@@ -7,6 +7,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddOpenApi();
 
+// To use inmemory store instance 
 builder.Services.AddSingleton<
     ITrackStore,
     InMemoryTrackStore>();

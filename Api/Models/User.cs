@@ -22,6 +22,7 @@ public sealed class User
     {
         Id = Guid.NewGuid();
 
+        //Validates when user is created to prevent invalid users
         FullName = ValidateName(fullName);
         Email = ValidateEmail(email);
         PhoneNumber = ValidatePhoneNumber(phoneNumber);

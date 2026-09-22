@@ -4,6 +4,7 @@ namespace Api.Domain;
 
 public sealed class Stokvel
 {
+    // Kept private as members can only be changed through AddMember/RemoveMember
     private readonly List<User> _members = [];
 
     public Guid Id { get; private set; }
@@ -20,8 +21,8 @@ public sealed class Stokvel
 
     public DateTime CreatedAtUtc { get; private set; }
 
-    public IReadOnlyCollection<User> Members =>
-        _members.AsReadOnly();
+    //Read-only to prevent outside code to add/remove members
+    public IReadOnlyCollection<User> Members => _members.AsReadOnly();
 
     [JsonConstructor]
     public Stokvel(
@@ -46,6 +47,7 @@ public sealed class Stokvel
         CreatedAtUtc = DateTime.UtcNow;
     }
 
+    //Updates are controlled by stokvel entity instead making controllers change properties
     public void UpdateDetails(
         string name,
         decimal monthlyContribution,
