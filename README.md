@@ -1,6 +1,9 @@
 # RondiTrack
 RondiTrack is a Web API that manages stokvels and it's members.
 
+## API Structure Choice
+Controllers were selected because they provide clear separation between HTTP routing and domain logic. It also makes it easy to show attribute routing.  
+
 ## Domain Rules
 ### User
 A User must:
