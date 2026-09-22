@@ -21,8 +21,7 @@ public sealed class StokvelsController : ControllerBase
     public async Task<ActionResult<IReadOnlyCollection<Stokvel>>>
         GetAll()
     {
-        var stokvels =
-            await _store.GetStokvelsAsync();
+        var stokvels = await _store.GetStokvelsAsync();
 
         return Ok(stokvels);
     }
@@ -33,8 +32,7 @@ public sealed class StokvelsController : ControllerBase
     public async Task<ActionResult<Stokvel>>
         GetById(Guid id)
     {
-        var stokvel =
-            await _store.GetStokvelByIdAsync(id);
+        var stokvel = await _store.GetStokvelByIdAsync(id);
 
         if (stokvel is null)
         {
@@ -64,8 +62,7 @@ public sealed class StokvelsController : ControllerBase
             Guid id,
             [FromBody] Stokvel updatedStokvel)
     {
-        var existingStokvel =
-            await _store.GetStokvelByIdAsync(id);
+        var existingStokvel = await _store.GetStokvelByIdAsync(id);
 
         if (existingStokvel is null)
         {
@@ -83,12 +80,10 @@ public sealed class StokvelsController : ControllerBase
         }
         catch (ArgumentException exception)
         {
-            return BadRequest(
-                new { message = exception.Message });
+            return BadRequest(new { message = exception.Message });
         }
 
-        await _store.UpdateStokvelAsync(
-            existingStokvel);
+        await _store.UpdateStokvelAsync(existingStokvel);
 
         return Ok(existingStokvel);
     }
@@ -97,8 +92,7 @@ public sealed class StokvelsController : ControllerBase
     public async Task<IActionResult>
         Delete(Guid id)
     {
-        var deleted =
-            await _store.DeleteStokvelAsync(id);
+        var deleted = await _store.DeleteStokvelAsync(id);
 
         if (!deleted)
         {

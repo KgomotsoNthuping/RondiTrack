@@ -12,7 +12,6 @@ public sealed class User
 
     public string PhoneNumber { get; private set; }
 
-    public DateTime CreatedAtUtc { get; private set; }
 
     [JsonConstructor]
     public User(
@@ -26,8 +25,6 @@ public sealed class User
         FullName = ValidateName(fullName);
         Email = ValidateEmail(email);
         PhoneNumber = ValidatePhoneNumber(phoneNumber);
-
-        CreatedAtUtc = DateTime.UtcNow;
     }
 
     public void UpdateProfile(

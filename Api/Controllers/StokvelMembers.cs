@@ -44,8 +44,7 @@ public sealed class StokvelMembersController : ControllerBase
             return NotFound();
         }
 
-        var member =
-            stokvel.Members.FirstOrDefault(
+        var member = stokvel.Members.FirstOrDefault(
                 user => user.Id == userId);
 
         if (member is null)
@@ -60,8 +59,7 @@ public sealed class StokvelMembersController : ControllerBase
     public async Task<IActionResult>
         AddMember(Guid stokvelId, Guid userId)
     {
-        var stokvel =
-            await _store.GetStokvelByIdAsync(stokvelId);
+        var stokvel = await _store.GetStokvelByIdAsync(stokvelId);
 
         if (stokvel is null)
         {
@@ -71,8 +69,7 @@ public sealed class StokvelMembersController : ControllerBase
             });
         }
 
-        var user =
-            await _store.GetUserByIdAsync(userId);
+        var user = await _store.GetUserByIdAsync(userId);
 
         if (user is null)
         {
@@ -108,20 +105,16 @@ public sealed class StokvelMembersController : ControllerBase
 
     [HttpDelete("{userId:guid}")]
     public async Task<IActionResult>
-        RemoveMember(
-            Guid stokvelId,
-            Guid userId)
+        RemoveMember(Guid stokvelId, Guid userId)
     {
-        var stokvel =
-            await _store.GetStokvelByIdAsync(stokvelId);
+        var stokvel = await _store.GetStokvelByIdAsync(stokvelId);
 
         if (stokvel is null)
         {
             return NotFound();
         }
 
-        var removed =
-            stokvel.RemoveMember(userId);
+        var removed = stokvel.RemoveMember(userId);
 
         if (!removed)
         {

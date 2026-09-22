@@ -19,8 +19,6 @@ public sealed class Stokvel
 
     public string? Rules { get; private set; }
 
-    public DateTime CreatedAtUtc { get; private set; }
-
     //Read-only to prevent outside code to add/remove members
     public IReadOnlyCollection<User> Members => _members.AsReadOnly();
 
@@ -43,8 +41,6 @@ public sealed class Stokvel
         CurrentPeriod = currentPeriod;
         TotalPeriods = totalPeriods;
         Rules = NormalizeRules(rules);
-
-        CreatedAtUtc = DateTime.UtcNow;
     }
 
     //Updates are controlled by stokvel entity instead making controllers change properties
@@ -102,8 +98,7 @@ public sealed class Stokvel
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            throw new ArgumentException(
-                "A stokvel must have a name.");
+            throw new ArgumentException("A stokvel must have a name.");
         }
 
         return name.Trim();
@@ -114,8 +109,7 @@ public sealed class Stokvel
     {
         if (monthlyContribution <= 0)
         {
-            throw new ArgumentException(
-                "The monthly contribution must be greater than zero.");
+            throw new ArgumentException("The monthly contribution must be greater than zero.");
         }
 
         return monthlyContribution;
@@ -127,22 +121,18 @@ public sealed class Stokvel
     {
         if (totalPeriods < 1)
         {
-            throw new ArgumentException(
-                "A stokvel must have at least one period.");
+            throw new ArgumentException("A stokvel must have at least one period.");
         }
 
         if (currentPeriod < 1 ||
             currentPeriod > totalPeriods)
         {
-            throw new ArgumentException(
-                "The current period must be between 1 and the total number of periods.");
+            throw new ArgumentException("The current period must be between 1 and the total number of periods.");
         }
     }
 
     private static string? NormalizeRules(string? rules)
     {
-        return string.IsNullOrWhiteSpace(rules)
-            ? null
-            : rules.Trim();
+        return string.IsNullOrWhiteSpace(rules)? null : rules.Trim();
     }
 }

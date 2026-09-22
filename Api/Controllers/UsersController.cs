@@ -20,8 +20,7 @@ public sealed class UsersController : ControllerBase
     public async Task<ActionResult<IReadOnlyCollection<User>>>
         GetAll()
     {
-        var users =
-            await _store.GetUsersAsync();
+        var users = await _store.GetUsersAsync();
 
         return Ok(users);
     }
@@ -31,8 +30,7 @@ public sealed class UsersController : ControllerBase
     public async Task<ActionResult<User>>
         GetById(Guid id)
     {
-        var user =
-            await _store.GetUserByIdAsync(id);
+        var user = await _store.GetUserByIdAsync(id);
 
         if (user is null)
         {
@@ -64,8 +62,7 @@ public sealed class UsersController : ControllerBase
             Guid id,
             [FromBody] User updatedUser)
     {
-        var existingUser =
-            await _store.GetUserByIdAsync(id);
+        var existingUser = await _store.GetUserByIdAsync(id);
 
         if (existingUser is null)
         {
@@ -96,8 +93,7 @@ public sealed class UsersController : ControllerBase
     public async Task<IActionResult>
         Delete(Guid id)
     {
-        var user =
-            await _store.GetUserByIdAsync(id);
+        var user = await _store.GetUserByIdAsync(id);
 
         if (user is null)
         {
@@ -105,16 +101,13 @@ public sealed class UsersController : ControllerBase
         }
 
         //Stops deletion if user still belongs to a stokvel
-        var belongsToStokvel =
-            await _store
-                .IsUserMemberOfAnyStokvelAsync(id);
+        var belongsToStokvel = await _store.IsUserMemberOfAnyStokvelAsync(id);
 
         if (belongsToStokvel)
         {
             return Conflict(new
             {
-                message =
-                    "The user cannot be deleted while they are still a member of a stokvel."
+                message = "The user cannot be deleted while they are still a member of a stokvel."
             });
         }
 
