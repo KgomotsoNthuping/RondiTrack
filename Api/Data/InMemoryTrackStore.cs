@@ -58,13 +58,13 @@ public sealed class InMemoryTrackStore : ITrackStore
         _stokvels.Add(communitySavers);
     }
 
-    //This is readonly to not show the list directly
+    //This is readonly so only list of users can be viewed without or being able to add/remove users
     public Task<IReadOnlyCollection<User>> GetUsersAsync()
     {
         IReadOnlyCollection<User> users = _users.AsReadOnly();
 
         return Task.FromResult(users);
-    }
+    } 
 
     public Task<User?> GetUserByIdAsync(Guid id)
     {
