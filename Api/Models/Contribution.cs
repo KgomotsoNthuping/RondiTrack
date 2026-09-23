@@ -1,4 +1,4 @@
-namespace Api.Domain;
+namespace Api.Models;
 
 public sealed class Contribution
 {

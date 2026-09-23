@@ -1,4 +1,4 @@
-namespace Api.Contracts;
+namespace Api.DTO;
 
 // Information the client is allowed to send when creating a Stokvel.
 public sealed class CreateStokvelRequest

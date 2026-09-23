@@ -1,4 +1,4 @@
-namespace Api.Contracts;
+namespace Api.DTO;
 
 public sealed class RecordContributionRequest
 {

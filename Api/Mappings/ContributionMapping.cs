@@ -1,4 +1,4 @@
-using Api.Contracts;
+using Api.DTO;
 using Api.Models;
 
 namespace Api.Mapping;

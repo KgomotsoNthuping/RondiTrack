@@ -1,4 +1,4 @@
-using Api.Domain;
+using Api.Models;
 
 namespace Api.Data;
 
