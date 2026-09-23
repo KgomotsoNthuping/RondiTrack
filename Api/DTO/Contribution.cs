@@ -1,4 +1,4 @@
-namespace RondiTrack.Api.Contracts;
+namespace Api.Contracts;
 
 public sealed class RecordContributionRequest
 {

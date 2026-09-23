@@ -8,6 +8,8 @@ public sealed class InMemoryTrackStore : ITrackStore
 
     private readonly List<Stokvel> _stokvels = [];
 
+    private readonly List<Contribution> _contributions = [];
+
     public InMemoryTrackStore()
     {
         SeedData();
@@ -175,4 +177,39 @@ public sealed class InMemoryTrackStore : ITrackStore
 
         return Task.FromResult(true);
     }
+
+    //Implement Contribution
+    public Task<Contribution?> GetContributionByIdAsync(
+    Guid stokvelId,
+    Guid contributionId)
+    {
+    var contribution =
+        _contributions.FirstOrDefault(contribution =>
+            contribution.Id == contributionId &&
+            contribution.StokvelId == stokvelId);
+
+    return Task.FromResult(contribution);
+    }
+
+    public Task<Contribution?> GetContributionAsync(    
+    Guid stokvelId,
+    Guid userId,
+    int cycleNumber)
+    {
+    var contribution =
+        _contributions.FirstOrDefault(contribution =>
+            contribution.StokvelId == stokvelId &&
+            contribution.UserId == userId &&
+            contribution.CycleNumber == cycleNumber);
+
+    return Task.FromResult(contribution);
+    }   
+
+    public Task AddContributionAsync(
+    Contribution contribution)
+    {
+    _contributions.Add(contribution);
+
+    return Task.CompletedTask;
+    } 
 }

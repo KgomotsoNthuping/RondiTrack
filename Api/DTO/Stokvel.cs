@@ -1,4 +1,4 @@
-namespace RondiTrack.Api.Contracts;
+namespace Api.Contracts;
 
 // Information the client is allowed to send when creating a Stokvel.
 public sealed class CreateStokvelRequest

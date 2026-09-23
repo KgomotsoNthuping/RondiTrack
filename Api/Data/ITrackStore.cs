@@ -27,4 +27,10 @@ public interface ITrackStore
     Task UpdateStokvelAsync(Stokvel stokvel);
 
     Task<bool> DeleteStokvelAsync(Guid id);
+
+    Task<Contribution?> GetContributionByIdAsync(Guid stokvelId, Guid contributionId);
+
+    Task<Contribution?> GetContributionAsync(Guid stokvelId, Guid userId, int cycleNumber);
+
+    Task AddContributionAsync(Contribution contribution);
 }
