@@ -8,11 +8,11 @@ public sealed class Contribution
 
     public Guid UserId { get; private set; }
 
-    public int CycleNumber { get; private set; }
+    public Guid ContributionCycleId { get; private set; }
 
     public decimal Amount { get; private set; }
 
-    public Contribution(Guid stokvelId, Guid userId, int cycleNumber, decimal amount)
+    public Contribution(Guid stokvelId, Guid userId, Guid contributionCycleId, decimal amount)
     {
         if (stokvelId == Guid.Empty)
         {
@@ -24,9 +24,9 @@ public sealed class Contribution
             throw new ArgumentException("A user ID is required.");
         }
 
-        if (cycleNumber < 1)
+        if (contributionCycleId == Guid.Empty)
         {
-            throw new ArgumentException("The cycle number must be greater than zero.");
+            throw new ArgumentException("A contribution cycle ID is required.");
         }
 
         if (amount <= 0)
@@ -37,7 +37,7 @@ public sealed class Contribution
         Id = Guid.NewGuid();
         StokvelId = stokvelId;
         UserId = userId;
-        CycleNumber = cycleNumber;
+        ContributionCycleId = contributionCycleId;
         Amount = amount;
     }
 }

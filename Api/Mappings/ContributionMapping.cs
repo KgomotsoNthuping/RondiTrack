@@ -5,14 +5,13 @@ namespace Api.Mapping;
 
 public static class ContributionMapping
 {
-    public static ContributionResponse ToResponse(
-        this Contribution contribution)
+    public static ContributionResponse ToResponse(this Contribution contribution)
     {
         return new ContributionResponse(
             contribution.Id,
             contribution.StokvelId,
             contribution.UserId,
-            contribution.CycleNumber,
+            contribution.ContributionCycleId,
             contribution.Amount);
     }
 }
