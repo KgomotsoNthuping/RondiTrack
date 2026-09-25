@@ -5,7 +5,7 @@ public sealed class RecordContributionRequest
 {
     public Guid UserId { get; init; } //maybe use private set
 
-    public int CycleNumber { get; init; }
+    public Guid ContributionCycleId { get; init; }
 
     public decimal Amount { get; init; }
 }
@@ -15,5 +15,5 @@ public sealed record ContributionResponse(
     Guid Id,
     Guid StokvelId,
     Guid UserId,
-    int CycleNumber,
+    Guid ContributionCycleId,
     decimal Amount);
