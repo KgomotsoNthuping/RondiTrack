@@ -1,4 +1,4 @@
-using Api.Domain;
+using Api.Models;
 
 namespace Api.Data;
 
@@ -6,7 +6,7 @@ namespace Api.Data;
 public sealed record ContributionRequestSignature(
     Guid StokvelId,
     Guid UserId,
-    int CycleNumber,
+    Guid ContributionCycleId,
     decimal Amount);
 
 // Stores what request used an Idempotency-Key

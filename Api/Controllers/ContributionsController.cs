@@ -9,8 +9,7 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/stokvels/{stokvelId:guid}/contributions")]
-public sealed class ContributionsController
-    : ControllerBase
+public sealed class ContributionsController : ControllerBase
 {
     private readonly ITrackStore _store;
     private readonly ITrackService _service;
@@ -46,36 +45,30 @@ public sealed class ContributionsController
 
     // POST /api/stokvels/{stokvelId}/contributions
     [HttpPost]
+    [RequireIdempotencyKey]
     public async Task<ActionResult<ContributionResponse>>
-        RecordContribution(
-            Guid stokvelId,
-            [FromHeader(Name = "Idempotency-Key")]
-            string? idempotencyKey,
-            RecordContributionRequest request)
+    RecordContribution(
+        Guid stokvelId,
+        [FromHeader(Name = "Idempotency-Key")]
+        string idempotencyKey,
+        RecordContributionRequest request)
     {
-        var result =
-            await _service.RecordContributionAsync(
-                stokvelId,
-                request.UserId,
-                request.CycleNumber,
-                request.Amount,
-                idempotencyKey);
+        var contribution = await _service.RecordContributionAsync(
+            stokvelId,
+            request.UserId,
+            request.ContributionCycleId,
+            request.Amount,
+            idempotencyKey);
 
-        if (!result.IsSuccess)
-        {
-            return this.ToProblem(result);
-        }
-
-        var response =
-            result.Value!.ToResponse();
+        var response = contribution.ToResponse();
 
         return CreatedAtAction(
-            nameof(GetById),
-            new
-            {
-                stokvelId,
-                contributionId = response.Id
-            },
-            response);
+        nameof(GetById),
+        new
+        {
+            stokvelId,
+            contributionId = response.Id
+        },
+        response);
     }
 }

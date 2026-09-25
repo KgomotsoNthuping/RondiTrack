@@ -4,22 +4,21 @@ namespace Api.Services;
 
 public interface ITrackService
 {
-    Task<ServiceResult<User>> AddMemberAsync(
+    Task<User> AddMemberAsync(
         Guid stokvelId,
         Guid userId);
 
-    Task<ServiceResult<bool>> RemoveMemberAsync(
+    Task RemoveMemberAsync(
         Guid stokvelId,
         Guid userId);
 
-    Task<ServiceResult<bool>> DeleteUserAsync(
+    Task DeleteUserAsync(
         Guid userId);
 
-    Task<ServiceResult<Contribution>>
-        RecordContributionAsync(
-            Guid stokvelId,
-            Guid userId,
-            int cycleNumber,
-            decimal amount,
-            string? idempotencyKey);
+    Task<Contribution> RecordContributionAsync(
+        Guid stokvelId,
+        Guid userId,
+        Guid contributionCycleId,
+        decimal amount,
+        string idempotencyKey);
 }

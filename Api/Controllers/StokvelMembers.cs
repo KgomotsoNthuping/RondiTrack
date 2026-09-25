@@ -5,17 +5,16 @@ using Api.Extensions;
 using Api.Mappings;
 using Api.Services;
 
-namespace RondiTrack.Api.Controllers;
+namespace Api.Controllers;
 
 [ApiController]
 [Route("api/stokvels/{stokvelId:guid}/members")]
-public sealed class StokvelMembersController
-    : ControllerBase
+public sealed class StokvelMember : ControllerBase
 {
     private readonly ITrackStore _store;
     private readonly ITrackService _service;
 
-    public StokvelMembersController(
+    public StokvelMember(
         ITrackStore store,
         ITrackService service)
     {
@@ -78,27 +77,19 @@ public sealed class StokvelMembersController
             Guid stokvelId,
             Guid userId)
     {
-        var result =
+        var user =
             await _service.AddMemberAsync(
                 stokvelId,
                 userId);
 
-        if (!result.IsSuccess)
-        {
-            return this.ToProblem(result);
-        }
-
-        var response =
-            result.Value!.ToResponse();
-
         return CreatedAtAction(
-            nameof(GetMember),
-            new
-            {
-                stokvelId,
-                userId
-            },
-            response);
+        nameof(GetMember),
+        new
+        {
+            stokvelId,
+            userId
+        },
+        user.ToResponse());
     }
 
     [HttpDelete("{userId:guid}")]

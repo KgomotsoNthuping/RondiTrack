@@ -1,122 +1,118 @@
 using Microsoft.AspNetCore.Mvc;
 using Api.DTO;
 using Api.Data;
-using Api.Extensions;
+using Api.Exceptions;
 using Api.Mappings;
+using Api.Services;
 
 namespace Api.Controllers;
 
 [ApiController]
-[Route("api/stokvels")]
-public sealed class StokvelsController : ControllerBase
+[Route("api/users")]
+public sealed class UsersController : ControllerBase
 {
     private readonly ITrackStore _store;
+    private readonly ITrackService _service;
 
-    public StokvelsController(
-        ITrackStore store)
+    // The store handles simple data access.
+    // The service handles operations that require business decisions.
+    public UsersController(
+        ITrackStore store,
+        ITrackService service)
     {
         _store = store;
+        _service = service;
     }
 
+    // GET /api/users
+    // Returns all Users as response DTOs rather than exposing domain entities.
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyCollection<StokvelResponse>>>
+    public async Task<ActionResult<IReadOnlyCollection<UserResponse>>>
         GetAll()
     {
-        var stokvels =
-            await _store.GetStokvelsAsync();
+        var users =
+            await _store.GetUsersAsync();
 
         var response =
-            stokvels
-                .Select(stokvel => stokvel.ToResponse())
+            users
+                .Select(user => user.ToResponse())
                 .ToList();
 
         return Ok(response);
     }
 
+    // GET /api/users/{id}
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<StokvelResponse>>
+    public async Task<ActionResult<UserResponse>>
         GetById(Guid id)
     {
-        var stokvel =
-            await _store.GetStokvelByIdAsync(id);
+        var user =
+            await _store.GetUserByIdAsync(id);
 
-        if (stokvel is null)
+        // The controller no longer creates a 404 ProblemDetails response.
+        // It throws an exception which is handled centrally.
+        if (user is null)
         {
-            return this.NotFoundProblem(
-                "The stokvel was not found.");
+            throw new ResourceNotFoundException(
+                "The user was not found.");
         }
 
-        return Ok(stokvel.ToResponse());
+        return Ok(user.ToResponse());
     }
 
+    // POST /api/users
+    // FluentValidation checks the request before this action executes.
     [HttpPost]
-    public async Task<ActionResult<StokvelResponse>>
-        Create(CreateStokvelRequest request)
+    public async Task<ActionResult<UserResponse>>
+        Create(CreateUserRequest request)
     {
-        try
-        {
-            var stokvel =
-                request.ToDomain();
+        // Convert the request DTO into the User domain entity.
+        var user =
+            request.ToDomain();
 
-            await _store.AddStokvelAsync(stokvel);
+        await _store.AddUserAsync(user);
 
-            var response =
-                stokvel.ToResponse();
+        var response =
+            user.ToResponse();
 
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = stokvel.Id },
-                response);
-        }
-        catch (ArgumentException exception)
-        {
-            return this.UnprocessableProblem(
-                exception.Message);
-        }
+        // 201 Created and a link to the newly-created User.
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = user.Id },
+            response);
     }
 
+    // PUT /api/users/{id}
     [HttpPut("{id:guid}")]
-    public async Task<ActionResult<StokvelResponse>>
+    public async Task<ActionResult<UserResponse>>
         Update(
             Guid id,
-            UpdateStokvelRequest request)
+            UpdateUserRequest request)
     {
-        var stokvel =
-            await _store.GetStokvelByIdAsync(id);
+        var user =
+            await _store.GetUserByIdAsync(id);
 
-        if (stokvel is null)
+        if (user is null)
         {
-            return this.NotFoundProblem(
-                "The stokvel was not found.");
+            throw new ResourceNotFoundException(
+                "The user was not found.");
         }
 
-        try
-        {
-            request.ApplyTo(stokvel);
+        // Manual mapping applies the request values
+        // to the existing domain entity.
+        request.ApplyTo(user);
 
-            await _store.UpdateStokvelAsync(stokvel);
+        await _store.UpdateUserAsync(user);
 
-            return Ok(stokvel.ToResponse());
-        }
-        catch (ArgumentException exception)
-        {
-            return this.UnprocessableProblem(
-                exception.Message);
-        }
+        return Ok(user.ToResponse());
     }
 
+    // DELETE /api/users/{id}
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult>
         Delete(Guid id)
     {
-        var deleted =
-            await _store.DeleteStokvelAsync(id);
-
-        if (!deleted)
-        {
-            return this.NotFoundProblem(
-                "The stokvel was not found.");
-        }
+       await _service.DeleteUserAsync(id);
 
         return NoContent();
     }
