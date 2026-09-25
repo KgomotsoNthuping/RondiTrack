@@ -1,5 +1,6 @@
 using Api.Data;
 using Scalar.AspNetCore;
+using Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,16 @@ builder.Services.AddOpenApi();
 builder.Services.AddSingleton<
     ITrackStore,
     InMemoryTrackStore>();
+
+// Stores Idempotency-Key results in memory.
+builder.Services.AddSingleton<
+    IIdempotency,
+    InMemoryIdempotency>();
+
+// Contains RondiTrack business decisions.
+builder.Services.AddSingleton<
+    ITrackService,
+    TrackService>()
 
 var app = builder.Build();
 

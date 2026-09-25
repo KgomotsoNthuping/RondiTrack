@@ -1,117 +1,122 @@
 using Microsoft.AspNetCore.Mvc;
+using Api.DTO;
 using Api.Data;
-using Api.Domain;
+using Api.Extensions;
+using Api.Mappings;
 
 namespace Api.Controllers;
 
 [ApiController]
-[Route("api/users")]
-public sealed class UsersController : ControllerBase
+[Route("api/stokvels")]
+public sealed class StokvelsController : ControllerBase
 {
     private readonly ITrackStore _store;
 
-    public UsersController(ITrackStore store)
+    public StokvelsController(
+        ITrackStore store)
     {
         _store = store;
     }
 
-    // Get /api/users
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyCollection<User>>>
+    public async Task<ActionResult<IReadOnlyCollection<StokvelResponse>>>
         GetAll()
     {
-        var users = await _store.GetUsersAsync();
+        var stokvels =
+            await _store.GetStokvelsAsync();
 
-        return Ok(users);
+        var response =
+            stokvels
+                .Select(stokvel => stokvel.ToResponse())
+                .ToList();
+
+        return Ok(response);
     }
 
-    // Get users by id
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<User>>
+    public async Task<ActionResult<StokvelResponse>>
         GetById(Guid id)
     {
-        var user = await _store.GetUserByIdAsync(id);
+        var stokvel =
+            await _store.GetStokvelByIdAsync(id);
 
-        if (user is null)
+        if (stokvel is null)
         {
-            return NotFound();
+            return this.NotFoundProblem(
+                "The stokvel was not found.");
         }
 
-        return Ok(user);
+        return Ok(stokvel.ToResponse());
     }
 
-    // Post /api/users
-    // Creates the user resource
     [HttpPost]
-    public async Task<ActionResult<User>>
-        Create([FromBody] User user)
+    public async Task<ActionResult<StokvelResponse>>
+        Create(CreateStokvelRequest request)
     {
-        await _store.AddUserAsync(user);
+        try
+        {
+            var stokvel =
+                request.ToDomain();
 
-        return CreatedAtAction(
-            nameof(GetById),
-            new { id = user.Id },
-            user);
+            await _store.AddStokvelAsync(stokvel);
+
+            var response =
+                stokvel.ToResponse();
+
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = stokvel.Id },
+                response);
+        }
+        catch (ArgumentException exception)
+        {
+            return this.UnprocessableProblem(
+                exception.Message);
+        }
     }
 
-    //Update user resources
-    // /api/users/id
     [HttpPut("{id:guid}")]
-    public async Task<ActionResult<User>>
+    public async Task<ActionResult<StokvelResponse>>
         Update(
             Guid id,
-            [FromBody] User updatedUser)
+            UpdateStokvelRequest request)
     {
-        var existingUser = await _store.GetUserByIdAsync(id);
+        var stokvel =
+            await _store.GetStokvelByIdAsync(id);
 
-        if (existingUser is null)
+        if (stokvel is null)
         {
-            return NotFound();
+            return this.NotFoundProblem(
+                "The stokvel was not found.");
         }
 
         try
         {
-            existingUser.UpdateProfile(
-                updatedUser.FullName,
-                updatedUser.Email,
-                updatedUser.PhoneNumber);
+            request.ApplyTo(stokvel);
+
+            await _store.UpdateStokvelAsync(stokvel);
+
+            return Ok(stokvel.ToResponse());
         }
         catch (ArgumentException exception)
         {
-            return BadRequest(
-                new { message = exception.Message });
+            return this.UnprocessableProblem(
+                exception.Message);
         }
-
-        await _store.UpdateUserAsync(existingUser);
-
-        return Ok(existingUser);
     }
 
-    //delete users
-    //api/users/id
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult>
         Delete(Guid id)
     {
-        var user = await _store.GetUserByIdAsync(id);
+        var deleted =
+            await _store.DeleteStokvelAsync(id);
 
-        if (user is null)
+        if (!deleted)
         {
-            return NotFound();
+            return this.NotFoundProblem(
+                "The stokvel was not found.");
         }
-
-        //Stops deletion if user still belongs to a stokvel
-        var belongsToStokvel = await _store.IsUserMemberOfAnyStokvelAsync(id);
-
-        if (belongsToStokvel)
-        {
-            return Conflict(new
-            {
-                message = "The user cannot be deleted while they are still a member of a stokvel."
-            });
-        }
-
-        await _store.DeleteUserAsync(id);
 
         return NoContent();
     }

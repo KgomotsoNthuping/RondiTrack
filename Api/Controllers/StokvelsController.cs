@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Api.Data;
-using Api.Domain;
+using Api.Models;
 
 namespace Api.Controllers;
 

@@ -1,22 +1,30 @@
 using Microsoft.AspNetCore.Mvc;
+using Api.DTO;
 using Api.Data;
-using Api.Domain;
+using Api.Extensions;
+using Api.Mappings;
+using Api.Services;
 
-namespace Api.Controllers;
+namespace RondiTrack.Api.Controllers;
 
 [ApiController]
 [Route("api/stokvels/{stokvelId:guid}/members")]
-public sealed class StokvelMembersController : ControllerBase
+public sealed class StokvelMembersController
+    : ControllerBase
 {
     private readonly ITrackStore _store;
+    private readonly ITrackService _service;
 
-    public StokvelMembersController(ITrackStore store)
+    public StokvelMembersController(
+        ITrackStore store,
+        ITrackService service)
     {
         _store = store;
+        _service = service;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyCollection<User>>>
+    public async Task<ActionResult<IReadOnlyCollection<UserResponse>>>
         GetMembers(Guid stokvelId)
     {
         var stokvel =
@@ -24,14 +32,20 @@ public sealed class StokvelMembersController : ControllerBase
 
         if (stokvel is null)
         {
-            return NotFound();
+            return this.NotFoundProblem(
+                "The stokvel was not found.");
         }
 
-        return Ok(stokvel.Members);
+        var response =
+            stokvel.Members
+                .Select(user => user.ToResponse())
+                .ToList();
+
+        return Ok(response);
     }
 
     [HttpGet("{userId:guid}")]
-    public async Task<ActionResult<User>>
+    public async Task<ActionResult<UserResponse>>
         GetMember(
             Guid stokvelId,
             Guid userId)
@@ -41,57 +55,41 @@ public sealed class StokvelMembersController : ControllerBase
 
         if (stokvel is null)
         {
-            return NotFound();
+            return this.NotFoundProblem(
+                "The stokvel was not found.");
         }
 
-        var member = stokvel.Members.FirstOrDefault(
+        var member =
+            stokvel.Members.FirstOrDefault(
                 user => user.Id == userId);
 
         if (member is null)
         {
-            return NotFound();
+            return this.NotFoundProblem(
+                "The member was not found in this stokvel.");
         }
 
-        return Ok(member);
+        return Ok(member.ToResponse());
     }
 
     [HttpPost("{userId:guid}")]
-    public async Task<IActionResult>
-        AddMember(Guid stokvelId, Guid userId)
+    public async Task<ActionResult<UserResponse>>
+        AddMember(
+            Guid stokvelId,
+            Guid userId)
     {
-        var stokvel = await _store.GetStokvelByIdAsync(stokvelId);
+        var result =
+            await _service.AddMemberAsync(
+                stokvelId,
+                userId);
 
-        if (stokvel is null)
+        if (!result.IsSuccess)
         {
-            return NotFound(new
-            {
-                message = "Stokvel not found."
-            });
+            return this.ToProblem(result);
         }
 
-        var user = await _store.GetUserByIdAsync(userId);
-
-        if (user is null)
-        {
-            return NotFound(new
-            {
-                message = "User not found."
-            });
-        }
-
-        try
-        {
-            stokvel.AddMember(user);
-        }
-        catch (InvalidOperationException exception)
-        {
-            return Conflict(new
-            {
-                message = exception.Message
-            });
-        }
-
-        await _store.UpdateStokvelAsync(stokvel);
+        var response =
+            result.Value!.ToResponse();
 
         return CreatedAtAction(
             nameof(GetMember),
@@ -100,32 +98,24 @@ public sealed class StokvelMembersController : ControllerBase
                 stokvelId,
                 userId
             },
-            user);
+            response);
     }
 
     [HttpDelete("{userId:guid}")]
     public async Task<IActionResult>
-        RemoveMember(Guid stokvelId, Guid userId)
+        RemoveMember(
+            Guid stokvelId,
+            Guid userId)
     {
-        var stokvel = await _store.GetStokvelByIdAsync(stokvelId);
+        var result =
+            await _service.RemoveMemberAsync(
+                stokvelId,
+                userId);
 
-        if (stokvel is null)
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return this.ToProblem(result);
         }
-
-        var removed = stokvel.RemoveMember(userId);
-
-        if (!removed)
-        {
-            return NotFound(new
-            {
-                message =
-                    "The user is not a member of this stokvel."
-            });
-        }
-
-        await _store.UpdateStokvelAsync(stokvel);
 
         return NoContent();
     }

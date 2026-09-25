@@ -37,3 +37,44 @@ A Stokvel must:
 
 4. Run:
    dotnet run
+
+## DTO
+The application no longer exposes domain entities directly through the HTTP API.
+
+Create and update operations use request DTOs, while responses use separate response DTOs. This prevents clients from attempting to set internal values such as IDs or creation timestamps and allows the API contract to evolve independently from the internal domain model.
+
+Mapping is performed manually through dedicated mapping classes.
+
+Manual mapping is appropriate for RondiTrack because the mappings are small and explicit. It also makes it easy to audit exactly which fields cross the HTTP boundary, which is particularly valuable for an application that manages financial information.
+
+## Service Layer
+The service layer is used only for operations that contain meaningful business decisions.
+
+These currently include:
+
+- Adding and removing stokvel members.
+- Preventing deletion of users who still belong to a stokvel.
+- Recording contributions.
+- Preventing duplicate contributions.
+- Enforcing contribution amounts and cycle membership.
+- Handling idempotency for contribution recording.
+
+Simple retrieval operations continue to access the in-memory store directly because they do not require business decisions.
+
+## Contribution Idempotency
+Recording a contribution requires an Idempotency-Key request header.
+
+When a contribution is successfully recorded, the key, request details and original contribution are stored in memory.
+
+If the same key is sent again with the same request, the original contribution is returned instead of recording another payment.
+
+If the same key is reused with different request data, the API returns 409 Conflict.
+
+A separate duplicate-contribution check also prevents a member's contribution for the same stokvel cycle from being recorded twice even when a different idempotency key is supplied.
+
+## 400 and 422
+RondiTrack uses 400 Bad Request when the request itself does not satisfy the API contract, such as a contribution request without an Idempotency-Key.
+
+422 Unprocessable Entity is used when the request can be understood but cannot be processed because it violates a domain or business rule, such as submitting R100 when the stokvel requires a R500 contribution.
+
+409 Conflict is used when the request conflicts with existing system state, such as attempting to record a contribution that has already been recorded.
