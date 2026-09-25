@@ -1,12 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "hlYApC58eSs=",
+  "dgSpecHash": "mwB5eBw+NjQ=",
   "success": true,
-  "projectFilePath": "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Api\\Api.csproj",
+  "projectFilePath": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Api\\Api.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\LCBitcube\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.12\\microsoft.aspnetcore.openapi.10.0.12.nupkg.sha512",
-    "C:\\Users\\LCBitcube\\.nuget\\packages\\microsoft.openapi\\2.12.0\\microsoft.openapi.2.12.0.nupkg.sha512",
-    "C:\\Users\\LCBitcube\\.nuget\\packages\\scalar.aspnetcore\\2.17.7\\scalar.aspnetcore.2.17.7.nupkg.sha512"
+    "C:\\Users\\KG\\.nuget\\packages\\fluentvalidation\\12.1.1\\fluentvalidation.12.1.1.nupkg.sha512",
+    "C:\\Users\\KG\\.nuget\\packages\\fluentvalidation.dependencyinjectionextensions\\12.1.1\\fluentvalidation.dependencyinjectionextensions.12.1.1.nupkg.sha512",
+    "C:\\Users\\KG\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.12\\microsoft.aspnetcore.openapi.10.0.12.nupkg.sha512",
+    "C:\\Users\\KG\\.nuget\\packages\\microsoft.openapi\\2.12.0\\microsoft.openapi.2.12.0.nupkg.sha512",
+    "C:\\Users\\KG\\.nuget\\packages\\scalar.aspnetcore\\2.17.7\\scalar.aspnetcore.2.17.7.nupkg.sha512"
   ],
   "logs": []
 }

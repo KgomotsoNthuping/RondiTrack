@@ -1,25 +1,32 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Api\\Api.csproj": {}
+    "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Api\\Api.csproj": {}
   },
   "projects": {
-    "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Api\\Api.csproj": {
+    "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Api\\Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Api\\Api.csproj",
+        "projectUniqueName": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Api\\Api.csproj",
         "projectName": "Api",
-        "projectPath": "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Api\\Api.csproj",
-        "packagesPath": "C:\\Users\\LCBitcube\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Api\\obj\\",
+        "projectPath": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Api\\Api.csproj",
+        "packagesPath": "C:\\Users\\KG\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Api\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\LCBitcube\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\KG\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -46,6 +53,14 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
+            "FluentValidation": {
+              "target": "Package",
+              "version": "[12.1.1, )"
+            },
+            "FluentValidation.DependencyInjectionExtensions": {
+              "target": "Package",
+              "version": "[12.1.1, )"
+            },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[10.0.12, )"
@@ -74,7 +89,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.401/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
