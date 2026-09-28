@@ -1,4 +1,4 @@
-namespace Api.Contracts;
+namespace Api.DTO;
 
 public sealed class CreateContributionCycleRequest
 {
@@ -18,5 +18,4 @@ public sealed record ContributionCycleResponse(
     Guid Id,
     Guid StokvelId,
     int CycleNumber,
-    decimal TargetAmount,
-    DateTime CreatedAtUtc);
+    decimal TargetAmount);

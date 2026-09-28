@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Api.Services;
 
-namespace Api.Http;
+namespace Api.Extensions;
 
 public static class Problems
 {

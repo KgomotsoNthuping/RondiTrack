@@ -1,5 +1,5 @@
 using FluentValidation;
-using Api.Contracts;
+using Api.DTO;
 
 namespace Api.Validation;
 

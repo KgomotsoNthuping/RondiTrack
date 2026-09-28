@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Api.DTO;
 using Api.Data;
-using Api.Extensions;
 using Api.Mappings;
 using Api.Services;
+using Api.Extensions;
+using Api.Validation;
 
 namespace Api.Controllers;
 

@@ -100,7 +100,7 @@ public sealed class ValidationFilter : IAsyncActionFilter
                         .Distinct()
                         .ToArray());
 
-            throw new RequestValidationException(
+            throw new Api.Exceptions.ValidationException(
                 formattedErrors);
         }
 

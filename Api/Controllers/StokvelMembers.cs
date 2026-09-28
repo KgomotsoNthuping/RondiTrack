@@ -98,15 +98,9 @@ public sealed class StokvelMember : ControllerBase
             Guid stokvelId,
             Guid userId)
     {
-        var result =
-            await _service.RemoveMemberAsync(
-                stokvelId,
-                userId);
-
-        if (!result.IsSuccess)
-        {
-            return this.ToProblem(result);
-        }
+        await _service.RemoveMemberAsync(
+            stokvelId,
+            userId);
 
         return NoContent();
     }

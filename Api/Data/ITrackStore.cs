@@ -37,71 +37,15 @@ public interface ITrackStore
     Task AddContributionAsync(Contribution contribution);
 
     //ContributionCycle
-    public Task<IReadOnlyCollection<ContributionCycle>>
-    GetContributionCyclesAsync(Guid stokvelId)
-    {
-        IReadOnlyCollection<ContributionCycle> cycles =
-         _contributionCycles
-            .Where(cycle => cycle.StokvelId == stokvelId)
-            .ToList()
-            .AsReadOnly();
+    Task<IReadOnlyCollection<ContributionCycle>>
+        GetContributionCyclesAsync(Guid stokvelId);
 
-        return Task.FromResult(cycles);
-    }
+    Task<ContributionCycle?>
+        GetContributionCycleByIdAsync(Guid stokvelId, Guid cycleId);
 
-    public Task<ContributionCycle?>
-        GetContributionCycleByIdAsync(
-            Guid stokvelId,
-            Guid cycleId)
-    {
-        var cycle =
-            _contributionCycles.FirstOrDefault(cycle =>
-                cycle.Id == cycleId &&
-                cycle.StokvelId == stokvelId);
+    Task AddContributionCycleAsync(ContributionCycle cycle);
 
-        return Task.FromResult(cycle);
-    }
+    Task UpdateContributionCycleAsync(ContributionCycle cycle);
 
-    public Task AddContributionCycleAsync(
-        ContributionCycle cycle)
-    {
-        _contributionCycles.Add(cycle);
-
-        return Task.CompletedTask;
-    }
-
-    public Task UpdateContributionCycleAsync(
-        ContributionCycle cycle)
-    {
-        var index =
-            _contributionCycles.FindIndex(existing =>
-                existing.Id == cycle.Id);
-
-        if (index >= 0)
-        {
-            _contributionCycles[index] = cycle;
-        }
-
-        return Task.CompletedTask;
-    }
-
-    public Task<bool> DeleteContributionCycleAsync(
-         Guid stokvelId,
-        Guid cycleId)
-    {
-        var cycle =
-            _contributionCycles.FirstOrDefault(cycle =>
-                cycle.Id == cycleId &&
-                cycle.StokvelId == stokvelId);
-
-        if (cycle is null)
-        {
-            return Task.FromResult(false);
-        }
-
-        _contributionCycles.Remove(cycle);
-
-        return Task.FromResult(true);
-    }
-    
+    Task<bool> DeleteContributionCycleAsync(Guid stokvelId, Guid cycleId);
 }

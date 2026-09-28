@@ -1,5 +1,6 @@
 using Api.Data;
 using Scalar.AspNetCore;
+using FluentValidation;
 using Api.Services;
 using Api.Validation;
 using Api.ErrorHandling;

@@ -31,7 +31,7 @@ public sealed class ExceptionHandler : IExceptionHandler
         var (statusCode, title, detail) =
             exception switch
             {
-                RequestValidationException =>
+                ValidationException =>
                     (
                         StatusCodes.Status400BadRequest,
                         "Validation Failed",
@@ -102,7 +102,7 @@ public sealed class ExceptionHandler : IExceptionHandler
 
         // Add field-by-field validation errors when relevant.
         if (exception
-            is RequestValidationException validationException)
+            is ValidationException validationException)
         {
             problemDetails.Extensions["errors"] =
                 validationException.Errors;

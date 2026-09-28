@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Api.Domain;
+namespace Api.Models;
 
 public sealed class User
 {

@@ -1,7 +1,7 @@
 using Api.DTO;
 using Api.Models;
 
-namespace Api.Mapping;
+namespace Api.Mappings;
 
 public static class StokvelMapping
 {
