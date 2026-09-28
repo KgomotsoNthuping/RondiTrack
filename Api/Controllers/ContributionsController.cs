@@ -1,16 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Api.DTO;
 using Api.Data;
-using Api.Extensions;
 using Api.Mappings;
 using Api.Services;
+using Api.Extensions;
 
 namespace Api.Controllers;
 
 [ApiController]
 [Route("api/stokvels/{stokvelId:guid}/contributions")]
-public sealed class ContributionsController
-    : ControllerBase
+public sealed class ContributionsController : ControllerBase
 {
     private readonly ITrackStore _store;
     private readonly ITrackService _service;
