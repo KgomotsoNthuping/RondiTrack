@@ -51,7 +51,7 @@ builder.Services.AddSingleton<
 // Contains RondiTrack business decisions.
 builder.Services.AddSingleton<
     ITrackService,
-    TrackService>()
+    TrackService>();
 
 var app = builder.Build();
 
