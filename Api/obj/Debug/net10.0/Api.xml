@@ -1,0 +1,200 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Api</name>
+    </assembly>
+    <members>
+        <member name="M:Api.Controllers.UsersController.GetAll">
+            <summary>
+            Returns all Users as response DTOs rather than exposing entities.
+            </summary>
+            <remarks>
+            Returns the current collection of users.
+            An empty collection is returned when no users exist.
+            Entities are not exposed directly; UserResponse DTOs
+            are returned instead.
+            </remarks>
+            <returns>The collection of users.</returns>
+            <response code="200">
+            Returns the collection of users.
+            </response>
+        </member>
+        <member name="M:Api.Controllers.UsersController.GetById(System.Guid)">
+            <summary>
+            Gets a specific user.
+            </summary>
+            <remarks>
+            Looks up a user using the supplied unique identifier.
+            This endpoint does not create or modify any data.
+            </remarks>
+            <param name="id">
+            The unique identifier of the user.
+            </param>
+            <returns>The requested user.</returns>
+            <response code="200">
+            Returns the requested user.
+            </response>
+            <response code="404">
+            No user exists with the supplied identifier.
+            </response>
+        </member>
+        <member name="M:Api.Controllers.UsersController.Create(Api.DTO.CreateUserRequest)">
+             <summary>
+             FluentValidation checks the request before this action executes.
+             </summary>
+             <remarks>
+             Creates a user from the supplied request.
+             The API generates values such as the user's identifier.
+             The caller cannot provide those values.
+            
+             FluentValidation validates the request before the controller
+             action executes.
+             </remarks>
+             <param name="request">
+             The details required to create the user.
+             </param>
+             <returns>The newly created user.</returns>
+             <response code="201">
+             The user was successfully created.
+             </response>
+             <response code="400">
+             The request failed input validation.
+             </response>
+        </member>
+        <member name="M:Api.Controllers.UsersController.Update(System.Guid,Api.DTO.UpdateUserRequest)">
+            <summary>
+            Updates an existing user.
+            </summary>
+            <remarks>
+            Replaces the editable profile details of an existing user.
+            The user's identifier and creation timestamp cannot be changed.
+            </remarks>
+            <param name="id">
+            The unique identifier of the user being updated.
+            </param>
+            <param name="request">
+            The replacement profile information.
+            </param>
+            <returns>The updated user.</returns>
+            <response code="200">
+            The user was successfully updated.
+            </response>
+            <response code="400">
+            The request failed input validation.
+            </response>
+            <response code="404">
+            The requested user does not exist.
+            </response>
+        </member>
+        <member name="M:Api.Controllers.UsersController.Delete(System.Guid)">
+             <summary>
+             Deletes a user.
+             </summary>
+             <remarks>
+             Deletes the requested user only when the user is not currently
+             a member of a stokvel.
+            
+             Membership protection is a business rule and is enforced by
+             the service layer.
+             </remarks>
+             <param name="id">
+             The unique identifier of the user being deleted.
+             </param>
+             <response code="204">
+             The user was successfully deleted.
+             </response>
+             <response code="404">
+             The requested user does not exist.
+             </response>
+             <response code="409">
+             The user still belongs to a stokvel and cannot be deleted.
+             </response>
+        </member>
+        <member name="T:Api.DTO.CreateUserRequest">
+            <summary>
+            Information the client is allowed to send when creating a User.
+            </summary>
+            <example>
+              "fullName": "Kgomotso Nthuping",
+              "email": "kgomotso@rondi.co.za",
+              "phoneNumber": "0741111111"
+            </example>
+        </member>
+        <member name="T:Api.DTO.UpdateUserRequest">
+            <summary>
+            Information the client is allowed to update
+            </summary>
+            <example>
+              "fullName": "Kgomotso Nthuping",
+              "email": "kgomotso.nthuping@rondi.co.za",
+              "phoneNumber": "0742222222"
+            </example>
+        </member>
+        <member name="T:Api.DTO.UserResponse">
+            <summary>
+            Shape/representation returned to API user.
+            </summary>
+            <example>
+              "id": "11111111-1111-1111-1111-111111111111",
+              "fullName": "Kgomotso Nthuping",
+              "email": "kgomotso@rondi.co.za",
+              "phoneNumber": "07411111111"
+            </example>
+        </member>
+        <member name="M:Api.DTO.UserResponse.#ctor(System.Guid,System.String,System.String,System.String)">
+            <summary>
+            Shape/representation returned to API user.
+            </summary>
+            <example>
+              "id": "11111111-1111-1111-1111-111111111111",
+              "fullName": "Kgomotso Nthuping",
+              "email": "kgomotso@rondi.co.za",
+              "phoneNumber": "07411111111"
+            </example>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.CreateDocumentationId(System.Type)">
+            <summary>
+            Generates a documentation comment ID for a type.
+            Example: T:Namespace.Outer+Inner`1 becomes T:Namespace.Outer.Inner`1
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.CreateDocumentationId(System.Reflection.PropertyInfo)">
+            <summary>
+            Generates a documentation comment ID for a property.
+            Example: P:Namespace.ContainingType.PropertyName or for an indexer P:Namespace.ContainingType.Item(System.Int32)
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.CreateDocumentationId(System.Type,System.String)">
+            <summary>
+            Generates a documentation comment ID for a property given its container type and property name.
+            Example: P:Namespace.ContainingType.PropertyName
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.CreateDocumentationId(System.Reflection.MethodInfo)">
+            <summary>
+            Generates a documentation comment ID for a method (or constructor).
+            For example:
+              M:Namespace.ContainingType.MethodName(ParamType1,ParamType2)~ReturnType
+              M:Namespace.ContainingType.#ctor(ParamType)
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.GetTypeDocId(System.Type,System.Boolean,System.Boolean)">
+            <summary>
+            Generates a documentation ID string for a type.
+            This method handles nested types (replacing '+' with '.'),
+            generic types, arrays, pointers, by-ref types, and generic parameters.
+            The <paramref name="includeGenericArguments"/> flag controls whether
+            constructed generic type arguments are emitted, while <paramref name="omitGenericArity"/>
+            controls whether the generic arity marker (e.g. "`1") is appended.
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.NormalizeDocId(System.String)">
+            <summary>
+            Normalizes a documentation comment ID to match the compiler-style format.
+            Strips the return type suffix for ordinary methods but retains it for conversion operators.
+            </summary>
+            <param name="docId">The documentation comment ID to normalize.</param>
+            <returns>The normalized documentation comment ID.</returns>
+        </member>
+    </members>
+</doc>

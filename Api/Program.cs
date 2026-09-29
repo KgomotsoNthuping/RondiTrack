@@ -74,3 +74,6 @@ app.UseHsts();
 app.MapControllers();
 
 app.Run();
+
+// To makeentry point for integration tests
+public partial class Program { }
