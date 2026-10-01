@@ -4,6 +4,7 @@ using FluentValidation;
 using Api.Services;
 using Api.Validation;
 using Api.ErrorHandling;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,22 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateUserRequestValidator>
 builder.Services.AddScoped<ValidationFilter>();
 
 builder.Services.AddOpenApi();
+
+var connectionString = builder.Configuration.GetConnectionString("RondiTrack") ??
+     throw new InvalidOperationException("The RondiTrack database connection string is missing.");
+
+builder.Services.AddDbContext<RondiTrackDbContext>(options =>
+    {
+        options.UseNpgsql(
+            connectionString,
+            npgsqlOptions =>
+            {
+                npgsqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 3,
+                    maxRetryDelay: TimeSpan.FromSeconds(5),
+                    errorCodesToAdd: null);
+            });
+    });
 
 // Enables standardized Problem Details output.
 builder.Services.AddProblemDetails(options =>

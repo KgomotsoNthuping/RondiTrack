@@ -10,6 +10,8 @@ public sealed class ContributionCycle
 
     public decimal TargetAmount { get; private set; }
 
+    public ContributionCycleStatus Status { get; private set; }
+
     public ContributionCycle(
         Guid stokvelId,
         int cycleNumber,
@@ -34,6 +36,7 @@ public sealed class ContributionCycle
         StokvelId = stokvelId;
         CycleNumber = cycleNumber;
         TargetAmount = targetAmount;
+        Status = ContributionCycleStatus.Open;
     }
 
     public void Update(
@@ -49,8 +52,16 @@ public sealed class ContributionCycle
         {
             throw new ArgumentException("Target amount must be greater than zero.");
         }
-
         CycleNumber = cycleNumber;
         TargetAmount = targetAmount;
+    }
+
+    public void MarkPaidOut()
+    {
+        if (Status == ContributionCycleStatus.PaidOut)
+        {
+            throw new InvalidOperationException("The contribution cycle has already been paid out.");
+        }
+        Status = ContributionCycleStatus.PaidOut;
     }
 }
