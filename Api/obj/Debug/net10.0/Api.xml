@@ -152,6 +152,18 @@
               "phoneNumber": "07411111111"
             </example>
         </member>
+        <member name="T:Api.Migrations.InitialPostgreSql">
+            <inheritdoc />
+        </member>
+        <member name="M:Api.Migrations.InitialPostgreSql.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Api.Migrations.InitialPostgreSql.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Api.Migrations.InitialPostgreSql.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.CreateDocumentationId(System.Type)">
             <summary>
             Generates a documentation comment ID for a type.
