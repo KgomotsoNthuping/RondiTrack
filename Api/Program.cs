@@ -56,9 +56,9 @@ builder.Services.AddProblemDetails(options =>
 builder.Services.AddExceptionHandler<ExceptionHandler>();
 
 // To use inmemory store instance 
-builder.Services.AddSingleton<
+builder.Services.AddScoped<
     ITrackStore,
-    InMemoryTrackStore>();
+    EfTrackStore>();
 
 // Stores Idempotency-Key results in memory.
 builder.Services.AddSingleton<
@@ -66,11 +66,20 @@ builder.Services.AddSingleton<
     InMemoryIdempotency>();
 
 // Contains RondiTrack business decisions.
-builder.Services.AddSingleton<
+builder.Services.AddScoped<
     ITrackService,
     TrackService>();
 
 var app = builder.Build();
+
+// Recreates the development data previously provided
+// by InMemoryTrackStore when the database is empty.
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<RondiTrackDbContext>();
+
+    await DbSeeder.SeedAsync(dbContext);
+}
 
 app.UseExceptionHandler();
 
