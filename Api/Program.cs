@@ -70,6 +70,11 @@ builder.Services.AddScoped<
     ITrackService,
     TrackService>();
 
+// Processes payouts inside an explicit database transaction.
+builder.Services.AddScoped<
+    IPayoutService,
+    PayoutService>();
+
 var app = builder.Build();
 
 // Recreates the development data previously provided
