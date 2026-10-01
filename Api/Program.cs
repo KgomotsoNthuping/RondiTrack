@@ -75,6 +75,14 @@ builder.Services.AddScoped<
     IPayoutService,
     PayoutService>();
 
+builder.Services.AddScoped<
+    IPayoutTransaction,
+    NoOpPayoutTransaction>();
+
+builder.Services.AddScoped<
+    IPayoutService,
+    PayoutService>();
+
 var app = builder.Build();
 
 // Recreates the development data previously provided

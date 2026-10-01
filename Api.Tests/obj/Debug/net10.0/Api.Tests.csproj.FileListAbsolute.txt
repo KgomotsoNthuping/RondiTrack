@@ -1,12 +1,5 @@
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\.msCoverageSourceRootsMapping_Api.Tests
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\CoverletSourceRootsMapping_Api.Tests
-C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\obj\Debug\net10.0\Api.Tests.csproj.AssemblyReference.cache
-C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\obj\Debug\net10.0\MvcTestingAppManifest.json
-C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\obj\Debug\net10.0\Api.Tests.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\obj\Debug\net10.0\Api.Tests.AssemblyInfoInputs.cache
-C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\obj\Debug\net10.0\Api.Tests.AssemblyInfo.cs
-C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\obj\Debug\net10.0\Api.Tests.csproj.CoreCompileInputs.cache
-C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\obj\Debug\net10.0\Api.Tests.sourcelink.json
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\testhost.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\xunit.abstractions.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Api.deps.json
@@ -110,8 +103,6 @@ C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.AspNetCore.WebSockets.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.AspNetCore.WebUtilities.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.CSharp.dll
-C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.Extensions.Caching.Abstractions.dll
-C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.Extensions.Caching.Memory.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.Extensions.Configuration.Ini.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.Extensions.Configuration.KeyPerFile.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.Extensions.Configuration.Xml.dll
@@ -307,6 +298,11 @@ C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.AspNe
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.AspNetCore.OpenApi.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.AspNetCore.TestHost.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.VisualStudio.CodeCoverage.Shim.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Relational.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.Extensions.Caching.Abstractions.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.Extensions.Caching.Memory.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.Extensions.Configuration.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.Extensions.Configuration.Abstractions.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.Extensions.Configuration.Binder.dll
@@ -344,6 +340,8 @@ C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.TestP
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.TestPlatform.Utilities.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.VisualStudio.TestPlatform.Common.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Newtonsoft.Json.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Npgsql.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Scalar.AspNetCore.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\System.Diagnostics.EventLog.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\xunit.assert.dll
@@ -418,6 +416,13 @@ C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\runtimes\win\li
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Api.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Api.pdb
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Api.xml
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\obj\Debug\net10.0\Api.Tests.csproj.AssemblyReference.cache
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\obj\Debug\net10.0\MvcTestingAppManifest.json
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\obj\Debug\net10.0\Api.Tests.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\obj\Debug\net10.0\Api.Tests.AssemblyInfoInputs.cache
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\obj\Debug\net10.0\Api.Tests.AssemblyInfo.cs
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\obj\Debug\net10.0\Api.Tests.csproj.CoreCompileInputs.cache
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\obj\Debug\net10.0\Api.Tests.sourcelink.json
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\obj\Debug\net10.0\Api.Tests.csproj.Up2Date
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\obj\Debug\net10.0\Api.Tests.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\obj\Debug\net10.0\refint\Api.Tests.dll

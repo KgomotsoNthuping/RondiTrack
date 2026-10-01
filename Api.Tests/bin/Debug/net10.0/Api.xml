@@ -4,6 +4,17 @@
         <name>Api</name>
     </assembly>
     <members>
+        <member name="M:Api.Controllers.PayoutsController.ProcessPayout(System.Guid,System.Guid)">
+            <summary>
+            Processes the payout for a contribution cycle.
+            </summary>
+            <remarks>
+            RondiTrack determines the next recipient from
+            the stokvel's rotation order. The payout and
+            contribution-cycle status update are committed
+            in one database transaction.
+            </remarks>
+        </member>
         <member name="M:Api.Controllers.UsersController.GetAll">
             <summary>
             Returns all Users as response DTOs rather than exposing entities.
@@ -151,6 +162,18 @@
               "email": "kgomotso@rondi.co.za",
               "phoneNumber": "07411111111"
             </example>
+        </member>
+        <member name="T:Api.Migrations.InitialPostgreSql">
+            <inheritdoc />
+        </member>
+        <member name="M:Api.Migrations.InitialPostgreSql.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Api.Migrations.InitialPostgreSql.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Api.Migrations.InitialPostgreSql.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
         </member>
         <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.CreateDocumentationId(System.Type)">
             <summary>

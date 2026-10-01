@@ -9,9 +9,12 @@ public sealed class PayoutService : IPayoutService
 {
     private readonly RondiTrackDbContext _dbContext;
 
-    public PayoutService(RondiTrackDbContext dbContext)
+    private readonly IPayoutTransaction _transaction;
+
+    public PayoutService(RondiTrackDbContext dbContext, IPayoutTransaction transaction)
     {
         _dbContext = dbContext;
+        _transaction = transaction;
     }
 
     public async Task<Payout> ProcessPayoutAsync(
@@ -96,6 +99,8 @@ public sealed class PayoutService : IPayoutService
         await _dbContext.Payouts.AddAsync(payout);
 
         await _dbContext.SaveChangesAsync();
+
+        await _transaction.AfterPayoutSavedAsync();
 
         cycle.MarkPaidOut();
 
