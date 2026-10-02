@@ -33,49 +33,24 @@ public sealed class ContributionQueryService : IContributionQueryService
                 "The contribution cycle was not found.");
         }
 
-        /*
-         * DELIBERATELY NAIVE VERSION FOR ASSIGNMENT 5.2.
-         *
-         * First query:
-         * load all Contribution rows for the cycle.
-         */
-        var contributions =
-            await _dbContext.Contributions
-                .AsNoTracking()
-                .Where(contribution =>
-                    contribution.StokvelId == stokvelId &&
-                    contribution.ContributionCycleId == cycleId)
-                .ToListAsync();
+        
+        var contributions = await _dbContext.Contributions
+            .AsNoTracking()
+            .Where(contribution =>
+                contribution.StokvelId == stokvelId &&
+                contribution.ContributionCycleId == cycleId)
+            .Include(contribution => contribution.Member)
+            .ThenInclude(member => member.User)
+            .ToListAsync();
 
-        var response =
-            new List<CycleContributionResponse>();
-
-        /*
-         * N+1 problem:
-         *
-         * One additional database query is executed
-         * for every Contribution.
-         */
-        foreach (var contribution in contributions)
-        {
-            var member =
-                await _dbContext.StokvelMembers
-                    .AsNoTracking()
-                    .Include(member => member.User)
-                    .SingleAsync(member =>
-                        member.StokvelId ==
-                            contribution.StokvelId &&
-                        member.UserId ==
-                            contribution.UserId);
-
-            response.Add(
+        var response = contributions.Select(contribution =>
                 new CycleContributionResponse(
                     contribution.Id,
                     contribution.UserId,
-                    member.User.FullName,
-                    member.Role,
-                    contribution.Amount));
-        }
+                    contribution.Member.User.FullName,
+                    contribution.Member.Role,
+                    contribution.Amount))
+            .ToList();
 
         return response;
     }
