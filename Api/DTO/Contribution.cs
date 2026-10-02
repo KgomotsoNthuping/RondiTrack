@@ -1,19 +1,28 @@
+using Api.Models;
+
 namespace Api.DTO;
 
-// Client send recording of the payment they make
-public sealed class RecordContributionRequest
-{
-    public Guid UserId { get; init; } //maybe use private set
+    // Client send recording of the payment they make
+    public sealed class RecordContributionRequest
+    {
+        public Guid UserId { get; init; } //maybe use private set
 
-    public Guid ContributionCycleId { get; init; }
+        public Guid ContributionCycleId { get; init; }
 
-    public decimal Amount { get; init; }
-}
+        public decimal Amount { get; init; }
+    }
 
-//API sends info back after payment made
-public sealed record ContributionResponse(
+    //API sends info back after payment made
+    public sealed record ContributionResponse(
     Guid Id,
     Guid StokvelId,
     Guid UserId,
     Guid ContributionCycleId,
+    decimal Amount);
+
+    public sealed record CycleContributionResponse(
+    Guid Id,
+    Guid UserId,
+    string UserFullName,
+    StokvelMemberRole MemberRole,
     decimal Amount);

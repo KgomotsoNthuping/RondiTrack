@@ -3,6 +3,7 @@ using Api.DTO;
 using Api.Data;
 using Api.Exceptions;
 using Api.Mappings;
+using Api.Services;
 
 namespace Api.Controllers;
 
@@ -12,10 +13,14 @@ public sealed class ContributionsCycleController : ControllerBase
 {
     private readonly ITrackStore _store;
 
+    private readonly IContributionQueryService _contributionQueryService;
+
     public ContributionsCycleController(
-        ITrackStore store)
+        ITrackStore store,
+        IContributionQueryService contributionQueryService)
     {
         _store = store;
+        _contributionQueryService = contributionQueryService;
     }
 
     // GET /api/stokvels/{stokvelId}/cycles
@@ -61,6 +66,19 @@ public sealed class ContributionsCycleController : ControllerBase
         }
 
         return Ok(cycle.ToResponse());
+    }
+
+    // GET /api/stokvels/{stokvelId}/cycles/{cycleId}/contributions
+    [HttpGet("{cycleId:guid}/contributions")]
+    public async Task< ActionResult<IReadOnlyCollection<CycleContributionResponse>>> GetContributions(
+            Guid stokvelId,
+            Guid cycleId)
+    {
+            var contributions =await _contributionQueryService.GetCycleContributionsAsync(
+                    stokvelId,
+                    cycleId);
+
+            return Ok(contributions);
     }
 
     // POST /api/stokvels/{stokvelId}/cycles

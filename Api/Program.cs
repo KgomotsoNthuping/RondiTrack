@@ -83,6 +83,10 @@ builder.Services.AddScoped<
     IPayoutService,
     PayoutService>();
 
+builder.Services.AddScoped<
+    IContributionQueryService,
+    ContributionQueryService>();
+
 var app = builder.Build();
 
 // Recreates the development data previously provided
