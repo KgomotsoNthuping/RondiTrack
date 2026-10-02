@@ -13,6 +13,8 @@ public sealed class InMemoryTrackStore : ITrackStore
 
     private readonly List<ContributionCycle> _contributionCycles = [];
 
+    private readonly List<StokvelMember> _stokvelMembers = [];
+
     public InMemoryTrackStore()
     {
         SeedData();
@@ -124,25 +126,65 @@ public sealed class InMemoryTrackStore : ITrackStore
     }
 
 
-    public Task<bool> IsUserMemberOfAnyStokvelAsync(
-        Guid userId)
+    public Task<bool> IsUserMemberOfAnyStokvelAsync(Guid userId)
     {   
         // This checks all stokvels before allowing a user to be deleted
-        var isMember =
-            _stokvels.Any(stokvel =>
-                stokvel.HasMember(userId));
+        var isMember = _stokvelMembers.Any(member => member.UserId == userId);
 
         return Task.FromResult(isMember);
     }
 
-    public Task<IReadOnlyCollection<Stokvel>>
-        GetStokvelsAsync()
-    {
-        IReadOnlyCollection<Stokvel> stokvels =
-            _stokvels.AsReadOnly();
+    public Task<StokvelMember?> GetStokvelMemberAsync(Guid stokvelId, Guid userId)
+        {
+            var membership = _stokvelMembers.FirstOrDefault(member =>
+                        member.StokvelId == stokvelId &&
+                        member.UserId == userId);
 
-        return Task.FromResult(stokvels);
-    }
+            return Task.FromResult(membership);
+        }
+
+        public Task AddStokvelMemberAsync(StokvelMember member)
+        {
+            _stokvelMembers.Add(member);
+
+            var stokvel = _stokvels.FirstOrDefault(stokvel => stokvel.Id == member.StokvelId);
+
+            var user = _users.FirstOrDefault(user =>user.Id == member.UserId);
+
+            if (stokvel is not null && user is not null && !stokvel.HasMember(user.Id))
+            {
+                stokvel.AddMember(user);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task<bool> DeleteStokvelMemberAsync(Guid stokvelId, Guid userId)
+        {
+            var membership = _stokvelMembers.FirstOrDefault(member =>
+                        member.StokvelId == stokvelId &&
+                        member.UserId == userId);
+
+            if (membership is null)
+            {
+                return Task.FromResult(false);
+            }
+
+            _stokvelMembers.Remove(membership);
+
+            var stokvel = _stokvels.FirstOrDefault(stokvel => stokvel.Id == stokvelId);
+
+            stokvel?.RemoveMember(userId);
+
+            return Task.FromResult(true);
+        }
+
+        public Task<IReadOnlyCollection<Stokvel>> GetStokvelsAsync()
+            {
+                IReadOnlyCollection<Stokvel> stokvels = _stokvels.AsReadOnly();
+
+                return Task.FromResult(stokvels);
+            }
 
     public Task<Stokvel?> GetStokvelByIdAsync(Guid id)
     {

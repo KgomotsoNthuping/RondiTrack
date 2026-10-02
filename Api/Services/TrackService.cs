@@ -37,19 +37,23 @@
 
                 if (user is null)
                 {
-                    throw new ResourceNotFoundException(
-                        "The user was not found.");
+                    throw new ResourceNotFoundException("The user was not found.");
                 }
 
                 // Relationship business rule.
-                if (stokvel.HasMember(userId))
+                var existingMembership = await _store.GetStokvelMemberAsync(stokvelId, userId);
+
+                if (existingMembership is not null)
                 {
                     throw new DuplicateMembershipException();
                 }
 
-                stokvel.AddMember(user);
+                var membership = new StokvelMember(
+                        stokvelId,
+                        userId,
+                        StokvelMemberRole.Member);
 
-                await _store.UpdateStokvelAsync(stokvel);
+                await _store.AddStokvelMemberAsync(membership);
 
                 return user;
             }
@@ -65,17 +69,14 @@
                         "The stokvel was not found.");
                 }
 
-                var removed =
-                    stokvel.RemoveMember(userId);
+                var removed = await _store.DeleteStokvelMemberAsync(stokvelId, userId);
 
                 if (!removed)
                 {
-                    throw new ResourceNotFoundException(
-                        "The user is not a member of this stokvel.");
+                    throw new ResourceNotFoundException("The user is not a member of this stokvel.");
                 }
-
-                await _store.UpdateStokvelAsync(stokvel);
             }
+    
 
         public async Task DeleteUserAsync(Guid userId)
         {
@@ -161,20 +162,19 @@
                         throw new ResourceNotFoundException("The contribution cycle was not found.");
                     }
 
-                    if (!stokvel.HasMember(userId))
+                    var membership = await _store.GetStokvelMemberAsync(stokvelId, userId);
+
+                    if (membership is null)
                     {
-                        throw new BusinessRuleException(
-                        "The user is not a member of this stokvel.");
+                        throw new BusinessRuleException("The user is not a member of this stokvel.");
                     }
 
                     if (amount != stokvel.MonthlyContribution)
                     {
-                        throw new BusinessRuleException(
-                         $"The required contribution is R{stokvel.MonthlyContribution:0.00}.");
+                        throw new BusinessRuleException($"The required contribution is R{stokvel.MonthlyContribution:0.00}.");
                     }
 
-                    var existingContribution =
-                      await _store.GetContributionAsync(
+                    var existingContribution = await _store.GetContributionAsync(
                         stokvelId,
                         userId,
                         contributionCycleId);

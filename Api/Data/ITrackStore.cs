@@ -18,6 +18,13 @@ public interface ITrackStore
 
     Task<bool> IsUserMemberOfAnyStokvelAsync(Guid userId);
 
+        // Stokvel Membership
+    Task<StokvelMember?> GetStokvelMemberAsync(Guid stokvelId, Guid userId);
+
+    Task AddStokvelMemberAsync(StokvelMember member);
+
+    Task<bool> DeleteStokvelMemberAsync(Guid stokvelId, Guid userId);
+
     //Stokvel
     Task<IReadOnlyCollection<Stokvel>> GetStokvelsAsync();
 

@@ -58,6 +58,39 @@ public sealed class EfTrackStore : ITrackStore
         return await _dbContext.StokvelMembers.AnyAsync(member => member.UserId == userId);
     }
 
+        // Stokvel Membership
+    public async Task<StokvelMember?> GetStokvelMemberAsync(Guid stokvelId, Guid userId)
+    {
+        return await _dbContext.StokvelMembers.FirstOrDefaultAsync(member =>
+                member.StokvelId == stokvelId &&
+                member.UserId == userId);
+    }
+
+    public async Task AddStokvelMemberAsync(StokvelMember member)
+    {
+        await _dbContext.StokvelMembers.AddAsync(member);
+
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task<bool> DeleteStokvelMemberAsync(Guid stokvelId, Guid userId)
+    {
+        var member = await _dbContext.StokvelMembers.FirstOrDefaultAsync(member =>
+                    member.StokvelId == stokvelId &&
+                    member.UserId == userId);
+
+        if (member is null)
+        {
+            return false;
+        }
+
+        _dbContext.StokvelMembers.Remove(member);
+
+        await _dbContext.SaveChangesAsync();
+
+        return true;
+    }
+
     // Stokvels
     public async Task<IReadOnlyCollection<Stokvel>> GetStokvelsAsync()
     {
