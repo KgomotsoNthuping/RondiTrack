@@ -27,7 +27,7 @@ public sealed class StokvelMember : ControllerBase
         GetMembers(Guid stokvelId)
     {
         var stokvel =
-            await _store.GetStokvelByIdAsync(stokvelId);
+            await _store.GetStokvelByIdAsync(stokvelId, asNoTracking: true);
 
         if (stokvel is null)
         {

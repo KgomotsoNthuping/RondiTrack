@@ -39,28 +39,19 @@ public sealed class ContributionQueryService : IContributionQueryService
             .Where(contribution =>
                 contribution.StokvelId == stokvelId &&
                 contribution.ContributionCycleId == cycleId)
-
-            .Select(contribution => new CycleContributionResponse(
-                contribution.Id,
-                contribution.UserId,
-                contribution.Member.User.FullName,
-                contribution.Member.Role,
-                contribution.Amount))
-            // .Include(contribution => contribution.Member)
-            // .ThenInclude(member => member.User)
+            .Include(contribution => contribution.Member)
+            .ThenInclude(member => member.User)
             .ToListAsync();
 
-            return contributions;
+        var response = contributions.Select(contribution =>
+                new CycleContributionResponse(
+                    contribution.Id,
+                    contribution.UserId,
+                    contribution.Member.User.FullName,
+                    contribution.Member.Role,
+                    contribution.Amount))
+            .ToList();
 
-        // var response = contributions.Select(contribution =>
-        //         new CycleContributionResponse(
-        //             contribution.Id,
-        //             contribution.UserId,
-        //             contribution.Member.User.FullName,
-        //             contribution.Member.Role,
-        //             contribution.Amount))
-        //     .ToList();
-
-        // return response;
+        return response;
     }
 }

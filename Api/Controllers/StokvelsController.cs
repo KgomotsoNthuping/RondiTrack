@@ -32,7 +32,7 @@ public sealed class StokvelsController : ControllerBase
     public async Task<ActionResult<Stokvel>>
         GetById(Guid id)
     {
-        var stokvel = await _store.GetStokvelByIdAsync(id);
+        var stokvel = await _store.GetStokvelByIdAsync(id, asNoTracking: true);
 
         if (stokvel is null)
         {

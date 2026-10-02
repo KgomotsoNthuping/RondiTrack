@@ -15,12 +15,19 @@ public sealed class EfTrackStore : ITrackStore
     // Users
     public async Task<IReadOnlyCollection<User>> GetUsersAsync()
     {
-        return await _dbContext.Users.ToListAsync();
+        return await _dbContext.Users.AsNoTracking().ToListAsync();
     }
 
-    public async Task<User?> GetUserByIdAsync(Guid id)
+    public async Task<User?> GetUserByIdAsync(Guid id, bool asNoTracking = false)
     {
-        return await _dbContext.Users.FirstOrDefaultAsync(user => user.Id == id);
+        IQueryable<User> query = _dbContext.Users;
+
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
+
+        return await query.FirstOrDefaultAsync(user => user.Id == id);
     }
 
     public async Task AddUserAsync(User user)
@@ -61,7 +68,7 @@ public sealed class EfTrackStore : ITrackStore
         // Stokvel Membership
     public async Task<StokvelMember?> GetStokvelMemberAsync(Guid stokvelId, Guid userId)
     {
-        return await _dbContext.StokvelMembers.FirstOrDefaultAsync(member =>
+        return await _dbContext.StokvelMembers.AsNoTracking().FirstOrDefaultAsync(member =>
                 member.StokvelId == stokvelId &&
                 member.UserId == userId);
     }
@@ -92,25 +99,39 @@ public sealed class EfTrackStore : ITrackStore
     }
 
     // Stokvels
-    public async Task<IReadOnlyCollection<Stokvel>> GetStokvelsAsync()
+    public async Task<IReadOnlyCollection<Stokvel>>
+    GetStokvelsAsync()
     {
-        var stokvels = await _dbContext.Stokvels.ToListAsync();
+        var stokvels = await _dbContext.Stokvels
+                .AsNoTracking()
+                .Include(stokvel => stokvel.Memberships)
+                .ThenInclude(membership => membership.User)
+                .ToListAsync();
 
-        await LoadMembersAsync(stokvels);
+        PopulateMembers(stokvels);
 
         return stokvels;
     }
 
-    public async Task<Stokvel?> GetStokvelByIdAsync(Guid id)
+    public async Task<Stokvel?> GetStokvelByIdAsync(Guid id, bool asNoTracking = false)
     {
-        var stokvel = await _dbContext.Stokvels.FirstOrDefaultAsync(stokvel => stokvel.Id == id);
+        IQueryable<Stokvel> query = _dbContext.Stokvels
+                .Include(stokvel => stokvel.Memberships)
+                .ThenInclude(membership => membership.User);
+
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
+
+        var stokvel = await query.FirstOrDefaultAsync(stokvel => stokvel.Id == id);
 
         if (stokvel is null)
         {
             return null;
         }
 
-        await LoadMembersAsync([stokvel]);
+        PopulateMembers([stokvel]);
 
         return stokvel;
     }
@@ -154,28 +175,19 @@ public sealed class EfTrackStore : ITrackStore
     }
 
     // Contributions
-    public async Task<Contribution?> GetContributionByIdAsync(
-            Guid stokvelId,
-            Guid contributionId)
+    public async Task<Contribution?> GetContributionByIdAsync(Guid stokvelId, Guid contributionId)
     {
-        return await _dbContext.Contributions
-            .FirstOrDefaultAsync(contribution =>
-                contribution.Id == contributionId &&
-                contribution.StokvelId == stokvelId);
+        return await _dbContext.Contributions.AsNoTracking().FirstOrDefaultAsync(contribution =>
+                    contribution.Id == contributionId &&
+                    contribution.StokvelId == stokvelId);
     }
 
-    public async Task<Contribution?>
-        GetContributionAsync(
-            Guid stokvelId,
-            Guid userId,
-            Guid contributionCycleId)
+    public async Task<Contribution?> GetContributionAsync( Guid stokvelId, Guid userId, Guid contributionCycleId)
     {
-        return await _dbContext.Contributions
-            .FirstOrDefaultAsync(contribution =>
-                contribution.StokvelId == stokvelId &&
-                contribution.UserId == userId &&
-                contribution.ContributionCycleId ==
-                    contributionCycleId);
+        return await _dbContext.Contributions.AsNoTracking().FirstOrDefaultAsync(
+                contribution => contribution.StokvelId == stokvelId &&
+                    contribution.UserId == userId &&
+                    contribution.ContributionCycleId == contributionCycleId);
     }
 
     public async Task AddContributionAsync(
@@ -188,23 +200,28 @@ public sealed class EfTrackStore : ITrackStore
     }
 
     // Contribution Cycles
-    public async Task<IReadOnlyCollection<ContributionCycle>>
-        GetContributionCyclesAsync(Guid stokvelId)
+    public async Task<IReadOnlyCollection<ContributionCycle>> GetContributionCyclesAsync( Guid stokvelId)
     {
         return await _dbContext.ContributionCycles
+            .AsNoTracking()
             .Where(cycle => cycle.StokvelId == stokvelId)
             .ToListAsync();
     }
 
-    public async Task<ContributionCycle?>
-        GetContributionCycleByIdAsync(
-            Guid stokvelId,
-            Guid cycleId)
+    public async Task<ContributionCycle?> GetContributionCycleByIdAsync(
+        Guid stokvelId,
+        Guid cycleId,
+        bool asNoTracking = false)
     {
-        return await _dbContext.ContributionCycles
-            .FirstOrDefaultAsync(cycle =>
-                cycle.Id == cycleId &&
-                cycle.StokvelId == stokvelId);
+        IQueryable<ContributionCycle> query = _dbContext.ContributionCycles;
+
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
+
+        return await query.FirstOrDefaultAsync(cycle =>
+                    cycle.Id == cycleId && cycle.StokvelId == stokvelId);
     }
 
     public async Task AddContributionCycleAsync(
@@ -247,62 +264,15 @@ public sealed class EfTrackStore : ITrackStore
         return true;
     }
 
-    private async Task LoadMembersAsync(
-        IEnumerable<Stokvel> stokvels)
+    private static void PopulateMembers(IEnumerable<Stokvel> stokvels)
     {
-        var stokvelList = stokvels.ToList();
-
-        if (stokvelList.Count == 0)
+        foreach (var stokvel in stokvels)
         {
-            return;
-        }
-
-        var stokvelIds = stokvelList
-            .Select(stokvel => stokvel.Id)
-            .ToList();
-
-        var memberships =
-            await _dbContext.StokvelMembers
-                .Where(member =>
-                    stokvelIds.Contains(
-                        member.StokvelId))
-                .ToListAsync();
-
-        if (memberships.Count == 0)
-        {
-            return;
-        }
-
-        var userIds = memberships
-            .Select(member => member.UserId)
-            .Distinct()
-            .ToList();
-
-        var users = await _dbContext.Users
-            .Where(user =>
-                userIds.Contains(user.Id))
-            .ToDictionaryAsync(user => user.Id);
-
-        foreach (var stokvel in stokvelList)
-        {
-            var stokvelMemberships =
-                memberships.Where(member =>
-                    member.StokvelId ==
-                    stokvel.Id);
-
-            foreach (var membership
-                     in stokvelMemberships)
+            foreach (var membership in stokvel.Memberships)
             {
-                if (!users.TryGetValue(
-                        membership.UserId,
-                        out var user))
+                if (!stokvel.HasMember(membership.UserId))
                 {
-                    continue;
-                }
-
-                if (!stokvel.HasMember(user.Id))
-                {
-                    stokvel.AddMember(user);
+                    stokvel.AddMember(membership.User);
                 }
             }
         }

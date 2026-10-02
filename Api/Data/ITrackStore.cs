@@ -8,7 +8,7 @@ public interface ITrackStore
     //User
     Task<IReadOnlyCollection<User>> GetUsersAsync();
 
-    Task<User?> GetUserByIdAsync(Guid id);
+    Task<User?> GetUserByIdAsync(Guid id, bool asNoTracking = false);
 
     Task AddUserAsync(User user);
 
@@ -28,7 +28,7 @@ public interface ITrackStore
     //Stokvel
     Task<IReadOnlyCollection<Stokvel>> GetStokvelsAsync();
 
-    Task<Stokvel?> GetStokvelByIdAsync(Guid id);
+    Task<Stokvel?> GetStokvelByIdAsync(Guid id, bool asNoTracking = false);
 
     Task AddStokvelAsync(Stokvel stokvel);
 
@@ -48,7 +48,7 @@ public interface ITrackStore
         GetContributionCyclesAsync(Guid stokvelId);
 
     Task<ContributionCycle?>
-        GetContributionCycleByIdAsync(Guid stokvelId, Guid cycleId);
+        GetContributionCycleByIdAsync(Guid stokvelId, Guid cycleId, bool asNoTracking = false);
 
     Task AddContributionCycleAsync(ContributionCycle cycle);
 

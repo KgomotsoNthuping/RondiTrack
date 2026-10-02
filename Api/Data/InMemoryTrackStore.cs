@@ -82,7 +82,7 @@ public sealed class InMemoryTrackStore : ITrackStore
         return Task.FromResult(users);
     } 
 
-    public Task<User?> GetUserByIdAsync(Guid id)
+    public Task<User?> GetUserByIdAsync(Guid id, bool asNoTracking = false)
     {
         var user =
             _users.FirstOrDefault(user => user.Id == id);
@@ -186,7 +186,7 @@ public sealed class InMemoryTrackStore : ITrackStore
                 return Task.FromResult(stokvels);
             }
 
-    public Task<Stokvel?> GetStokvelByIdAsync(Guid id)
+    public Task<Stokvel?> GetStokvelByIdAsync(Guid id, bool asNoTracking = false)
     {
         var stokvel =
             _stokvels.FirstOrDefault(stokvel =>
@@ -283,7 +283,8 @@ public sealed class InMemoryTrackStore : ITrackStore
     public Task<ContributionCycle?>
         GetContributionCycleByIdAsync(
             Guid stokvelId,
-            Guid cycleId)
+            Guid cycleId,
+            bool asNoTracking = false)
     {
         var cycle =
             _contributionCycles.FirstOrDefault(cycle =>

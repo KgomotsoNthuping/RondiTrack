@@ -57,7 +57,8 @@ public sealed class ContributionsCycleController : ControllerBase
             await _store
                 .GetContributionCycleByIdAsync(
                     stokvelId,
-                    cycleId);
+                    cycleId,
+                    asNoTracking: true);
 
         if (cycle is null)
         {

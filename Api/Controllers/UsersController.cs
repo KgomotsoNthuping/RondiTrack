@@ -80,7 +80,7 @@ public sealed class UsersController : ControllerBase
         GetById(Guid id)
     {
         var user =
-            await _store.GetUserByIdAsync(id);
+            await _store.GetUserByIdAsync(id, asNoTracking: true);
 
         // The controller no longer creates a 404 ProblemDetails response.
         // It throws an exception which is handled centrally.
