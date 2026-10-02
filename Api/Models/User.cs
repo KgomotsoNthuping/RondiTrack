@@ -12,6 +12,8 @@ public sealed class User
 
     public string PhoneNumber { get; private set; }
 
+    [JsonIgnore]
+    public ICollection<StokvelMember> Memberships { get; private set; } = new List<StokvelMember>();
 
     [JsonConstructor]
     public User(

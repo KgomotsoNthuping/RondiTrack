@@ -300,7 +300,8 @@ public sealed class EfTrackStore : ITrackStore
                 await _dbContext.StokvelMembers.AddAsync(
                     new StokvelMember(
                         stokvel.Id,
-                        userId));
+                        userId,
+                        StokvelMemberRole.Member));
             }
         }
 

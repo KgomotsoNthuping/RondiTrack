@@ -54,16 +54,19 @@ public static class DbSeeder
         // It is now persisted through StokvelMember.
         await dbContext.StokvelMembers.AddRangeAsync(
             new StokvelMember(
-                ubuntuSavers.Id,
-                testOne.Id),
+            ubuntuSavers.Id,
+            testOne.Id,
+            StokvelMemberRole.Admin),
 
             new StokvelMember(
-                ubuntuSavers.Id,
-                testTwo.Id),
+            ubuntuSavers.Id,
+            testTwo.Id,
+            StokvelMemberRole.Treasurer),
 
             new StokvelMember(
-                communitySavers.Id,
-                testThree.Id));
+            communitySavers.Id,
+            testThree.Id,
+            StokvelMemberRole.Member));
 
         var septemberCycle =
             new ContributionCycle(

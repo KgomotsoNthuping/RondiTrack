@@ -61,24 +61,45 @@ public class RondiTrackDbContext : DbContext
 
     private static void ConfigureStokvelMembers(ModelBuilder modelBuilder)
     {
-        var entity = modelBuilder.Entity<StokvelMember>();
+            var entity = modelBuilder.Entity<StokvelMember>();
 
-        entity.HasKey(member => member.Id);
-
-        entity.HasIndex(member => new
+            entity.HasKey(member => new
             {
-                member.StokvelId,
-                member.UserId
-            }).IsUnique();
+                member.UserId,
+                member.StokvelId
+            });
+
+            entity.Property(member => member.Role)
+                .HasConversion<string>()
+                .HasDefaultValue(StokvelMemberRole.Member);
+
+            entity.HasOne(member => member.User)
+                .WithMany(user => user.Memberships)
+                .HasForeignKey(member => member.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(member => member.Stokvel)
+                .WithMany(stokvel => stokvel.Memberships)
+                .HasForeignKey(member => member.StokvelId)
+                .OnDelete(DeleteBehavior.Cascade);
     }
 
     private static void ConfigureContributionCycles(ModelBuilder modelBuilder)
     {
-        var entity = modelBuilder.Entity<ContributionCycle>();
+        var entity =
+            modelBuilder.Entity<ContributionCycle>();
 
         entity.HasKey(cycle => cycle.Id);
 
-        entity.Property(cycle => cycle.TargetAmount).HasPrecision(18, 2);
+        entity.Property(cycle => cycle.TargetAmount)
+            .HasPrecision(18, 2);
+
+        entity.HasMany(cycle => cycle.Contributions)
+            .WithOne(contribution =>
+                contribution.ContributionCycle)
+            .HasForeignKey(contribution =>
+                contribution.ContributionCycleId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     private static void ConfigureContributions(ModelBuilder modelBuilder)
@@ -95,6 +116,21 @@ public class RondiTrackDbContext : DbContext
                 contribution.UserId,
                 contribution.ContributionCycleId
             }).IsUnique();
+
+        entity.HasOne(contribution =>contribution.Member)
+              .WithMany(member =>
+                member.Contributions)
+              .HasForeignKey(contribution => new
+            {
+                contribution.UserId,
+                contribution.StokvelId
+            })
+              .HasPrincipalKey(member => new
+            {
+                member.UserId,
+                member.StokvelId
+            })
+              .OnDelete(DeleteBehavior.Restrict);
     }
 
     private static void ConfigurePayouts(ModelBuilder modelBuilder)
@@ -106,5 +142,19 @@ public class RondiTrackDbContext : DbContext
         entity.Property(payout => payout.Amount).HasPrecision(18, 2);
 
         entity.HasIndex(payout => payout.ContributionCycleId).IsUnique();
-    }
+
+        entity.HasOne(payout => payout.RecipientMember)
+              .WithMany(member => member.Payouts)
+              .HasForeignKey(payout => new
+            {
+                payout.RecipientUserId,
+                payout.StokvelId
+            })
+              .HasPrincipalKey(member => new
+            {
+                member.UserId,
+                member.StokvelId
+            })
+              .OnDelete(DeleteBehavior.Restrict);
+            }
 }

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Api.Models;
 
 public sealed class Contribution
@@ -11,6 +13,12 @@ public sealed class Contribution
     public Guid ContributionCycleId { get; private set; }
 
     public decimal Amount { get; private set; }
+
+    [JsonIgnore]
+    public StokvelMember Member { get; private set; } = null!;
+
+    [JsonIgnore]
+    public ContributionCycle ContributionCycle { get; private set; } = null!;
 
     public Contribution(Guid stokvelId, Guid userId, Guid contributionCycleId, decimal amount)
     {

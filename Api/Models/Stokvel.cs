@@ -22,6 +22,9 @@ public sealed class Stokvel
     //Read-only to prevent outside code to add/remove members
     public IReadOnlyCollection<User> Members => _members.AsReadOnly();
 
+    [JsonIgnore]
+    public ICollection<StokvelMember> Memberships { get; private set; } = new List<StokvelMember>();
+
     [JsonConstructor]
     public Stokvel(
         string name,

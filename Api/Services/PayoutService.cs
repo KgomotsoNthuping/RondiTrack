@@ -75,7 +75,7 @@ public sealed class PayoutService : IPayoutService
         var members = await _dbContext.StokvelMembers
                 .Where(member => member.StokvelId == stokvelId)
                 .OrderBy(member => member.JoinedAtUtc)
-                .ThenBy(member => member.Id)
+                .ThenBy(member => member.UserId)
                 .ToListAsync();
 
         if (members.Count == 0)
@@ -93,7 +93,7 @@ public sealed class PayoutService : IPayoutService
         var payout = new Payout(
                 stokvelId,
                 contributionCycleId,
-                recipient.Id,
+                recipient.UserId,
                 cycle.TargetAmount);
 
         await _dbContext.Payouts.AddAsync(payout);

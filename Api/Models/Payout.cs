@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Api.Models;
 
 public class Payout
@@ -8,18 +10,23 @@ public class Payout
 
     public Guid ContributionCycleId { get; private set; }
 
-    public Guid RecipientMemberId { get; private set; }
-
     public decimal Amount { get; private set; }
 
     public DateTime PaidAtUtc { get; private set; }
 
-    private Payout() { }
+    public Guid RecipientUserId { get; private set; }
+
+    [JsonIgnore]
+    public StokvelMember RecipientMember { get; private set; } = null!;
+
+    private Payout()
+    {
+    }
 
     public Payout(
         Guid stokvelId,
         Guid contributionCycleId,
-        Guid recipientMemberId,
+        Guid recipientUserId,
         decimal amount)
     {
         if (stokvelId == Guid.Empty)
@@ -32,21 +39,21 @@ public class Payout
             throw new ArgumentException("A contribution cycle ID is required.");
         }
 
-        if (recipientMemberId == Guid.Empty)
-        {
-            throw new ArgumentException("A recipient member ID is required.");
-        }
-
         if (amount <= 0)
         {
             throw new ArgumentException("The payout amount must be greater than zero.");
         }
 
+        if (recipientUserId == Guid.Empty)
+        {
+            throw new ArgumentException("A recipient user ID is required.");
+        }
+
         Id = Guid.NewGuid();
         StokvelId = stokvelId;
         ContributionCycleId = contributionCycleId;
-        RecipientMemberId = recipientMemberId;
         Amount = amount;
         PaidAtUtc = DateTime.UtcNow;
+        RecipientUserId = recipientUserId;
     }
 }

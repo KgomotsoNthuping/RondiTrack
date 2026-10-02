@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Api.Models;
 
 public sealed class ContributionCycle
@@ -11,6 +13,9 @@ public sealed class ContributionCycle
     public decimal TargetAmount { get; private set; }
 
     public ContributionCycleStatus Status { get; private set; }
+
+    [JsonIgnore]
+    public ICollection<Contribution> Contributions { get; private set; } = new List<Contribution>();
 
     public ContributionCycle(
         Guid stokvelId,

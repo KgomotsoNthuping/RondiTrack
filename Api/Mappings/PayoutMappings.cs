@@ -11,7 +11,7 @@ public static class PayoutMappings
             payout.Id,
             payout.StokvelId,
             payout.ContributionCycleId,
-            payout.RecipientMemberId,
+            payout.RecipientUserId,
             payout.Amount,
             payout.PaidAtUtc);
     }
