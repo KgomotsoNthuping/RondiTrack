@@ -44,6 +44,8 @@ public class RondiTrackDbContext : DbContext
         entity.Property(user => user.Email).IsRequired();
 
         entity.Property(user => user.PhoneNumber).IsRequired();
+
+        entity.Property(user => user.Version).IsRowVersion();
     }
 
     private static void ConfigureStokvels(ModelBuilder modelBuilder)
@@ -57,6 +59,8 @@ public class RondiTrackDbContext : DbContext
         entity.Property(stokvel => stokvel.MonthlyContribution).HasPrecision(18, 2);
 
         entity.Ignore(stokvel => stokvel.Members);
+
+        entity.Property(stokvel => stokvel.Version).IsRowVersion();
     }
 
     private static void ConfigureStokvelMembers(ModelBuilder modelBuilder)
@@ -100,6 +104,8 @@ public class RondiTrackDbContext : DbContext
             .HasForeignKey(contribution =>
                 contribution.ContributionCycleId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        entity.Property(cycle => cycle.Version).IsRowVersion();
     }
 
     private static void ConfigureContributions(ModelBuilder modelBuilder)
@@ -142,24 +148,12 @@ public class RondiTrackDbContext : DbContext
 
         entity.Property(payout => payout.Amount).HasPrecision(18, 2);
 
+        entity.Property(payout => payout.Version).IsRowVersion();
+
         entity.HasIndex(payout => new
         {
             payout.StokvelId,
             payout.ContributionCycleId
         }).IsUnique().HasDatabaseName("UX_Payouts_Stokvel_Cycle");
-        
-        entity.HasOne(payout => payout.RecipientMember)
-              .WithMany(member => member.Payouts)
-              .HasForeignKey(payout => new
-            {
-                payout.RecipientUserId,
-                payout.StokvelId
-            })
-              .HasPrincipalKey(member => new
-            {
-                member.UserId,
-                member.StokvelId
-            })
-              .OnDelete(DeleteBehavior.Restrict);
-            }
+    }
 }

@@ -211,6 +211,18 @@
         <member name="M:Api.Migrations.AddDatabaseUniqueConstraints.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:Api.Migrations.EnableXminConcurrency">
+            <inheritdoc />
+        </member>
+        <member name="M:Api.Migrations.EnableXminConcurrency.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Api.Migrations.EnableXminConcurrency.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Api.Migrations.EnableXminConcurrency.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.CreateDocumentationId(System.Type)">
             <summary>
             Generates a documentation comment ID for a type.

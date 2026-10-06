@@ -19,6 +19,8 @@ public sealed class Stokvel
 
     public string? Rules { get; private set; }
 
+    public uint Version { get; private set; }
+
     //Read-only to prevent outside code to add/remove members
     public IReadOnlyCollection<User> Members => _members.AsReadOnly();
 

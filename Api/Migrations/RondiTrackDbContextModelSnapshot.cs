@@ -73,6 +73,12 @@ namespace Api.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
 
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("Id");
 
                     b.ToTable("ContributionCycles");
@@ -94,15 +100,27 @@ namespace Api.Migrations
                     b.Property<DateTime>("PaidAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("RecipientMemberStokvelId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RecipientMemberUserId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("RecipientUserId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("StokvelId")
                         .HasColumnType("uuid");
 
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("RecipientUserId", "StokvelId");
+                    b.HasIndex("RecipientMemberUserId", "RecipientMemberStokvelId");
 
                     b.HasIndex("StokvelId", "ContributionCycleId")
                         .IsUnique()
@@ -133,6 +151,12 @@ namespace Api.Migrations
 
                     b.Property<int>("TotalPeriods")
                         .HasColumnType("integer");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
                     b.HasKey("Id");
 
@@ -181,6 +205,12 @@ namespace Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("Id");
 
                     b.ToTable("Users");
@@ -209,8 +239,8 @@ namespace Api.Migrations
                 {
                     b.HasOne("Api.Models.StokvelMember", "RecipientMember")
                         .WithMany("Payouts")
-                        .HasForeignKey("RecipientUserId", "StokvelId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasForeignKey("RecipientMemberUserId", "RecipientMemberStokvelId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("RecipientMember");

@@ -16,6 +16,8 @@ public class Payout
 
     public Guid RecipientUserId { get; private set; }
 
+    public uint Version { get; private set; }
+
     [JsonIgnore]
     public StokvelMember RecipientMember { get; private set; } = null!;
 

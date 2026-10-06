@@ -14,6 +14,8 @@ public sealed class ContributionCycle
 
     public ContributionCycleStatus Status { get; private set; }
 
+    public uint Version { get; private set; }
+
     [JsonIgnore]
     public ICollection<Contribution> Contributions { get; private set; } = new List<Contribution>();
 
