@@ -87,6 +87,10 @@ builder.Services.AddScoped<
     IContributionQueryService,
     ContributionQueryService>();
 
+builder.Services.AddScoped<
+    IStokvelMemberQueryService,
+    StokvelMemberQueryService>();
+    
 var app = builder.Build();
 
 // Recreates the development data previously provided

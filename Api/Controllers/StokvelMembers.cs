@@ -13,34 +13,25 @@ public sealed class StokvelMember : ControllerBase
 {
     private readonly ITrackStore _store;
     private readonly ITrackService _service;
+    private readonly IStokvelMemberQueryService _memberQueryService;
 
     public StokvelMember(
         ITrackStore store,
-        ITrackService service)
+        ITrackService service,
+        IStokvelMemberQueryService memberQueryService)
     {
         _store = store;
         _service = service;
+        _memberQueryService = memberQueryService;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyCollection<UserResponse>>>
-        GetMembers(Guid stokvelId)
+    public async Task<ActionResult<PagedResponse<UserResponse>>> GetMembers(
+            Guid stokvelId, [FromQuery] StokvelMemberPageRequest request)
     {
-        var stokvel =
-            await _store.GetStokvelByIdAsync(stokvelId, asNoTracking: true);
+        var members = await _memberQueryService.GetMembersAsync(stokvelId, request);
 
-        if (stokvel is null)
-        {
-            return this.NotFoundProblem(
-                "The stokvel was not found.");
-        }
-
-        var response =
-            stokvel.Members
-                .Select(user => user.ToResponse())
-                .ToList();
-
-        return Ok(response);
+        return Ok(members);
     }
 
     [HttpGet("{userId:guid}")]
@@ -49,8 +40,7 @@ public sealed class StokvelMember : ControllerBase
             Guid stokvelId,
             Guid userId)
     {
-        var stokvel =
-            await _store.GetStokvelByIdAsync(stokvelId);
+        var stokvel = await _store.GetStokvelByIdAsync(stokvelId, asNoTracking: true);
 
         if (stokvel is null)
         {
