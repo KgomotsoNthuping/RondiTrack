@@ -102,10 +102,11 @@ namespace Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ContributionCycleId")
-                        .IsUnique();
-
                     b.HasIndex("RecipientUserId", "StokvelId");
+
+                    b.HasIndex("StokvelId", "ContributionCycleId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Payouts_Stokvel_Cycle");
 
                     b.ToTable("Payouts");
                 });

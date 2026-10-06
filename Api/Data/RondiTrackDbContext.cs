@@ -142,8 +142,12 @@ public class RondiTrackDbContext : DbContext
 
         entity.Property(payout => payout.Amount).HasPrecision(18, 2);
 
-        entity.HasIndex(payout => payout.ContributionCycleId).IsUnique();
-
+        entity.HasIndex(payout => new
+        {
+            payout.StokvelId,
+            payout.ContributionCycleId
+        }).IsUnique().HasDatabaseName("UX_Payouts_Stokvel_Cycle");
+        
         entity.HasOne(payout => payout.RecipientMember)
               .WithMany(member => member.Payouts)
               .HasForeignKey(payout => new

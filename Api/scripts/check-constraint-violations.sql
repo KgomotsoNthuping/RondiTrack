@@ -1,7 +1,4 @@
--- =====================================================
--- Contribution uniqueness
--- One member should contribute only once per cycle.
--- =====================================================
+-- One contribution per member per cycle.
 
 SELECT
     "StokvelId",
@@ -16,48 +13,14 @@ GROUP BY
 HAVING COUNT(*) > 1;
 
 
--- =====================================================
--- Contribution-cycle uniqueness
--- A stokvel should not have the same cycle number twice.
--- =====================================================
+-- One payout per stokvel contribution cycle.
 
 SELECT
     "StokvelId",
-    "CycleNumber",
-    COUNT(*) AS "DuplicateCount"
-FROM "ContributionCycles"
-GROUP BY
-    "StokvelId",
-    "CycleNumber"
-HAVING COUNT(*) > 1;
-
-
--- =====================================================
--- Payout uniqueness
--- A contribution cycle should not be paid out twice.
--- =====================================================
-
-SELECT
     "ContributionCycleId",
     COUNT(*) AS "DuplicateCount"
 FROM "Payouts"
 GROUP BY
-    "ContributionCycleId"
-HAVING COUNT(*) > 1;
-
-
--- =====================================================
--- Membership check
--- This is already protected by the composite primary key
--- from the previous relationship work.
--- =====================================================
-
-SELECT
-    "UserId",
     "StokvelId",
-    COUNT(*) AS "DuplicateCount"
-FROM "StokvelMembers"
-GROUP BY
-    "UserId",
-    "StokvelId"
+    "ContributionCycleId"
 HAVING COUNT(*) > 1;

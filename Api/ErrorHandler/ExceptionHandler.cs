@@ -1,16 +1,16 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Api.Exceptions;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Api.ErrorHandling;
 
 public sealed class ExceptionHandler : IExceptionHandler
 {
-    private readonly ILogger<ExceptionHandler>
-        _logger;
+    private readonly ILogger<ExceptionHandler> _logger;
 
-    private readonly IProblemDetailsService
-        _problemDetailsService;
+    private readonly IProblemDetailsService _problemDetailsService;
 
     public ExceptionHandler(
         ILogger<ExceptionHandler> logger,
@@ -50,6 +50,15 @@ public sealed class ExceptionHandler : IExceptionHandler
                         StatusCodes.Status409Conflict,
                         "Conflict",
                         exception.Message
+                    ),
+
+                DbUpdateException dbUpdateException
+                    when IsUniqueConstraintViolation(
+                        dbUpdateException) =>
+                    (
+                        StatusCodes.Status409Conflict,
+                        "Conflict",
+                        "The request conflicts with existing data."
                     ),
 
                 BusinessRuleException =>
@@ -120,5 +129,12 @@ public sealed class ExceptionHandler : IExceptionHandler
                 HttpContext = httpContext,
                 ProblemDetails = problemDetails
             });
+    }
+
+    private static bool IsUniqueConstraintViolation(DbUpdateException exception)
+    {
+        return exception.InnerException
+            is PostgresException postgresException &&
+            postgresException.SqlState == PostgresErrorCodes.UniqueViolation;
     }
 }
