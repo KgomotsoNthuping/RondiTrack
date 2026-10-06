@@ -26,3 +26,16 @@ namespace Api.DTO;
     string UserFullName,
     StokvelMemberRole MemberRole,
     decimal Amount);
+
+    public class CycleContributionPageRequest
+    {
+        public int? PageSize { get; init; }
+
+        public string? PageToken { get; init; }
+
+        public string? Sort { get; init; }
+
+        public Guid? UserId { get; init; }
+
+        public string? MemberRole { get; init; }
+    }

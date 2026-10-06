@@ -4,7 +4,8 @@ namespace Api.Services;
 
 public interface IContributionQueryService
 {
-    Task<IReadOnlyCollection<CycleContributionResponse>> GetCycleContributionsAsync(
+    Task<PagedResponse<CycleContributionResponse>> GetCycleContributionsAsync(
             Guid stokvelId,
-            Guid cycleId);
+            Guid cycleId,
+            CycleContributionPageRequest request);
 }

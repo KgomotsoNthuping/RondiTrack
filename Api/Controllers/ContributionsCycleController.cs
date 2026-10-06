@@ -71,15 +71,17 @@ public sealed class ContributionsCycleController : ControllerBase
 
     // GET /api/stokvels/{stokvelId}/cycles/{cycleId}/contributions
     [HttpGet("{cycleId:guid}/contributions")]
-    public async Task< ActionResult<IReadOnlyCollection<CycleContributionResponse>>> GetContributions(
+    public async Task<ActionResult<PagedResponse<CycleContributionResponse>>> GetContributions(
             Guid stokvelId,
-            Guid cycleId)
+            Guid cycleId,
+            [FromQuery] CycleContributionPageRequest request)
     {
-            var contributions =await _contributionQueryService.GetCycleContributionsAsync(
+        var contributions = await _contributionQueryService.GetCycleContributionsAsync(
                     stokvelId,
-                    cycleId);
+                    cycleId,
+                    request);
 
-            return Ok(contributions);
+        return Ok(contributions);
     }
 
     // POST /api/stokvels/{stokvelId}/cycles
