@@ -185,7 +185,7 @@ public sealed class UsersController : ControllerBase
         // to the existing domain entity.
         request.ApplyTo(user);
 
-        await _store.UpdateUserAsync(user);
+        await _store.UpdateUserAsync(user, request.Version);
 
         return Ok(user.ToResponse());
     }

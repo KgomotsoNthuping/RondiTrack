@@ -31,6 +31,7 @@ public static class ContributionCycleMappings
             cycle.Id,
             cycle.StokvelId,
             cycle.CycleNumber,
-            cycle.TargetAmount);
+            cycle.TargetAmount,
+            cycle.Version);
     }
 }

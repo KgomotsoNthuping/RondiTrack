@@ -134,7 +134,7 @@ public sealed class ContributionsCycleController : ControllerBase
         request.ApplyTo(cycle);
 
         await _store
-            .UpdateContributionCycleAsync(cycle);
+            .UpdateContributionCycleAsync(cycle, request.Version);
 
         return Ok(cycle.ToResponse());
     }

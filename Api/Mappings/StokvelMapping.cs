@@ -38,6 +38,7 @@ public static class StokvelMapping
             stokvel.CurrentPeriod,
             stokvel.TotalPeriods,
             stokvel.Rules,
-            stokvel.Members.Count);
+            stokvel.Members.Count,
+            stokvel.Version);
     }
 }

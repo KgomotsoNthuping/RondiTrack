@@ -61,6 +61,8 @@ public sealed class ExceptionHandler : IExceptionHandler
                         "The request conflicts with existing data."
                     ),
 
+                DbUpdateConcurrencyException => StatusCodes.Status409Conflict,
+
                 BusinessRuleException =>
                     (
                         StatusCodes.Status422UnprocessableEntity,

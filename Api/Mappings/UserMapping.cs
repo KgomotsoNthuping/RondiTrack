@@ -31,6 +31,7 @@ public static class UserMapping
             user.Id,
             user.FullName,
             user.Email,
-            user.PhoneNumber);
+            user.PhoneNumber,
+            user.Version);
     }
 }

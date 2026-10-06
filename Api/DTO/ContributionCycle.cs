@@ -5,6 +5,8 @@ public sealed class CreateContributionCycleRequest
     public int CycleNumber { get; init; }
 
     public decimal TargetAmount { get; init; }
+
+    public uint Version { get; init; }
 }
 
 public sealed class UpdateContributionCycleRequest
@@ -18,4 +20,5 @@ public sealed record ContributionCycleResponse(
     Guid Id,
     Guid StokvelId,
     int CycleNumber,
-    decimal TargetAmount);
+    decimal TargetAmount,
+    uint Version);

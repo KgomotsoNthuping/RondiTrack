@@ -26,6 +26,8 @@ public sealed class UpdateStokvelRequest
     public int TotalPeriods { get; init; }
 
     public string? Rules { get; init; }
+
+    public uint Version { get; init; }
 }
 
 public sealed record StokvelResponse(
@@ -35,4 +37,5 @@ public sealed record StokvelResponse(
     int CurrentPeriod,
     int TotalPeriods,
     string? Rules,
-    int MemberCount);
+    int MemberCount,
+    uint Version);

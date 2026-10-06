@@ -83,9 +83,9 @@ public sealed class StokvelsController : ControllerBase
             return BadRequest(new { message = exception.Message });
         }
 
-        await _store.UpdateStokvelAsync(existingStokvel);
+        await _store.UpdateStokvelAsync(stokvel, request.Version);
 
-        return Ok(existingStokvel);
+        return Ok(stokvel);
     }
     // /api/stokvels
     [HttpDelete("{id:guid}")]

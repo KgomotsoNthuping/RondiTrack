@@ -57,6 +57,10 @@ public sealed class UpdateUserRequestValidator : AbstractValidator<UpdateUserReq
             .WithMessage("Phone number is required.")
             .Must(HaveEnoughDigits)
             .WithMessage("Phone number must contain at least 9 digits.");
+
+        RuleFor(request => request.Version)
+            .GreaterThan(0)
+            .WithMessage("A valid version is required.");
     }
 
     private static bool HaveEnoughDigits(

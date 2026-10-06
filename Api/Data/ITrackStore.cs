@@ -12,7 +12,7 @@ public interface ITrackStore
 
     Task AddUserAsync(User user);
 
-    Task UpdateUserAsync(User user);
+    Task UpdateUserAsync(User user, uint expectedVersion);
 
     Task<bool> DeleteUserAsync(Guid id);
 
@@ -32,7 +32,7 @@ public interface ITrackStore
 
     Task AddStokvelAsync(Stokvel stokvel);
 
-    Task UpdateStokvelAsync(Stokvel stokvel);
+    Task UpdateStokvelAsync(Stokvel stokvel, uint expectedVersion);
 
     Task<bool> DeleteStokvelAsync(Guid id);
 
@@ -52,7 +52,7 @@ public interface ITrackStore
 
     Task AddContributionCycleAsync(ContributionCycle cycle);
 
-    Task UpdateContributionCycleAsync(ContributionCycle cycle);
+    Task UpdateContributionCycleAsync(ContributionCycle cycle, uint expectedVersion);
 
     Task<bool> DeleteContributionCycleAsync(Guid stokvelId, Guid cycleId);
 }

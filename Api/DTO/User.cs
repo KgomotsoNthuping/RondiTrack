@@ -15,6 +15,8 @@ public sealed class CreateUserRequest
     public string? Email { get; init; }
 
     public string? PhoneNumber { get; init; }
+
+    public uint Version { get; init; }
 }
 
 /// <summary>
@@ -47,4 +49,5 @@ public sealed record UserResponse(
     Guid Id,
     string FullName,
     string Email,
-    string PhoneNumber);
+    string PhoneNumber,
+    uint Version);

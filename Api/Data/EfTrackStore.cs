@@ -37,9 +37,11 @@ public sealed class EfTrackStore : ITrackStore
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task UpdateUserAsync(User user)
+    public async Task UpdateUserAsync(User user, uint expectedVersion)
     {
-        _dbContext.Users.Update(user);
+        _dbContext.Entry(user)
+        .Property(entity => entity.Version)
+        .OriginalValue = expectedVersion;
 
         await _dbContext.SaveChangesAsync();
     }
@@ -143,11 +145,13 @@ public sealed class EfTrackStore : ITrackStore
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task UpdateStokvelAsync(Stokvel stokvel)
+    public async Task UpdateStokvelAsync(Stokvel stokvel, uint expectedVersion)
     {
         await SynchronizeMembershipsAsync(stokvel);
 
-        _dbContext.Stokvels.Update(stokvel);
+        _dbContext.Entry(stokvel)
+        .Property(entity => entity.Version)
+        .OriginalValue = expectedVersion;
 
         await _dbContext.SaveChangesAsync();
     }
@@ -233,10 +237,11 @@ public sealed class EfTrackStore : ITrackStore
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task UpdateContributionCycleAsync(
-        ContributionCycle cycle)
+    public async Task UpdateContributionCycleAsync(ContributionCycle cycle, uint expectedVersion)
     {
-        _dbContext.ContributionCycles.Update(cycle);
+        _dbContext.Entry(cycle)
+        .Property(entity => entity.Version)
+        .OriginalValue = expectedVersion;
 
         await _dbContext.SaveChangesAsync();
     }

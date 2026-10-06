@@ -1,0 +1,165 @@
+using System.Net;
+using System.Net.Http.Json;
+using Api.DTO;
+using Api.Tests.TestSupport;
+using Microsoft.AspNetCore.Mvc.Testing;
+
+namespace Api.Tests;
+
+public sealed class PaginationTests
+    : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly WebApplicationFactory<Program>
+        _factory;
+
+    private readonly HttpClient _client;
+
+    public PaginationTests(
+        WebApplicationFactory<Program> factory)
+    {
+        _factory = factory;
+        _client = factory.CreateClient();
+    }
+
+    [Fact]
+    public async Task
+        ContributionPages_ReturnAllRowsWithoutDuplicates()
+    {
+        var data =
+            await TestData.CreateAsync(
+                _factory.Services,
+                memberCount: 5);
+
+        var first =
+            await _client.GetFromJsonAsync<
+                PagedResponse<
+                    CycleContributionResponse>>(
+                $"/api/stokvels/{data.StokvelId}" +
+                $"/cycles/{data.CycleId}" +
+                "/contributions?pageSize=2");
+
+        Assert.NotNull(first);
+        Assert.Equal(2, first.Items.Count);
+        Assert.False(
+            string.IsNullOrWhiteSpace(
+                first.NextPageToken));
+
+        var second =
+            await _client.GetFromJsonAsync<
+                PagedResponse<
+                    CycleContributionResponse>>(
+                $"/api/stokvels/{data.StokvelId}" +
+                $"/cycles/{data.CycleId}" +
+                "/contributions?pageSize=2" +
+                $"&pageToken={Uri.EscapeDataString(first.NextPageToken)}");
+
+        Assert.NotNull(second);
+        Assert.Equal(2, second.Items.Count);
+
+        var third =
+            await _client.GetFromJsonAsync<
+                PagedResponse<
+                    CycleContributionResponse>>(
+                $"/api/stokvels/{data.StokvelId}" +
+                $"/cycles/{data.CycleId}" +
+                "/contributions?pageSize=2" +
+                $"&pageToken={Uri.EscapeDataString(second.NextPageToken)}");
+
+        Assert.NotNull(third);
+        Assert.Single(third.Items);
+        Assert.Equal(
+            string.Empty,
+            third.NextPageToken);
+
+        var allIds =
+            first.Items
+                .Concat(second.Items)
+                .Concat(third.Items)
+                .Select(item => item.Id)
+                .ToList();
+
+        Assert.Equal(5, allIds.Count);
+        Assert.Equal(
+            5,
+            allIds.Distinct().Count());
+    }
+
+    [Fact]
+    public async Task
+        MembersEndpoint_IsAlsoPaged()
+    {
+        var data =
+            await TestData.CreateAsync(
+                _factory.Services,
+                memberCount: 5);
+
+        var response =
+            await _client.GetFromJsonAsync<
+                PagedResponse<UserResponse>>(
+                $"/api/stokvels/{data.StokvelId}" +
+                "/members?pageSize=2");
+
+        Assert.NotNull(response);
+        Assert.Equal(2, response.Items.Count);
+        Assert.False(
+            string.IsNullOrWhiteSpace(
+                response.NextPageToken));
+    }
+
+    [Fact]
+    public async Task
+        NegativePageSize_Returns400()
+    {
+        var data =
+            await TestData.CreateAsync(
+                _factory.Services);
+
+        var response =
+            await _client.GetAsync(
+                $"/api/stokvels/{data.StokvelId}" +
+                $"/cycles/{data.CycleId}" +
+                "/contributions?pageSize=-1");
+
+        Assert.Equal(
+            HttpStatusCode.BadRequest,
+            response.StatusCode);
+
+        Assert.Contains(
+            "application/problem+json",
+            response.Content.Headers
+                .ContentType?
+                .MediaType);
+    }
+
+    [Fact]
+    public async Task
+        TokenCannotBeReusedWithDifferentSort()
+    {
+        var data =
+            await TestData.CreateAsync(
+                _factory.Services,
+                memberCount: 5);
+
+        var first =
+            await _client.GetFromJsonAsync<
+                PagedResponse<
+                    CycleContributionResponse>>(
+                $"/api/stokvels/{data.StokvelId}" +
+                $"/cycles/{data.CycleId}" +
+                "/contributions?pageSize=2&sort=userId");
+
+        Assert.NotNull(first);
+
+        var response =
+            await _client.GetAsync(
+                $"/api/stokvels/{data.StokvelId}" +
+                $"/cycles/{data.CycleId}" +
+                "/contributions?pageSize=2" +
+                "&sort=amount" +
+                $"&pageToken={Uri.EscapeDataString(first.NextPageToken)}");
+
+        Assert.Equal(
+            HttpStatusCode.BadRequest,
+            response.StatusCode);
+    }
+}

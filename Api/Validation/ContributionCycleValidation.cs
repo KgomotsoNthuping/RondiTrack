@@ -28,5 +28,9 @@ public sealed class UpdateContributionCycleRequestValidator : AbstractValidator<
         RuleFor(x => x.TargetAmount)
             .GreaterThan(0)
             .WithMessage("Target amount must be greater than zero.");
+
+        RuleFor(request => request.Version)
+            .GreaterThan(0)
+            .WithMessage("A valid version is required.");
     }
 }

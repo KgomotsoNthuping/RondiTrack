@@ -116,7 +116,7 @@ public sealed class InMemoryTrackStore : ITrackStore
         return Task.CompletedTask;
     }
 
-    public Task UpdateUserAsync(User user)
+    public Task UpdateUserAsync(User user, uint expectedVersion)
     {
         var index =
             _users.FindIndex(existing => existing.Id == user.Id);
@@ -221,7 +221,7 @@ public sealed class InMemoryTrackStore : ITrackStore
         return Task.CompletedTask;
     }
 
-    public Task UpdateStokvelAsync(Stokvel stokvel)
+    public Task UpdateStokvelAsync(Stokvel stokvel, uint expectedVersion)
     {
         var index =
             _stokvels.FindIndex(existing =>
@@ -322,7 +322,7 @@ public sealed class InMemoryTrackStore : ITrackStore
     }
 
     public Task UpdateContributionCycleAsync(
-        ContributionCycle cycle)
+        ContributionCycle cycle, uint expectedVersion)
     {
         var index =
             _contributionCycles.FindIndex(existing =>
