@@ -114,8 +114,9 @@ public class RondiTrackDbContext : DbContext
             {
                 contribution.StokvelId,
                 contribution.UserId,
-                contribution.ContributionCycleId
-            }).IsUnique();
+                contribution.ContributionCycleId,
+                contribution.Id
+            }).IsUnique().HasDatabaseName("IX_Contributions_PagedCycleQuery");
 
         entity.HasOne(contribution =>contribution.Member)
               .WithMany(member =>

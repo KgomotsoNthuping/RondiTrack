@@ -47,8 +47,9 @@ namespace Api.Migrations
 
                     b.HasIndex("UserId", "StokvelId");
 
-                    b.HasIndex("StokvelId", "UserId", "ContributionCycleId")
-                        .IsUnique();
+                    b.HasIndex("StokvelId", "UserId", "ContributionCycleId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Contributions_PagedCycleQuery");
 
                     b.ToTable("Contributions");
                 });
