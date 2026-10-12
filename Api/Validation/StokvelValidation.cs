@@ -61,7 +61,7 @@ public sealed class UpdateStokvelRequestValidator : AbstractValidator<UpdateStok
             .WithMessage("Current period cannot be greater than total periods.");
 
         RuleFor(request => request.Version)
-            .GreaterThan(0)
+            .NotEqual(0u)
             .WithMessage("A valid version is required.");
     }
 }

@@ -713,6 +713,30 @@
         "build": {
           "buildTransitive/net8.0/_._": {}
         }
+      },
+      "Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Domain.dll": {}
+        }
+      },
+      "Infrastructure/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Domain": "1.0.0",
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.3"
+        },
+        "compile": {
+          "bin/placeholder/Infrastructure.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Infrastructure.dll": {}
+        }
       }
     }
   },
@@ -2290,14 +2314,28 @@
         "system.composition.typedparts.nuspec",
         "useSharedDesignerContext.txt"
       ]
+    },
+    "Domain/1.0.0": {
+      "type": "project",
+      "path": "../Domain/Domain.csproj",
+      "msbuildProject": "../Domain/Domain.csproj"
+    },
+    "Infrastructure/1.0.0": {
+      "type": "project",
+      "path": "../Infrastructure/Infrastructure.csproj",
+      "msbuildProject": "../Infrastructure/Infrastructure.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net10.0": [
+      "Domain >= 1.0.0",
       "FluentValidation >= 12.1.1",
       "FluentValidation.DependencyInjectionExtensions >= 12.1.1",
+      "Infrastructure >= 1.0.0",
       "Microsoft.AspNetCore.OpenApi >= 10.0.12",
+      "Microsoft.EntityFrameworkCore >= 10.0.12",
       "Microsoft.EntityFrameworkCore.Design >= 10.0.12",
+      "Microsoft.EntityFrameworkCore.Relational >= 10.0.12",
       "Npgsql.EntityFrameworkCore.PostgreSQL >= 10.0.3",
       "Scalar.AspNetCore >= 2.17.7"
     ]
@@ -2335,7 +2373,14 @@
         "net10.0": {
           "framework": "net10.0",
           "targetAlias": "net10.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Domain\\Domain.csproj": {
+              "projectPath": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Domain\\Domain.csproj"
+            },
+            "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Infrastructure\\Infrastructure.csproj": {
+              "projectPath": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Infrastructure\\Infrastructure.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
@@ -2367,9 +2412,17 @@
             "target": "Package",
             "version": "[10.0.12, )"
           },
+          "Microsoft.EntityFrameworkCore": {
+            "target": "Package",
+            "version": "[10.0.12, )"
+          },
           "Microsoft.EntityFrameworkCore.Design": {
             "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
             "suppressParent": "All",
+            "target": "Package",
+            "version": "[10.0.12, )"
+          },
+          "Microsoft.EntityFrameworkCore.Relational": {
             "target": "Package",
             "version": "[10.0.12, )"
           },

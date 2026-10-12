@@ -1,7 +1,8 @@
 using Api.Data;
-using Api.Exceptions;
-using Api.Models;
+using Domain.Exceptions;
+using Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using Infrastructure.Data;
 
 namespace Api.Services;
 

@@ -1,10 +1,10 @@
 using System.Text;
 using System.Text.Json;
-using Api.Data;
 using Api.DTO;
-using Api.Exceptions;
-using Api.Models;
+using Domain.Exceptions;
+using Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using Infrastructure.Data;
 
 namespace Api.Services;
 
@@ -111,7 +111,8 @@ public sealed class StokvelMemberQueryService
                         member.User.FullName,
                         member.User.Email,
                         member.User.PhoneNumber,
-                        member.JoinedAtUtc))
+                        member.JoinedAtUtc,
+                        member.User.Version))
                 .Take(pageSize + 1)
                 .ToListAsync();
 
@@ -142,7 +143,8 @@ public sealed class StokvelMemberQueryService
                         member.UserId,
                         member.FullName,
                         member.Email,
-                        member.PhoneNumber))
+                        member.PhoneNumber,
+                        member.Version))
                 .ToList();
 
         return new PagedResponse<UserResponse>(
@@ -442,7 +444,8 @@ public sealed class StokvelMemberQueryService
         string FullName,
         string Email,
         string PhoneNumber,
-        DateTime JoinedAtUtc);
+        DateTime JoinedAtUtc,
+        uint Version);
 
     /*
      * The token stores enough information to

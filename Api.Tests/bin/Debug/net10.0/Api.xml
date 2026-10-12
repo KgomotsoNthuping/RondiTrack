@@ -152,7 +152,7 @@
               "phoneNumber": "07411111111"
             </example>
         </member>
-        <member name="M:Api.DTO.UserResponse.#ctor(System.Guid,System.String,System.String,System.String)">
+        <member name="M:Api.DTO.UserResponse.#ctor(System.Guid,System.String,System.String,System.String,System.UInt32)">
             <summary>
             Shape/representation returned to API user.
             </summary>
@@ -162,54 +162,6 @@
               "email": "kgomotso@rondi.co.za",
               "phoneNumber": "07411111111"
             </example>
-        </member>
-        <member name="T:Api.Migrations.InitialPostgreSql">
-            <inheritdoc />
-        </member>
-        <member name="M:Api.Migrations.InitialPostgreSql.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:Api.Migrations.InitialPostgreSql.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:Api.Migrations.InitialPostgreSql.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:Api.Migrations.ModelRelationships">
-            <inheritdoc />
-        </member>
-        <member name="M:Api.Migrations.ModelRelationships.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:Api.Migrations.ModelRelationships.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:Api.Migrations.ModelRelationships.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:Api.Migrations.AddPagedContributionIndex">
-            <inheritdoc />
-        </member>
-        <member name="M:Api.Migrations.AddPagedContributionIndex.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:Api.Migrations.AddPagedContributionIndex.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:Api.Migrations.AddPagedContributionIndex.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:Api.Migrations.AddDatabaseUniqueConstraints">
-            <inheritdoc />
-        </member>
-        <member name="M:Api.Migrations.AddDatabaseUniqueConstraints.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:Api.Migrations.AddDatabaseUniqueConstraints.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:Api.Migrations.AddDatabaseUniqueConstraints.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
         </member>
         <member name="M:Microsoft.AspNetCore.OpenApi.Generated.DocumentationCommentIdHelper.CreateDocumentationId(System.Type)">
             <summary>

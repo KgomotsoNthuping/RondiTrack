@@ -39,9 +39,11 @@
       "Api.Tests/1.0.0": {
         "dependencies": {
           "Api": "1.0.0",
+          "Infrastructure": "1.0.0",
           "Microsoft.AspNetCore.Mvc.Testing": "10.0.12",
           "Microsoft.EntityFrameworkCore": "10.0.12",
           "Microsoft.NET.Test.Sdk": "17.14.1",
+          "Testcontainers.PostgreSql": "4.15.0",
           "coverlet.collector": "6.0.4",
           "xunit": "2.9.3",
           "xunit.runner.visualstudio": "3.1.4",
@@ -330,6 +332,128 @@
           "Api.Tests.dll": {}
         }
       },
+      "BouncyCastle.Cryptography/2.7.0": {
+        "runtime": {
+          "lib/net6.0/BouncyCastle.Cryptography.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.7.0.16391"
+          }
+        },
+        "compile": {
+          "lib/net6.0/BouncyCastle.Cryptography.dll": {}
+        }
+      },
+      "Docker.DotNet.Enhanced/4.3.3": {
+        "dependencies": {
+          "Docker.DotNet.Enhanced.Handler.Abstractions": "4.3.3",
+          "Docker.DotNet.Enhanced.LegacyHttp": "4.3.3",
+          "Docker.DotNet.Enhanced.NPipe": "4.3.3",
+          "Docker.DotNet.Enhanced.NativeHttp": "4.3.3",
+          "Docker.DotNet.Enhanced.Unix": "4.3.3",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.12"
+        },
+        "runtime": {
+          "lib/net10.0/Docker.DotNet.dll": {
+            "assemblyVersion": "4.3.0.0",
+            "fileVersion": "4.3.3.1"
+          }
+        },
+        "compile": {
+          "lib/net10.0/Docker.DotNet.dll": {}
+        }
+      },
+      "Docker.DotNet.Enhanced.Handler.Abstractions/4.3.3": {
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.12"
+        },
+        "runtime": {
+          "lib/net10.0/Docker.DotNet.Handler.Abstractions.dll": {
+            "assemblyVersion": "4.3.0.0",
+            "fileVersion": "4.3.3.1"
+          }
+        },
+        "compile": {
+          "lib/net10.0/Docker.DotNet.Handler.Abstractions.dll": {}
+        }
+      },
+      "Docker.DotNet.Enhanced.LegacyHttp/4.3.3": {
+        "dependencies": {
+          "Docker.DotNet.Enhanced.Handler.Abstractions": "4.3.3"
+        },
+        "runtime": {
+          "lib/net10.0/Docker.DotNet.LegacyHttp.dll": {
+            "assemblyVersion": "4.3.0.0",
+            "fileVersion": "4.3.3.1"
+          },
+          "lib/net10.0/Microsoft.Net.Http.Client.dll": {
+            "assemblyVersion": "4.3.0.0",
+            "fileVersion": "4.3.3.1"
+          }
+        },
+        "compile": {
+          "lib/net10.0/Docker.DotNet.LegacyHttp.dll": {},
+          "lib/net10.0/Microsoft.Net.Http.Client.dll": {}
+        }
+      },
+      "Docker.DotNet.Enhanced.NativeHttp/4.3.3": {
+        "dependencies": {
+          "Docker.DotNet.Enhanced.Handler.Abstractions": "4.3.3"
+        },
+        "runtime": {
+          "lib/net10.0/Docker.DotNet.NativeHttp.dll": {
+            "assemblyVersion": "4.3.0.0",
+            "fileVersion": "4.3.3.1"
+          }
+        },
+        "compile": {
+          "lib/net10.0/Docker.DotNet.NativeHttp.dll": {}
+        }
+      },
+      "Docker.DotNet.Enhanced.NPipe/4.3.3": {
+        "dependencies": {
+          "Docker.DotNet.Enhanced.Handler.Abstractions": "4.3.3"
+        },
+        "runtime": {
+          "lib/net10.0/Docker.DotNet.NPipe.dll": {
+            "assemblyVersion": "4.3.0.0",
+            "fileVersion": "4.3.3.1"
+          }
+        },
+        "compile": {
+          "lib/net10.0/Docker.DotNet.NPipe.dll": {},
+          "lib/net10.0/Microsoft.Net.Http.Client.dll": {}
+        }
+      },
+      "Docker.DotNet.Enhanced.Unix/4.3.3": {
+        "dependencies": {
+          "Docker.DotNet.Enhanced.Handler.Abstractions": "4.3.3"
+        },
+        "runtime": {
+          "lib/net10.0/Docker.DotNet.Unix.dll": {
+            "assemblyVersion": "4.3.0.0",
+            "fileVersion": "4.3.3.1"
+          }
+        },
+        "compile": {
+          "lib/net10.0/Docker.DotNet.Unix.dll": {},
+          "lib/net10.0/Microsoft.Net.Http.Client.dll": {}
+        }
+      },
+      "Docker.DotNet.Enhanced.X509/4.3.3": {
+        "dependencies": {
+          "Docker.DotNet.Enhanced.Handler.Abstractions": "4.3.3"
+        },
+        "runtime": {
+          "lib/net10.0/Docker.DotNet.X509.dll": {
+            "assemblyVersion": "4.3.0.0",
+            "fileVersion": "4.3.3.1"
+          }
+        },
+        "compile": {
+          "lib/net10.0/Docker.DotNet.X509.dll": {},
+          "lib/net10.0/Microsoft.Net.Http.Client.dll": {}
+        }
+      },
       "FluentValidation/12.1.1": {
         "runtime": {
           "lib/net8.0/FluentValidation.dll": {
@@ -436,7 +560,7 @@
           "lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll": {}
         }
       },
-      "Microsoft.EntityFrameworkCore.Relational/10.0.4": {
+      "Microsoft.EntityFrameworkCore.Relational/10.0.12": {
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "10.0.12",
           "Microsoft.Extensions.Caching.Memory": "10.0.12",
@@ -445,8 +569,8 @@
         },
         "runtime": {
           "lib/net10.0/Microsoft.EntityFrameworkCore.Relational.dll": {
-            "assemblyVersion": "10.0.4.0",
-            "fileVersion": "10.0.426.12010"
+            "assemblyVersion": "10.0.12.0",
+            "fileVersion": "10.0.1226.42308"
           }
         },
         "compile": {
@@ -1240,7 +1364,7 @@
       "Npgsql.EntityFrameworkCore.PostgreSQL/10.0.3": {
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "10.0.12",
-          "Microsoft.EntityFrameworkCore.Relational": "10.0.4",
+          "Microsoft.EntityFrameworkCore.Relational": "10.0.12",
           "Npgsql": "10.0.3"
         },
         "runtime": {
@@ -1264,6 +1388,32 @@
           "lib/net10.0/Scalar.AspNetCore.dll": {}
         }
       },
+      "SharpZipLib/1.4.2": {
+        "runtime": {
+          "lib/net6.0/ICSharpCode.SharpZipLib.dll": {
+            "assemblyVersion": "1.4.2.13",
+            "fileVersion": "1.4.2.13"
+          }
+        },
+        "compile": {
+          "lib/net6.0/ICSharpCode.SharpZipLib.dll": {}
+        }
+      },
+      "SSH.NET/2026.0.0": {
+        "dependencies": {
+          "BouncyCastle.Cryptography": "2.7.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.12"
+        },
+        "runtime": {
+          "lib/net10.0/Renci.SshNet.dll": {
+            "assemblyVersion": "2026.0.0.1",
+            "fileVersion": "2026.0.0.1"
+          }
+        },
+        "compile": {
+          "lib/net10.0/Renci.SshNet.dll": {}
+        }
+      },
       "System.Diagnostics.EventLog/10.0.12": {
         "runtime": {
           "lib/net10.0/System.Diagnostics.EventLog.dll": {
@@ -1281,6 +1431,38 @@
         },
         "compile": {
           "lib/net10.0/System.Diagnostics.EventLog.dll": {}
+        }
+      },
+      "Testcontainers/4.15.0": {
+        "dependencies": {
+          "Docker.DotNet.Enhanced": "4.3.3",
+          "Docker.DotNet.Enhanced.X509": "4.3.3",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.12",
+          "SSH.NET": "2026.0.0",
+          "SharpZipLib": "1.4.2"
+        },
+        "runtime": {
+          "lib/net10.0/Testcontainers.dll": {
+            "assemblyVersion": "4.15.0.0",
+            "fileVersion": "4.15.0.0"
+          }
+        },
+        "compile": {
+          "lib/net10.0/Testcontainers.dll": {}
+        }
+      },
+      "Testcontainers.PostgreSql/4.15.0": {
+        "dependencies": {
+          "Testcontainers": "4.15.0"
+        },
+        "runtime": {
+          "lib/net10.0/Testcontainers.PostgreSql.dll": {
+            "assemblyVersion": "4.15.0.0",
+            "fileVersion": "4.15.0.0"
+          }
+        },
+        "compile": {
+          "lib/net10.0/Testcontainers.PostgreSql.dll": {}
         }
       },
       "xunit/2.9.3": {
@@ -1348,9 +1530,13 @@
       },
       "Api/1.0.0": {
         "dependencies": {
+          "Domain": "1.0.0",
           "FluentValidation": "12.1.1",
           "FluentValidation.DependencyInjectionExtensions": "12.1.1",
+          "Infrastructure": "1.0.0",
           "Microsoft.AspNetCore.OpenApi": "10.0.12",
+          "Microsoft.EntityFrameworkCore": "10.0.12",
+          "Microsoft.EntityFrameworkCore.Relational": "10.0.12",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.3",
           "Scalar.AspNetCore": "2.17.7"
         },
@@ -1362,6 +1548,32 @@
         },
         "compile": {
           "Api.dll": {}
+        }
+      },
+      "Domain/1.0.0": {
+        "runtime": {
+          "Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        },
+        "compile": {
+          "Domain.dll": {}
+        }
+      },
+      "Infrastructure/1.0.0": {
+        "dependencies": {
+          "Domain": "1.0.0",
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.3"
+        },
+        "runtime": {
+          "Infrastructure.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        },
+        "compile": {
+          "Infrastructure.dll": {}
         }
       },
       "Microsoft.AspNetCore.Antiforgery/10.0.0.0": {
@@ -3046,6 +3258,62 @@
       "serviceable": false,
       "sha512": ""
     },
+    "BouncyCastle.Cryptography/2.7.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-U+12df8UEWHgBi04YVf/Lgi2dy3SItlIYvHjjEVa/BngCQIzDCDRBk50DDByCfDvSbe5pRNFr3b7UrVK2kMcLw==",
+      "path": "bouncycastle.cryptography/2.7.0",
+      "hashPath": "bouncycastle.cryptography.2.7.0.nupkg.sha512"
+    },
+    "Docker.DotNet.Enhanced/4.3.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-nGicLwvd42FhRk+khY5uS6cx49ErNdwYKnYBg0F4m4BDKLp/R77AVmmN9xAiqI3W/wN5ZCHkdUhgxf5ORkZuFQ==",
+      "path": "docker.dotnet.enhanced/4.3.3",
+      "hashPath": "docker.dotnet.enhanced.4.3.3.nupkg.sha512"
+    },
+    "Docker.DotNet.Enhanced.Handler.Abstractions/4.3.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-9Cp8hOgtynixcDoAs9lnEaQosluojSYmiW3fsLsLIVfZjlq/fznSIZNUhnmyT4Xo1Iyuok/y49WL/25O47u0Pw==",
+      "path": "docker.dotnet.enhanced.handler.abstractions/4.3.3",
+      "hashPath": "docker.dotnet.enhanced.handler.abstractions.4.3.3.nupkg.sha512"
+    },
+    "Docker.DotNet.Enhanced.LegacyHttp/4.3.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-7j3M16emv9PAQN7VwFn23xLYNj8GJmwPOcogveHkaWnOCqiC+anRaNKQwqIBNApM1AuwZKivehTKTPmmrjUUnw==",
+      "path": "docker.dotnet.enhanced.legacyhttp/4.3.3",
+      "hashPath": "docker.dotnet.enhanced.legacyhttp.4.3.3.nupkg.sha512"
+    },
+    "Docker.DotNet.Enhanced.NativeHttp/4.3.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-iNzK+jRFeEMobSA7l/h4ARwCKOOefOWtVN5/RB0ft6/6H6IQXvVUuOgGyZAjYLBT7TsyClRYno2B904f3dtBuQ==",
+      "path": "docker.dotnet.enhanced.nativehttp/4.3.3",
+      "hashPath": "docker.dotnet.enhanced.nativehttp.4.3.3.nupkg.sha512"
+    },
+    "Docker.DotNet.Enhanced.NPipe/4.3.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ZTLYufuEfY0e6qLOgeH9QgXx2KYuoABRVaY5A8rsggyLgYqbDj9rCRfVAhHPCUv83S7pVxDHy+Tvm/BnxjWVpg==",
+      "path": "docker.dotnet.enhanced.npipe/4.3.3",
+      "hashPath": "docker.dotnet.enhanced.npipe.4.3.3.nupkg.sha512"
+    },
+    "Docker.DotNet.Enhanced.Unix/4.3.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ypo8qNbmvHw1t9VfpRTMogCw2vht6VjkXzlGYUUeP2H2bf83USURdla1maW1njn2oq2rfLUFOGMfmt+A37QU2w==",
+      "path": "docker.dotnet.enhanced.unix/4.3.3",
+      "hashPath": "docker.dotnet.enhanced.unix.4.3.3.nupkg.sha512"
+    },
+    "Docker.DotNet.Enhanced.X509/4.3.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-oBDibWezEv4hgj3RIQxI3DVcxkNV1MdrD0d/jhjUu+h3DL+qc0wlkQva15kkwMatXmC/hWp1VP0DMoFXe+BmEw==",
+      "path": "docker.dotnet.enhanced.x509/4.3.3",
+      "hashPath": "docker.dotnet.enhanced.x509.4.3.3.nupkg.sha512"
+    },
     "FluentValidation/12.1.1": {
       "type": "package",
       "serviceable": true,
@@ -3102,12 +3370,12 @@
       "path": "microsoft.entityframeworkcore.abstractions/10.0.12",
       "hashPath": "microsoft.entityframeworkcore.abstractions.10.0.12.nupkg.sha512"
     },
-    "Microsoft.EntityFrameworkCore.Relational/10.0.4": {
+    "Microsoft.EntityFrameworkCore.Relational/10.0.12": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-DOTjTHy93W3TwpMLM4SCm0n57Sc0Jj3+m2S6LSTstKyBB34eT1UouaMS19mpWwvtj42+sRiEjA3+rOTNoNzXFQ==",
-      "path": "microsoft.entityframeworkcore.relational/10.0.4",
-      "hashPath": "microsoft.entityframeworkcore.relational.10.0.4.nupkg.sha512"
+      "sha512": "sha512-OiHmr8XzX96dbgMsYGe8qoqg4KxibdZG2r0QUVJBGktFInOp8IrABe8jvcbo5hrqeWfbwpK7fCEBiEPbY/ik4A==",
+      "path": "microsoft.entityframeworkcore.relational/10.0.12",
+      "hashPath": "microsoft.entityframeworkcore.relational.10.0.12.nupkg.sha512"
     },
     "Microsoft.Extensions.Caching.Abstractions/10.0.12": {
       "type": "package",
@@ -3375,12 +3643,40 @@
       "path": "scalar.aspnetcore/2.17.7",
       "hashPath": "scalar.aspnetcore.2.17.7.nupkg.sha512"
     },
+    "SharpZipLib/1.4.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-yjj+3zgz8zgXpiiC3ZdF/iyTBbz2fFvMxZFEBPUcwZjIvXOf37Ylm+K58hqMfIBt5JgU/Z2uoUS67JmTLe973A==",
+      "path": "sharpziplib/1.4.2",
+      "hashPath": "sharpziplib.1.4.2.nupkg.sha512"
+    },
+    "SSH.NET/2026.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Yu9dirPq8l3oaat0+OQ7K0nUf5MmYltpia5UGqsApTG4zTPvBC1cxbNnC3NERij26dUST0A3Ef1QdHSn5ArbWQ==",
+      "path": "ssh.net/2026.0.0",
+      "hashPath": "ssh.net.2026.0.0.nupkg.sha512"
+    },
     "System.Diagnostics.EventLog/10.0.12": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-sOZM+VyRj1pg/ItlHsvrSbjws6oGqZveTzTNBGZ9ziwRDyKsOF3ub6vhvOdxotCIqtlnyHAIwP5sLNvgiZC+pQ==",
       "path": "system.diagnostics.eventlog/10.0.12",
       "hashPath": "system.diagnostics.eventlog.10.0.12.nupkg.sha512"
+    },
+    "Testcontainers/4.15.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-8tCZKMm++C/9dHIr8lsE1iDBIBmthbo2XlGFDr4gorT1vgZrJwU36fNkCGuX7h7V39rpQoTK/aG+FhJz3jhY3A==",
+      "path": "testcontainers/4.15.0",
+      "hashPath": "testcontainers.4.15.0.nupkg.sha512"
+    },
+    "Testcontainers.PostgreSql/4.15.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-45ZvqAzrh9BoI15Z4id7WEfhk1pVKqVeAX76aef8fR5ScglD75fSQtYuXhKFx4kIcgRL5aLKt3pRiqCVIgsL9g==",
+      "path": "testcontainers.postgresql/4.15.0",
+      "hashPath": "testcontainers.postgresql.4.15.0.nupkg.sha512"
     },
     "xunit/2.9.3": {
       "type": "package",
@@ -3425,6 +3721,16 @@
       "hashPath": "xunit.extensibility.execution.2.9.3.nupkg.sha512"
     },
     "Api/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Infrastructure/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

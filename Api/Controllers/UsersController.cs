@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Api.DTO;
 using Api.Data;
-using Api.Exceptions;
+using Domain.Exceptions;
 using Api.Mappings;
 using Api.Services;
+using Domain.Repositories;
 
 namespace Api.Controllers;
 

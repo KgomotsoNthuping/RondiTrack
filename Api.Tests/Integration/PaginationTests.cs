@@ -6,16 +6,14 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Api.Tests;
 
+[Collection("Postgres collection")]
 public sealed class PaginationTests
-    : IClassFixture<WebApplicationFactory<Program>>
 {
-    private readonly WebApplicationFactory<Program>
-        _factory;
+    private readonly PostgresApiFactory _factory;
 
     private readonly HttpClient _client;
 
-    public PaginationTests(
-        WebApplicationFactory<Program> factory)
+    public PaginationTests(PostgresApiFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();

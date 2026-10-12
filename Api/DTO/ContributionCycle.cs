@@ -14,6 +14,8 @@ public sealed class UpdateContributionCycleRequest
     public int CycleNumber { get; init; }
 
     public decimal TargetAmount { get; init; }
+
+    public uint Version { get; init; }
 }
 
 public sealed record ContributionCycleResponse(

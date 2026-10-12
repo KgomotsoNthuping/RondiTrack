@@ -1,6 +1,7 @@
     using Api.Data;
-    using Api.Models;
-    using Api.Exceptions;
+    using Domain.Models;
+    using Domain.Exceptions;
+    using Domain.Repositories;
 
     namespace Api.Services;
 

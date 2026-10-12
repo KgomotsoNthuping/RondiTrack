@@ -1,22 +1,20 @@
 using System.Net;
 using System.Net.Http.Json;
 using Api.DTO;
-using Api.Models;
+using Domain.Models;
 using Api.Tests.TestSupport;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Api.Tests;
 
+[Collection("Postgres collection")]
 public sealed class QueryBehaviorTests
-    : IClassFixture<WebApplicationFactory<Program>>
 {
-    private readonly WebApplicationFactory<Program>
-        _factory;
+    private readonly PostgresApiFactory _factory;
 
     private readonly HttpClient _client;
 
-    public QueryBehaviorTests(
-        WebApplicationFactory<Program> factory)
+    public QueryBehaviorTests(PostgresApiFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();

@@ -1,3 +1,5 @@
 {
-  "Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Api"
+  "Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Api",
+  "Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Domain",
+  "Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Infrastructure"
 }

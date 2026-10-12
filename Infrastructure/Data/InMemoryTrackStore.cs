@@ -1,0 +1,357 @@
+using Domain.Models;
+using Domain.Repositories;
+
+namespace Infrastructure.Data;
+
+public sealed class InMemoryTrackStore : ITrackStore
+{
+    private readonly List<User> _users = [];
+
+    private readonly List<Stokvel> _stokvels = [];
+
+    private readonly List<Contribution> _contributions = [];
+
+    private readonly List<ContributionCycle> _contributionCycles = [];
+
+    private readonly List<StokvelMember> _stokvelMembers = [];
+
+    public InMemoryTrackStore()
+    {
+        SeedData();
+    }
+
+    //Test Data of users
+    private void SeedData()
+    {
+        var testOne = new User(
+            "Test One",
+            "testone@ronditrack.co.za",
+            "0711111111");
+
+        var testTwo = new User(
+            "Test Two",
+            "testtwo@ronditrack.co.za",
+            "0722222222");
+
+        var testThree = new User(
+            "Kgomotso Nthuping",
+            "kgomotso@ronditrack.co.za",
+            "0733333333");
+
+        _users.Add(testOne);
+        _users.Add(testTwo);
+        _users.Add(testThree);
+
+        var ubuntuSavers = new Stokvel(
+            "Ubuntu Savers",
+            500.00m,
+            9,
+            12,
+            null);
+
+
+
+        ubuntuSavers.AddMember(testOne);
+        ubuntuSavers.AddMember(testTwo);
+
+        var communitySavers = new Stokvel(
+            "Community Builders",
+            1000.00m,
+            3,
+            12,
+            "Monthly contributions must be paid before the 5th.");
+
+        communitySavers.AddMember(testThree);
+        ubuntuSavers.AddMember(testOne);
+
+        _stokvelMembers.Add(
+            new StokvelMember(
+                ubuntuSavers.Id,
+                testOne.Id,
+                StokvelMemberRole.Admin));
+
+        _stokvelMembers.Add(
+            new StokvelMember(
+                ubuntuSavers.Id,
+                testTwo.Id,
+                StokvelMemberRole.Treasurer));
+
+        _stokvelMembers.Add(
+            new StokvelMember(
+                communitySavers.Id,
+                testThree.Id,
+                StokvelMemberRole.Member));
+
+        _stokvels.Add(ubuntuSavers);
+        _stokvels.Add(communitySavers);
+
+        var septemberCycle = new ContributionCycle(
+            ubuntuSavers.Id,
+            9,
+            500.00m);
+
+        _contributionCycles.Add(septemberCycle);
+    }
+
+    //This is readonly so only list of users can be viewed without or being able to add/remove users
+    public Task<IReadOnlyCollection<User>> GetUsersAsync()
+    {
+        IReadOnlyCollection<User> users = _users.AsReadOnly();
+
+        return Task.FromResult(users);
+    } 
+
+    public Task<User?> GetUserByIdAsync(Guid id, bool asNoTracking = false)
+    {
+        var user =
+            _users.FirstOrDefault(user => user.Id == id);
+
+        return Task.FromResult(user);
+    }
+
+    public Task AddUserAsync(User user)
+    {
+        _users.Add(user);
+
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateUserAsync(User user, uint expectedVersion)
+    {
+        var index =
+            _users.FindIndex(existing => existing.Id == user.Id);
+
+        if (index >= 0)
+        {
+            _users[index] = user;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task<bool> DeleteUserAsync(Guid id)
+    {
+        var user =
+            _users.FirstOrDefault(user => user.Id == id);
+
+        if (user is null)
+        {
+            return Task.FromResult(false);
+        }
+
+        _users.Remove(user);
+
+        return Task.FromResult(true);
+    }
+
+
+    public Task<bool> IsUserMemberOfAnyStokvelAsync(Guid userId)
+    {   
+        // This checks all stokvels before allowing a user to be deleted
+        var isMember = _stokvelMembers.Any(member => member.UserId == userId);
+
+        return Task.FromResult(isMember);
+    }
+
+    public Task<StokvelMember?> GetStokvelMemberAsync(Guid stokvelId, Guid userId)
+        {
+            var membership = _stokvelMembers.FirstOrDefault(member =>
+                        member.StokvelId == stokvelId &&
+                        member.UserId == userId);
+
+            return Task.FromResult(membership);
+        }
+
+        public Task AddStokvelMemberAsync(StokvelMember member)
+        {
+            _stokvelMembers.Add(member);
+
+            var stokvel = _stokvels.FirstOrDefault(stokvel => stokvel.Id == member.StokvelId);
+
+            var user = _users.FirstOrDefault(user =>user.Id == member.UserId);
+
+            if (stokvel is not null && user is not null && !stokvel.HasMember(user.Id))
+            {
+                stokvel.AddMember(user);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task<bool> DeleteStokvelMemberAsync(Guid stokvelId, Guid userId)
+        {
+            var membership = _stokvelMembers.FirstOrDefault(member =>
+                        member.StokvelId == stokvelId &&
+                        member.UserId == userId);
+
+            if (membership is null)
+            {
+                return Task.FromResult(false);
+            }
+
+            _stokvelMembers.Remove(membership);
+
+            var stokvel = _stokvels.FirstOrDefault(stokvel => stokvel.Id == stokvelId);
+
+            stokvel?.RemoveMember(userId);
+
+            return Task.FromResult(true);
+        }
+
+        public Task<IReadOnlyCollection<Stokvel>> GetStokvelsAsync()
+            {
+                IReadOnlyCollection<Stokvel> stokvels = _stokvels.AsReadOnly();
+
+                return Task.FromResult(stokvels);
+            }
+
+    public Task<Stokvel?> GetStokvelByIdAsync(Guid id, bool asNoTracking = false)
+    {
+        var stokvel =
+            _stokvels.FirstOrDefault(stokvel =>
+                stokvel.Id == id);
+
+        return Task.FromResult(stokvel);
+    }
+
+    public Task AddStokvelAsync(Stokvel stokvel)
+    {
+        _stokvels.Add(stokvel);
+
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateStokvelAsync(Stokvel stokvel, uint expectedVersion)
+    {
+        var index =
+            _stokvels.FindIndex(existing =>
+                existing.Id == stokvel.Id);
+
+        if (index >= 0)
+        {
+            _stokvels[index] = stokvel;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task<bool> DeleteStokvelAsync(Guid id)
+    {
+        var stokvel =
+            _stokvels.FirstOrDefault(stokvel =>
+                stokvel.Id == id);
+
+        if (stokvel is null)
+        {
+            return Task.FromResult(false);
+        }
+
+        _stokvels.Remove(stokvel);
+
+        return Task.FromResult(true);
+    }
+
+    //Implement Contribution
+    public Task<Contribution?> GetContributionByIdAsync(
+    Guid stokvelId,
+    Guid contributionId)
+    {
+    var contribution =
+        _contributions.FirstOrDefault(contribution =>
+            contribution.Id == contributionId &&
+            contribution.StokvelId == stokvelId);
+
+    return Task.FromResult(contribution);
+    }
+
+    public Task<Contribution?> GetContributionAsync(    
+    Guid stokvelId,
+    Guid userId,
+    Guid contributionCycleId)
+    {
+    var contribution =
+        _contributions.FirstOrDefault(contribution =>
+            contribution.StokvelId == stokvelId &&
+            contribution.UserId == userId &&
+            contribution.ContributionCycleId == contributionCycleId);
+
+    return Task.FromResult(contribution);
+    }   
+
+    public Task AddContributionAsync(
+    Contribution contribution)
+    {
+    _contributions.Add(contribution);
+
+    return Task.CompletedTask;
+    } 
+
+        public Task<IReadOnlyCollection<ContributionCycle>>
+        GetContributionCyclesAsync(Guid stokvelId)
+    {
+        IReadOnlyCollection<ContributionCycle> cycles =
+            _contributionCycles
+                .Where(cycle =>
+                    cycle.StokvelId == stokvelId)
+                .ToList()
+                .AsReadOnly();
+
+        return Task.FromResult(cycles);
+    }
+
+    public Task<ContributionCycle?>
+        GetContributionCycleByIdAsync(
+            Guid stokvelId,
+            Guid cycleId,
+            bool asNoTracking = false)
+    {
+        var cycle =
+            _contributionCycles.FirstOrDefault(cycle =>
+                cycle.Id == cycleId &&
+                cycle.StokvelId == stokvelId);
+
+        return Task.FromResult(cycle);
+    }
+
+    public Task AddContributionCycleAsync(
+        ContributionCycle cycle)
+    {
+        _contributionCycles.Add(cycle);
+
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateContributionCycleAsync(
+        ContributionCycle cycle, uint expectedVersion)
+    {
+        var index =
+            _contributionCycles.FindIndex(existing =>
+                existing.Id == cycle.Id);
+
+        if (index >= 0)
+        {
+            _contributionCycles[index] = cycle;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task<bool> DeleteContributionCycleAsync(
+        Guid stokvelId,
+        Guid cycleId)
+    {
+        var cycle =
+            _contributionCycles.FirstOrDefault(cycle =>
+                cycle.Id == cycleId &&
+                cycle.StokvelId == stokvelId);
+
+        if (cycle is null)
+        {
+            return Task.FromResult(false);
+        }
+
+        _contributionCycles.Remove(cycle);
+
+        return Task.FromResult(true);
+    }
+}

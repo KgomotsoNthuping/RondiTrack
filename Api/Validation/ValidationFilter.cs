@@ -2,7 +2,7 @@ using System.Reflection;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Api.Exceptions;
+using Domain.Exceptions;
 
 namespace Api.Validation;
 
@@ -100,7 +100,7 @@ public sealed class ValidationFilter : IAsyncActionFilter
                         .Distinct()
                         .ToArray());
 
-            throw new Api.Exceptions.ValidationException(
+            throw new Domain.Exceptions.ValidationException(
                 formattedErrors);
         }
 

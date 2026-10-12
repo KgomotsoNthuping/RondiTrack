@@ -1,5 +1,5 @@
-using Api.Data;
-using Api.Models;
+using Infrastructure.Data;
+using Domain.Models;
 using Api.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;

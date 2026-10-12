@@ -1,6 +1,7 @@
-using Api.Data;
-using Api.Exceptions;
+using Infrastructure.Data;
+using Domain.Exceptions;
 using Api.Services;
+using Api.Data;
 
 namespace Api.Tests.Unit;
 

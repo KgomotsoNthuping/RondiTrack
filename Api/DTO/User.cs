@@ -34,6 +34,8 @@ public sealed class UpdateUserRequest
     public string? Email { get; init; }
 
     public string? PhoneNumber { get; init; }
+
+    public uint Version { get; init; }
 }
 
 /// <summary>

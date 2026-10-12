@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Api.Exceptions;
+using Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
@@ -61,7 +61,12 @@ public sealed class ExceptionHandler : IExceptionHandler
                         "The request conflicts with existing data."
                     ),
 
-                DbUpdateConcurrencyException => StatusCodes.Status409Conflict,
+                DbUpdateConcurrencyException =>
+                (
+                    StatusCodes.Status409Conflict,
+                    "Concurrency Conflict",
+                    "The resource was modified by another request. Reload it and try again."
+                ),
 
                 BusinessRuleException =>
                     (

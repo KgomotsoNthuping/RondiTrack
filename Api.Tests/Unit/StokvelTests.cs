@@ -1,4 +1,4 @@
-using Api.Models;
+using Domain.Models;
 
 namespace Api.Tests.Unit;
 

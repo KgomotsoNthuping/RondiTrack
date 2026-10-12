@@ -5,6 +5,8 @@ using Api.Services;
 using Api.Validation;
 using Api.ErrorHandling;
 using Microsoft.EntityFrameworkCore;
+using Domain.Repositories;
+using Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

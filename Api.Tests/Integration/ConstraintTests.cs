@@ -1,5 +1,5 @@
-using Api.Data;
-using Api.Models;
+using Infrastructure.Data;
+using Domain.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

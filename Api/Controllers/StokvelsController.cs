@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Api.Data;
-using Api.Models;
+using Domain.Models;
+using Domain.Repositories;
 
 namespace Api.Controllers;
 
@@ -83,9 +83,9 @@ public sealed class StokvelsController : ControllerBase
             return BadRequest(new { message = exception.Message });
         }
 
-        await _store.UpdateStokvelAsync(stokvel, request.Version);
+        await _store.UpdateStokvelAsync(existingStokvel, updatedStokvel.Version);
 
-        return Ok(stokvel);
+        return Ok(existingStokvel);
     }
     // /api/stokvels
     [HttpDelete("{id:guid}")]

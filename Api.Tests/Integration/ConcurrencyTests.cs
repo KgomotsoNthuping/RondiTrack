@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
-using Api.Data;
+using Infrastructure.Data;
 using Api.DTO;
-using Api.Models;
+using Domain.Models;
 using Api.Tests.TestSupport;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -10,16 +10,14 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Api.Tests;
 
+[Collection("Postgres collection")]
 public sealed class ConcurrencyTests
-    : IClassFixture<WebApplicationFactory<Program>>
 {
-    private readonly WebApplicationFactory<Program>
-        _factory;
+    private readonly PostgresApiFactory _factory;
 
     private readonly HttpClient _client;
 
-    public ConcurrencyTests(
-        WebApplicationFactory<Program> factory)
+    public ConcurrencyTests(PostgresApiFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();

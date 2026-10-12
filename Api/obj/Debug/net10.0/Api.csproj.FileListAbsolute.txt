@@ -163,3 +163,7 @@ C:\Users\KG\Desktop\Repos\RondiTrack\Api\obj\Debug\net10.0\Api.xml
 C:\Users\KG\Desktop\Repos\RondiTrack\Api\obj\Debug\net10.0\Api.pdb
 C:\Users\KG\Desktop\Repos\RondiTrack\Api\obj\Debug\net10.0\Api.genruntimeconfig.cache
 C:\Users\KG\Desktop\Repos\RondiTrack\Api\obj\Debug\net10.0\ref\Api.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api\bin\Debug\net10.0\Domain.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api\bin\Debug\net10.0\Infrastructure.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api\bin\Debug\net10.0\Domain.pdb
+C:\Users\KG\Desktop\Repos\RondiTrack\Api\bin\Debug\net10.0\Infrastructure.pdb
