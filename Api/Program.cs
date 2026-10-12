@@ -13,6 +13,8 @@ using Domain.Repositories;
 using Infrastructure.Data;
 using Domain.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -117,7 +119,12 @@ builder.Services.AddScoped<
 
 builder.Services.AddScoped<AuthService>();
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build();
+});
 
 builder.Services.AddSingleton<
     TokenService>();
@@ -150,6 +157,8 @@ builder.Services
 builder.Services.AddScoped<
     IRefreshTokenRepository,
     EfRefreshTokenRepository>();
+
+
     
 var app = builder.Build();
 
@@ -166,14 +175,69 @@ using (var scope = app.Services.CreateScope())
 
 app.UseExceptionHandler();
 
+app.UseStatusCodePages(async context =>
+{
+    var response =
+        context.HttpContext.Response;
+
+    if (response.StatusCode !=
+            StatusCodes.Status401Unauthorized &&
+        response.StatusCode !=
+            StatusCodes.Status403Forbidden)
+    {
+        return;
+    }
+
+    var problemDetailsService =
+        context.HttpContext.RequestServices
+            .GetRequiredService<
+                IProblemDetailsService>();
+
+    var title =
+        response.StatusCode ==
+        StatusCodes.Status401Unauthorized
+            ? "Unauthorized"
+            : "Forbidden";
+
+    var detail =
+        response.StatusCode ==
+        StatusCodes.Status401Unauthorized
+            ? "Authentication is required to access this resource."
+            : "You do not have permission to access this resource.";
+
+    await problemDetailsService.TryWriteAsync(
+        new ProblemDetailsContext
+        {
+            HttpContext =
+                context.HttpContext,
+
+            ProblemDetails =
+                new ProblemDetails
+                {
+                    Status =
+                        response.StatusCode,
+
+                    Title =
+                        title,
+
+                    Detail =
+                        detail,
+
+                    Instance =
+                        context.HttpContext
+                            .Request.Path
+                }
+        });
+});
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi().AllowAnonymous();
 
     app.MapScalarApiReference(options =>
     {
         options.WithTitle("RondiTrack API");
-    });
+    }).AllowAnonymous();
 }
 
 // app.UseHttpsRedirection();
