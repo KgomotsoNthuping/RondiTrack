@@ -56,8 +56,9 @@ public sealed class EdgeCaseTests
             response.StatusCode);
 
         var members =
-            await response.Content
-                .ReadFromJsonAsync<List<UserResponse>>();
+            (await response.Content
+                .ReadFromJsonAsync<PagedResponse<UserResponse>>())
+                ?.Items;
 
         Assert.NotNull(members);
 

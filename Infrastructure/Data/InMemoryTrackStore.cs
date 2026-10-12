@@ -62,7 +62,6 @@ public sealed class InMemoryTrackStore : ITrackStore
             "Monthly contributions must be paid before the 5th.");
 
         communitySavers.AddMember(testThree);
-        ubuntuSavers.AddMember(testOne);
 
         _stokvelMembers.Add(
             new StokvelMember(

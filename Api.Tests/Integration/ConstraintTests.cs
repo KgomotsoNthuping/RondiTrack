@@ -3,14 +3,16 @@ using Domain.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Api.Tests.TestSupport;
 
 namespace Api.Tests.Integration;
 
-public sealed class ConstraintTests : IClassFixture<WebApplicationFactory<Program>>
+[Collection("Postgres collection")]
+public sealed class ConstraintTests
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly PostgresApiFactory _factory;
 
-    public ConstraintTests(WebApplicationFactory<Program> factory)
+    public ConstraintTests(PostgresApiFactory factory)
     {
         _factory = factory;
     }

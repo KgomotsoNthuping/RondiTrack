@@ -101,6 +101,8 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<RondiTrackDbContext>();
 
+    await dbContext.Database.MigrateAsync();
+
     await DbSeeder.SeedAsync(dbContext);
 }
 

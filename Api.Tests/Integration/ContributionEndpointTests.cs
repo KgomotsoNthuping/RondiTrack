@@ -32,8 +32,9 @@ public sealed class ContributionEndpointTests
 
         // Get an existing member of that stokvel.
         var members =
-            await client.GetFromJsonAsync<List<UserResponse>>(
-                $"/api/stokvels/{stokvel.Id}/members");
+            (await client.GetFromJsonAsync<PagedResponse<UserResponse>>(
+                $"/api/stokvels/{stokvel.Id}/members"))
+                ?.Items;
 
         Assert.NotNull(members);
         Assert.NotEmpty(members);
@@ -142,9 +143,11 @@ public sealed class ContributionEndpointTests
         var stokvel =
             stokvels.First();
 
-        var members =
-            await client.GetFromJsonAsync<List<UserResponse>>(
+        var memberPage =
+            await client.GetFromJsonAsync<PagedResponse<UserResponse>>(
                 $"/api/stokvels/{stokvel.Id}/members");
+
+            var members = memberPage?.Items;
 
         Assert.NotNull(members);
         Assert.NotEmpty(members);
