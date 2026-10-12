@@ -54,6 +54,8 @@ public class RondiTrackDbContext : DbContext
         entity.Property(user => user.PasswordHash).IsRequired();
 
         entity.HasIndex(user => user.Email).IsUnique().HasDatabaseName("UX_Users_Email");
+
+        entity.Property(user => user.PlatformRole).HasConversion<string>().HasDefaultValue(PlatformRole.User);
     }
 
     private static void ConfigureStokvels(ModelBuilder modelBuilder)
@@ -166,26 +168,28 @@ public class RondiTrackDbContext : DbContext
     }
 
     private static void ConfigureRefreshTokens(ModelBuilder modelBuilder)
-{
-    var entity = modelBuilder.Entity<RefreshToken>();
+    {
+        var entity = modelBuilder.Entity<RefreshToken>();
 
-    entity.HasKey(token => token.Id);
+        entity.HasKey(token => token.Id);
 
-    entity.Property(token => token.TokenHash)
-        .IsRequired()
-        .HasMaxLength(64);
+        entity.Property(token => token.TokenHash)
+            .IsRequired()
+            .HasMaxLength(64);
 
-    entity.HasIndex(token => token.TokenHash)
-        .IsUnique();
+        entity.HasIndex(token => token.TokenHash)
+            .IsUnique();
 
-    entity.HasIndex(token => token.FamilyId);
+        entity.HasIndex(token => token.FamilyId);
 
-    entity.HasOne<User>()
-        .WithMany()
-        .HasForeignKey(token => token.UserId)
-        .OnDelete(DeleteBehavior.Cascade);
+        entity.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(token => token.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-    entity.Property(token => token.Version)
-        .IsRowVersion();
-}
+        entity.Property(token => token.Version)
+            .IsRowVersion();
+    }
+
+    
 }

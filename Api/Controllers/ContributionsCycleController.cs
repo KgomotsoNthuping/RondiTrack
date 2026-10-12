@@ -16,12 +16,16 @@ public sealed class ContributionsCycleController : ControllerBase
 
     private readonly IContributionQueryService _contributionQueryService;
 
+    private readonly StokvelAccessAuthorizer _access;
+
     public ContributionsCycleController(
         ITrackStore store,
-        IContributionQueryService contributionQueryService)
+        IContributionQueryService contributionQueryService,
+        StokvelAccessAuthorizer access)
     {
         _store = store;
         _contributionQueryService = contributionQueryService;
+        _access = access;
     }
 
     // GET /api/stokvels/{stokvelId}/cycles
@@ -32,6 +36,13 @@ public sealed class ContributionsCycleController : ControllerBase
                 ContributionCycleResponse>>>
         GetAll(Guid stokvelId)
     {
+        if (!await _access.AuthorizeAsync(
+        User,
+        stokvelId,
+        Policies.StokvelMember))
+        {
+            return Forbid();
+        }
         await EnsureStokvelExists(stokvelId);
 
         var cycles =
@@ -54,6 +65,13 @@ public sealed class ContributionsCycleController : ControllerBase
             Guid stokvelId,
             Guid cycleId)
     {
+        if (!await _access.AuthorizeAsync(
+        User,
+        stokvelId,
+        Policies.StokvelMember))
+        {
+            return Forbid();
+        }
         var cycle =
             await _store
                 .GetContributionCycleByIdAsync(
@@ -77,6 +95,13 @@ public sealed class ContributionsCycleController : ControllerBase
             Guid cycleId,
             [FromQuery] CycleContributionPageRequest request)
     {
+                if (!await _access.AuthorizeAsync(
+        User,
+        stokvelId,
+        Policies.StokvelMember))
+        {
+            return Forbid();
+        }
         var contributions = await _contributionQueryService.GetCycleContributionsAsync(
                     stokvelId,
                     cycleId,
@@ -93,6 +118,13 @@ public sealed class ContributionsCycleController : ControllerBase
             Guid stokvelId,
             CreateContributionCycleRequest request)
     {
+                if (!await _access.AuthorizeAsync(
+        User,
+        stokvelId,
+        Policies.StokvelAdmin))
+        {
+            return Forbid();
+        }
         await EnsureStokvelExists(stokvelId);
 
         var cycle =
@@ -120,6 +152,13 @@ public sealed class ContributionsCycleController : ControllerBase
             Guid cycleId,
             UpdateContributionCycleRequest request)
     {
+                if (!await _access.AuthorizeAsync(
+        User,
+        stokvelId,
+        Policies.StokvelAdmin))
+        {
+            return Forbid();
+        }
         var cycle =
             await _store
                 .GetContributionCycleByIdAsync(
@@ -147,6 +186,13 @@ public sealed class ContributionsCycleController : ControllerBase
             Guid stokvelId,
             Guid cycleId)
     {
+        if (!await _access.AuthorizeAsync(
+        User,
+        stokvelId,
+        Policies.StokvelAdmin))
+        {
+            return Forbid();
+        }
         var deleted =
             await _store
                 .DeleteContributionCycleAsync(

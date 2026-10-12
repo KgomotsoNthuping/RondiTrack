@@ -2,6 +2,7 @@ using Api.DTO;
 using Api.Mappings;
 using Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using Api.Auth;
 
 namespace Api.Controllers;
 
@@ -11,9 +12,12 @@ public class PayoutsController : ControllerBase
 {
     private readonly IPayoutService _payoutService;
 
-    public PayoutsController(IPayoutService payoutService)
+    private readonly StokvelAccessAuthorizer _access;
+
+    public PayoutsController(IPayoutService payoutService, StokvelAccessAuthorizer access)
     {
         _payoutService = payoutService;
+        _access = access;
     }
 
     /// <summary>
@@ -32,6 +36,13 @@ public class PayoutsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails),StatusCodes.Status422UnprocessableEntity,"application/problem+json")]
     public async Task<ActionResult<PayoutResponse>> ProcessPayout(Guid stokvelId, Guid cycleId)
     {
+        if (!await _access.AuthorizeAsync(
+        User,
+        stokvelId,
+        Policies.StokvelAdmin))
+        {
+            return Forbid();
+        }
         var payout = await _payoutService.ProcessPayoutAsync(stokvelId, cycleId);
 
         return StatusCode(

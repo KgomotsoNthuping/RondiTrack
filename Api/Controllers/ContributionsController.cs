@@ -15,13 +15,16 @@ public sealed class ContributionsController : ControllerBase
 {
     private readonly ITrackStore _store;
     private readonly ITrackService _service;
+    private readonly StokvelAccessAuthorizer _access;
 
     public ContributionsController(
         ITrackStore store,
-        ITrackService service)
+        ITrackService service,
+        StokvelAccessAuthorizer access)
     {
         _store = store;
         _service = service;
+        _access = access;
     }
 
     // GET /api/stokvels/{stokvelId}/contributions/{contributionId}
@@ -31,6 +34,13 @@ public sealed class ContributionsController : ControllerBase
             Guid stokvelId,
             Guid contributionId)
     {
+        if (!await _access.AuthorizeAsync(
+        User,
+        stokvelId,
+        Policies.StokvelMember))
+        {
+            return Forbid();
+        }
         var contribution =
             await _store.GetContributionByIdAsync(
                 stokvelId,
@@ -55,6 +65,29 @@ public sealed class ContributionsController : ControllerBase
         string idempotencyKey,
         RecordContributionRequest request)
     {
+        if (!await _access.AuthorizeAsync(
+                User,
+                stokvelId,
+                Policies.StokvelMember))
+        {
+            return Forbid();
+        }
+
+        var callerUserId =
+            Guid.Parse(
+                User.FindFirst("sub")!.Value);
+
+        if (request.UserId != callerUserId)
+        {
+            if (!await _access.AuthorizeAsync(
+                    User,
+                    stokvelId,
+                    Policies.StokvelAdmin))
+            {
+                return Forbid();
+            }
+        }
+        
         var contribution = await _service.RecordContributionAsync(
             stokvelId,
             request.UserId,

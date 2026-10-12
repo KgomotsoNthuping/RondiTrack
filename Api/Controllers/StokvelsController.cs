@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Domain.Models;
 using Domain.Repositories;
+using Api.Auth;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Api.Controllers;
 
@@ -10,13 +12,17 @@ public sealed class StokvelsController : ControllerBase
 {
     private readonly ITrackStore _store;
 
-    public StokvelsController(ITrackStore store)
+    private readonly StokvelAccessAuthorizer _access;
+
+    public StokvelsController(ITrackStore store, StokvelAccessAuthorizer access)
     {
         _store = store;
+        _access = access;
     }
 
     // api/stokvels
     //get all stokvels
+    [Authorize(Roles = nameof(PlatformRole.Admin))]
     [HttpGet]
     public async Task<ActionResult<IReadOnlyCollection<Stokvel>>>
         GetAll()
@@ -32,6 +38,11 @@ public sealed class StokvelsController : ControllerBase
     public async Task<ActionResult<Stokvel>>
         GetById(Guid id)
     {
+        if (!await _access.AuthorizeAsync(User, id, Policies.StokvelMember))
+        {
+            return Forbid();
+        }
+
         var stokvel = await _store.GetStokvelByIdAsync(id, asNoTracking: true);
 
         if (stokvel is null)
@@ -57,11 +68,12 @@ public sealed class StokvelsController : ControllerBase
 
     //PUT /api/stokvels
     [HttpPut("{id:guid}")]
-    public async Task<ActionResult<Stokvel>>
-        Update(
-            Guid id,
-            [FromBody] Stokvel updatedStokvel)
+    public async Task<ActionResult<Stokvel>> Update(Guid id, [FromBody] Stokvel updatedStokvel)
     {
+        if (!await _access.AuthorizeAsync(User, id, Policies.StokvelAdmin))
+        {
+            return Forbid();
+        }
         var existingStokvel = await _store.GetStokvelByIdAsync(id);
 
         if (existingStokvel is null)
@@ -89,9 +101,12 @@ public sealed class StokvelsController : ControllerBase
     }
     // /api/stokvels
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult>
-        Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id)
     {
+        if (!await _access.AuthorizeAsync(User, id, Policies.StokvelAdmin))
+        {
+            return Forbid();
+        }
         var deleted = await _store.DeleteStokvelAsync(id);
 
         if (!deleted)

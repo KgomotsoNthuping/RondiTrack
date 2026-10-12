@@ -16,6 +16,8 @@ public sealed class User
 
     public uint Version { get; private set; }
 
+    public PlatformRole PlatformRole { get; private set; } = PlatformRole.User;
+
     [JsonIgnore]
     public ICollection<StokvelMember> Memberships { get; private set; } = new List<StokvelMember>();
 
@@ -94,5 +96,10 @@ public sealed class User
         }
 
         return phoneNumber.Trim();
+    }
+
+    public void SetPlatformRole(PlatformRole role)
+    {
+        PlatformRole = role;
     }
 }

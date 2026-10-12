@@ -172,6 +172,8 @@ builder.Services
 
                 ClockSkew = TimeSpan.FromSeconds(30),
 
+                 RoleClaimType = "role",
+
                 ValidAlgorithms = [ SecurityAlgorithms.HmacSha256 ]
             };
     });
@@ -183,6 +185,9 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     IAuthorizationHandler,
     StokvelAuthorizationHandler>();
+
+builder.Services.AddScoped<
+    StokvelAccessAuthorizer>();
     
 var app = builder.Build();
 

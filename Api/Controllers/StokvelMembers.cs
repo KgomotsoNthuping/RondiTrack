@@ -15,32 +15,40 @@ public sealed class StokvelMember : ControllerBase
     private readonly ITrackStore _store;
     private readonly ITrackService _service;
     private readonly IStokvelMemberQueryService _memberQueryService;
+    private readonly StokvelAccessAuthorizer _access;
 
     public StokvelMember(
         ITrackStore store,
         ITrackService service,
-        IStokvelMemberQueryService memberQueryService)
+        IStokvelMemberQueryService memberQueryService,
+        StokvelAccessAuthorizer access)
     {
         _store = store;
         _service = service;
         _memberQueryService = memberQueryService;
+        _access = access;
     }
 
     [HttpGet]
     public async Task<ActionResult<PagedResponse<UserResponse>>> GetMembers(
             Guid stokvelId, [FromQuery] StokvelMemberPageRequest request)
     {
+        if (!await _access.AuthorizeAsync(User, stokvelId, Policies.StokvelMember))
+        {
+            return Forbid();
+        }
         var members = await _memberQueryService.GetMembersAsync(stokvelId, request);
 
         return Ok(members);
     }
 
     [HttpGet("{userId:guid}")]
-    public async Task<ActionResult<UserResponse>>
-        GetMember(
-            Guid stokvelId,
-            Guid userId)
+    public async Task<ActionResult<UserResponse>> GetMember(Guid stokvelId, Guid userId)
     {
+        if (!await _access.AuthorizeAsync(User, stokvelId, Policies.StokvelMember))
+        {
+            return Forbid();
+        }
         var stokvel = await _store.GetStokvelByIdAsync(stokvelId, asNoTracking: true);
 
         if (stokvel is null)
@@ -68,6 +76,13 @@ public sealed class StokvelMember : ControllerBase
             Guid stokvelId,
             Guid userId)
     {
+        if (!await _access.AuthorizeAsync(
+        User,
+        stokvelId,
+        Policies.StokvelAdmin))
+        {
+            return Forbid();
+        }
         var user =
             await _service.AddMemberAsync(
                 stokvelId,
@@ -89,6 +104,13 @@ public sealed class StokvelMember : ControllerBase
             Guid stokvelId,
             Guid userId)
     {
+        if (!await _access.AuthorizeAsync(
+        User,
+        stokvelId,
+        Policies.StokvelAdmin))
+        {
+            return Forbid();
+        }
         await _service.RemoveMemberAsync(
             stokvelId,
             userId);

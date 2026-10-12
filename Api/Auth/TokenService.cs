@@ -30,6 +30,8 @@ public sealed class TokenService
                 new(JwtRegisteredClaimNames.Email, user.Email),
 
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+
+                new("role", user.PlatformRole.ToString()),
             };
 
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes( _options.SigningKey));
