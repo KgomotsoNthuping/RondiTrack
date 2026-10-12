@@ -57,6 +57,26 @@ public sealed class AuthController : ControllerBase
         return Ok(new AuthResponse(result.AccessToken, result.AccessTokenExpiresAtUtc));
     }
 
+    [AllowAnonymous]
+    [HttpPost("logout")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> Logout()
+    {
+        Request.Cookies.TryGetValue("refresh_token", out var refreshToken);
+
+        await _authService.LogoutAsync(refreshToken);
+
+        Response.Cookies.Delete("refresh_token", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Path = "/api/auth"
+            });
+
+        return NoContent();
+    }
+
     private void SetRefreshCookie(AuthResult result)
     {
         Response.Cookies.Append("refresh_token", result.RefreshToken, new CookieOptions

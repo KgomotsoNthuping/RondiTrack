@@ -33,4 +33,14 @@ public sealed class EfRefreshTokenRepository : IRefreshTokenRepository
 
         await _dbContext.SaveChangesAsync();
     }
+
+    public async Task RevokeFamilyAsync(
+    Guid familyId,
+    DateTime revokedAtUtc)
+    {
+        await _dbContext.RefreshTokens
+            .Where(token => token.FamilyId == familyId && token.RevokedAtUtc == null)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(
+                    token => token.RevokedAtUtc, revokedAtUtc));
+    }
 }

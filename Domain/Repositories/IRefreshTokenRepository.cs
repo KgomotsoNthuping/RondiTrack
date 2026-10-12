@@ -13,4 +13,8 @@ public interface IRefreshTokenRepository
     Task SaveRotationAsync(
         RefreshToken currentToken,
         RefreshToken replacementToken);
+
+    Task RevokeFamilyAsync(
+        Guid familyId,
+        DateTime revokedAtUtc);
 }

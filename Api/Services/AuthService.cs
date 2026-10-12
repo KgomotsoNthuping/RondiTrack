@@ -111,9 +111,24 @@ public sealed class AuthService
         var now =
             DateTime.UtcNow;
 
-        if (current is null ||
-            current.RevokedAtUtc is not null ||
-            current.IsExpired(now))
+        if (current is null)
+        {
+            throw new AuthenticationFailedException(
+                "Refresh token is invalid.");
+        }
+
+        if (current.RevokedAtUtc is not null)
+        {
+            await _refreshTokens
+                .RevokeFamilyAsync(
+                    current.FamilyId,
+                    now);
+
+            throw new AuthenticationFailedException(
+                "Refresh token was already used. Please sign in again.");
+        }
+
+        if (current.IsExpired(now))
         {
             throw new AuthenticationFailedException(
                 "Refresh token is invalid.");
@@ -159,6 +174,35 @@ public sealed class AuthService
             generatedRefresh.Token,
             generatedRefresh.ExpiresAtUtc);
     }
+
+    public async Task LogoutAsync(
+    string? rawRefreshToken)
+    {
+        if (string.IsNullOrWhiteSpace(
+            rawRefreshToken))
+        {
+            return;
+        }
+
+        var hash =
+            _tokenService.HashRefreshToken(
+                rawRefreshToken);
+
+        var refreshToken =
+            await _refreshTokens
+                .GetByHashAsync(hash);
+
+        if (refreshToken is null)
+        {
+            return;
+        }
+
+        await _refreshTokens
+            .RevokeFamilyAsync(
+                refreshToken.FamilyId,
+                DateTime.UtcNow);
+    }
+
 
     private static AuthenticationFailedException
         InvalidLogin()
