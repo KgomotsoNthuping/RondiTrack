@@ -47,6 +47,10 @@ public class RondiTrackDbContext : DbContext
         entity.Property(user => user.PhoneNumber).IsRequired();
 
         entity.Property(user => user.Version).IsRowVersion();
+
+        entity.Property(user => user.PasswordHash).IsRequired();
+
+        entity.HasIndex(user => user.Email).IsUnique().HasDatabaseName("UX_Users_Email");
     }
 
     private static void ConfigureStokvels(ModelBuilder modelBuilder)

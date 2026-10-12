@@ -12,6 +12,8 @@ public sealed class User
 
     public string PhoneNumber { get; private set; }
 
+    public string PasswordHash { get; private set; } = string.Empty;
+
     public uint Version { get; private set; }
 
     [JsonIgnore]
@@ -39,6 +41,16 @@ public sealed class User
         FullName = ValidateName(fullName);
         Email = ValidateEmail(email);
         PhoneNumber = ValidatePhoneNumber(phoneNumber);
+    }
+
+    public void SetPasswordHash(string passwordHash)
+    {
+        if (string.IsNullOrWhiteSpace(passwordHash))
+        {
+            throw new ArgumentException("A password hash is required.");
+        }
+
+        PasswordHash = passwordHash;
     }
 
     private static string ValidateName(string fullName)

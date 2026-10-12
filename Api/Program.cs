@@ -7,6 +7,8 @@ using Api.ErrorHandling;
 using Microsoft.EntityFrameworkCore;
 using Domain.Repositories;
 using Infrastructure.Data;
+using Domain.Models;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -92,6 +94,12 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     IStokvelMemberQueryService,
     StokvelMemberQueryService>();
+
+builder.Services.AddScoped<
+    IPasswordHasher<User>,
+    PasswordHasher<User>>();
+
+builder.Services.AddScoped<AuthService>();
     
 var app = builder.Build();
 

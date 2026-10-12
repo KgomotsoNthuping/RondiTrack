@@ -108,6 +108,15 @@ public sealed class InMemoryTrackStore : ITrackStore
         return Task.FromResult(user);
     }
 
+    public Task<User?> GetUserByEmailAsync(string email)
+    {
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+
+        var user = _users.FirstOrDefault(user => user.Email == normalizedEmail);
+
+        return Task.FromResult(user);
+    }
+
     public Task AddUserAsync(User user)
     {
         _users.Add(user);

@@ -68,6 +68,15 @@ public sealed class EfTrackStore : ITrackStore
         return await _dbContext.StokvelMembers.AnyAsync(member => member.UserId == userId);
     }
 
+    public async Task<User?> GetUserByEmailAsync(string email)
+    {
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+
+        return await _dbContext.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(user => user.Email == normalizedEmail);
+    }
+
         // Stokvel Membership
     public async Task<StokvelMember?> GetStokvelMemberAsync(Guid stokvelId, Guid userId)
     {

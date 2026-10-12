@@ -11,6 +11,8 @@ public interface ITrackStore
 
     Task<User?> GetUserByIdAsync(Guid id, bool asNoTracking = false);
 
+    Task<User?> GetUserByEmailAsync(string email);
+
     Task AddUserAsync(User user);
 
     Task UpdateUserAsync(User user, uint expectedVersion);
