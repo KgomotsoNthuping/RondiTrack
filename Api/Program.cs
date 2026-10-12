@@ -1,3 +1,7 @@
+using System.Text;
+using Api.Auth;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Api.Data;
 using Scalar.AspNetCore;
 using FluentValidation;
@@ -11,6 +15,18 @@ using Domain.Models;
 using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var jwtSection = builder.Configuration.GetSection("Jwt");
+
+var jwtOptions = jwtSection.Get<JwtOptions>() ?? throw new InvalidOperationException("JWT configuration is missing.");
+
+if (string.IsNullOrWhiteSpace(jwtOptions.SigningKey) || Encoding.UTF8.GetByteCount(jwtOptions.SigningKey) < 32)
+{
+    throw new InvalidOperationException("JWT signing key is missing or too short. " +
+        "Set Jwt:SigningKey using dotnet user-secrets.");
+}
+
+builder.Services.AddSingleton(jwtOptions);
 
 builder.Services.AddControllers(options =>
 {
@@ -100,6 +116,38 @@ builder.Services.AddScoped<
     PasswordHasher<User>>();
 
 builder.Services.AddScoped<AuthService>();
+
+builder.Services.AddAuthorization();
+
+builder.Services.AddSingleton<
+    TokenService>();
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.MapInboundClaims = false;
+
+        options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = jwtOptions.Issuer,
+
+                ValidateAudience = true,
+                ValidAudience = jwtOptions.Audience,
+
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
+
+                ValidateLifetime = true,
+
+                ClockSkew = TimeSpan.FromSeconds(30),
+
+                ValidAlgorithms = [ SecurityAlgorithms.HmacSha256 ]
+            };
+    });
+
+
     
 var app = builder.Build();
 
@@ -129,6 +177,10 @@ if (app.Environment.IsDevelopment())
 // app.UseHttpsRedirection();
 
 app.UseHsts();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.MapControllers();
 

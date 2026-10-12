@@ -446,3 +446,12 @@ C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Domain.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Infrastructure.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Infrastructure.pdb
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Domain.pdb
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.Bcl.Cryptography.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
