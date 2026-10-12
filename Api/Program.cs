@@ -124,6 +124,28 @@ builder.Services.AddAuthorization(options =>
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
             .RequireAuthenticatedUser()
             .Build();
+
+    options.AddPolicy(
+        Policies.StokvelMember,
+        policy =>
+        {
+            policy.RequireAuthenticatedUser();
+
+            policy.AddRequirements(
+                new StokvelAccessRequirement(
+                    StokvelAccessLevel.Member));
+        });
+
+    options.AddPolicy(
+        Policies.StokvelAdmin,
+        policy =>
+        {
+            policy.RequireAuthenticatedUser();
+
+            policy.AddRequirements(
+                new StokvelAccessRequirement(
+                    StokvelAccessLevel.Admin));
+        });
 });
 
 builder.Services.AddSingleton<
@@ -158,7 +180,9 @@ builder.Services.AddScoped<
     IRefreshTokenRepository,
     EfRefreshTokenRepository>();
 
-
+builder.Services.AddScoped<
+    IAuthorizationHandler,
+    StokvelAuthorizationHandler>();
     
 var app = builder.Build();
 
