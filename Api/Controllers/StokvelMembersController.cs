@@ -5,6 +5,7 @@ using Api.Extensions;
 using Api.Mappings;
 using Api.Services;
 using Domain.Repositories;
+using Api.Auth;
 
 namespace Api.Controllers;
 

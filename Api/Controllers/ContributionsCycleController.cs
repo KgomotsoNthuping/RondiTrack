@@ -5,6 +5,7 @@ using Domain.Exceptions;
 using Api.Mappings;
 using Api.Services;
 using Domain.Repositories;
+using Api.Auth;
 
 namespace Api.Controllers;
 
