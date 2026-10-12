@@ -3,6 +3,8 @@ using System.Security.Claims;
 using System.Text;
 using Domain.Models;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Api.Auth;
 
@@ -46,6 +48,31 @@ public sealed class TokenService
 
         return new AccessTokenResult(value, expiresAt);
     }
+
+    public RefreshTokenResult CreateRefreshToken()
+    {
+        var rawBytes = RandomNumberGenerator.GetBytes(64);
+
+        var rawToken = Convert.ToHexString(rawBytes);
+
+        var hash = HashRefreshToken(rawToken);
+
+        return new RefreshTokenResult(
+            rawToken,
+            hash,
+            DateTime.UtcNow.AddDays(7));
+    }
+
+    public string HashRefreshToken(string rawToken)
+    {
+        var bytes = Encoding.UTF8.GetBytes(rawToken);
+
+        var hash = SHA256.HashData(bytes);
+
+        return Convert.ToHexString(hash);
+    }
 }
 
 public sealed record AccessTokenResult(string Token, DateTime ExpiresAtUtc);
+
+public sealed record RefreshTokenResult(string Token, string Hash, DateTime ExpiresAtUtc);

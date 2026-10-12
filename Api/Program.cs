@@ -147,7 +147,9 @@ builder.Services
             };
     });
 
-
+builder.Services.AddScoped<
+    IRefreshTokenRepository,
+    EfRefreshTokenRepository>();
     
 var app = builder.Build();
 

@@ -19,6 +19,7 @@ public sealed class ExceptionHandler : IExceptionHandler
         _logger = logger;
         _problemDetailsService = problemDetailsService;
     }
+    
 
     public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,
@@ -36,6 +37,13 @@ public sealed class ExceptionHandler : IExceptionHandler
                         StatusCodes.Status400BadRequest,
                         "Validation Failed",
                         "One or more request values are invalid."
+                    ),
+
+                    AuthenticationFailedException =>
+                    (
+                        StatusCodes.Status401Unauthorized,
+                        "Authentication Failed",
+                        exception.Message
                     ),
 
                 ResourceNotFoundException =>

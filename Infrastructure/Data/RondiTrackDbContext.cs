@@ -23,6 +23,8 @@ public class RondiTrackDbContext : DbContext
 
     public DbSet<Payout> Payouts => Set<Payout>();
 
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -32,6 +34,7 @@ public class RondiTrackDbContext : DbContext
         ConfigureContributionCycles(modelBuilder);
         ConfigureContributions(modelBuilder);
         ConfigurePayouts(modelBuilder);
+        ConfigureRefreshTokens(modelBuilder);
     }
 
     private static void ConfigureUsers(ModelBuilder modelBuilder)
@@ -161,4 +164,28 @@ public class RondiTrackDbContext : DbContext
             payout.ContributionCycleId
         }).IsUnique().HasDatabaseName("UX_Payouts_Stokvel_Cycle");
     }
+
+    private static void ConfigureRefreshTokens(ModelBuilder modelBuilder)
+{
+    var entity = modelBuilder.Entity<RefreshToken>();
+
+    entity.HasKey(token => token.Id);
+
+    entity.Property(token => token.TokenHash)
+        .IsRequired()
+        .HasMaxLength(64);
+
+    entity.HasIndex(token => token.TokenHash)
+        .IsUnique();
+
+    entity.HasIndex(token => token.FamilyId);
+
+    entity.HasOne<User>()
+        .WithMany()
+        .HasForeignKey(token => token.UserId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    entity.Property(token => token.Version)
+        .IsRowVersion();
+}
 }

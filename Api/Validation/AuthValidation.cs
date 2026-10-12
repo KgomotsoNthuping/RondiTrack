@@ -23,3 +23,16 @@ public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest
             .WithMessage("Password must be at least 12 characters.");
     }
 }
+
+public sealed class LoginRequestValidator : AbstractValidator<LoginRequest>
+{
+    public LoginRequestValidator()
+    {
+        RuleFor(request => request.Email)
+            .NotEmpty()
+            .EmailAddress();
+
+        RuleFor(request => request.Password)
+            .NotEmpty();
+    }
+}
