@@ -22,6 +22,8 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -230,6 +232,18 @@ if (!string.IsNullOrWhiteSpace(
     openTelemetry.UseOtlpExporter();
 }
 
+builder.Services
+    .AddHealthChecks()
+    .AddDbContextCheck<RondiTrackDbContext>("database",tags: ["ready"]);
+
+builder.Services.Configure< HealthCheckServiceOptions>(options =>
+    {
+        foreach (var registration in options.Registrations)
+        {
+            registration.Timeout = TimeSpan.FromSeconds(3);
+        }
+    });
+
 var app = builder.Build();
 
 // Recreates the development data previously provided
@@ -309,6 +323,16 @@ if (app.Environment.IsDevelopment())
         options.WithTitle("RondiTrack API");
     }).AllowAnonymous();
 }
+
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+    {
+        Predicate = _ => false
+    }).AllowAnonymous();
+
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+    {
+        Predicate = check => check.Tags.Contains("ready")
+    }).AllowAnonymous();
 
 // app.UseHttpsRedirection();
 

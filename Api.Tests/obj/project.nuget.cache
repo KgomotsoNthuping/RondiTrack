@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "b8DoajA8Y+U=",
+  "dgSpecHash": "l5951TD+tbE=",
   "success": true,
   "projectFilePath": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Api.Tests\\Api.Tests.csproj",
   "expectedPackageFiles": [
@@ -40,6 +40,9 @@
     "C:\\Users\\KG\\.nuget\\packages\\microsoft.extensions.dependencymodel\\10.0.12\\microsoft.extensions.dependencymodel.10.0.12.nupkg.sha512",
     "C:\\Users\\KG\\.nuget\\packages\\microsoft.extensions.diagnostics\\10.0.12\\microsoft.extensions.diagnostics.10.0.12.nupkg.sha512",
     "C:\\Users\\KG\\.nuget\\packages\\microsoft.extensions.diagnostics.abstractions\\10.0.12\\microsoft.extensions.diagnostics.abstractions.10.0.12.nupkg.sha512",
+    "C:\\Users\\KG\\.nuget\\packages\\microsoft.extensions.diagnostics.healthchecks\\10.0.12\\microsoft.extensions.diagnostics.healthchecks.10.0.12.nupkg.sha512",
+    "C:\\Users\\KG\\.nuget\\packages\\microsoft.extensions.diagnostics.healthchecks.abstractions\\10.0.12\\microsoft.extensions.diagnostics.healthchecks.abstractions.10.0.12.nupkg.sha512",
+    "C:\\Users\\KG\\.nuget\\packages\\microsoft.extensions.diagnostics.healthchecks.entityframeworkcore\\10.0.12\\microsoft.extensions.diagnostics.healthchecks.entityframeworkcore.10.0.12.nupkg.sha512",
     "C:\\Users\\KG\\.nuget\\packages\\microsoft.extensions.fileproviders.abstractions\\10.0.12\\microsoft.extensions.fileproviders.abstractions.10.0.12.nupkg.sha512",
     "C:\\Users\\KG\\.nuget\\packages\\microsoft.extensions.fileproviders.physical\\10.0.12\\microsoft.extensions.fileproviders.physical.10.0.12.nupkg.sha512",
     "C:\\Users\\KG\\.nuget\\packages\\microsoft.extensions.filesystemglobbing\\10.0.12\\microsoft.extensions.filesystemglobbing.10.0.12.nupkg.sha512",
