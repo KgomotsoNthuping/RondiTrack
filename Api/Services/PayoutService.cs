@@ -11,13 +11,14 @@ namespace Api.Services;
 public sealed class PayoutService : IPayoutService
 {
     private readonly RondiTrackDbContext _dbContext;
-
     private readonly IPayoutTransaction _transaction;
+    private readonly Metrics _metrics;
 
-    public PayoutService(RondiTrackDbContext dbContext, IPayoutTransaction transaction)
+    public PayoutService(RondiTrackDbContext dbContext, IPayoutTransaction transaction, Metrics metrics)
     {
         _dbContext = dbContext;
         _transaction = transaction;
+        _metrics = metrics;
     }
 
     public async Task<Payout> ProcessPayoutAsync(Guid stokvelId, Guid contributionCycleId)
@@ -64,6 +65,8 @@ public sealed class PayoutService : IPayoutService
             activity?.SetTag("payout.outcome", "failure");
 
             activity?.SetStatus(ActivityStatusCode.Error);
+
+            _metrics.PayoutFailed();
 
             throw;
         }
@@ -127,6 +130,8 @@ public sealed class PayoutService : IPayoutService
         cycle.MarkPaidOut();
 
         await _dbContext.SaveChangesAsync();
+
+        _metrics.PayoutSucceeded();
 
         return payout;
     }

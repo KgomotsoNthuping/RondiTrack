@@ -1,36 +1,151 @@
-    using Api.Data;
-    using Domain.Models;
-    using Domain.Exceptions;
-    using Domain.Repositories;
+using Api.Data;
+using Domain.Models;
+using Domain.Exceptions;
+using Domain.Repositories;
+using Api.Observability;
 
-    namespace Api.Services;
+namespace Api.Services;
 
-    public sealed class TrackService : ITrackService
+public sealed class TrackService : ITrackService
+{
+    private readonly ITrackStore _store;
+    private readonly IIdempotency _idempotencyStore;
+    private readonly Metrics _metrics;
+
+    // Keeps the contribution check and write together while using the in-memory implementation.
+    private readonly SemaphoreSlim _contributionLock = new(1, 1);
+
+    public TrackService(
+        ITrackStore store,
+        IIdempotency idempotencyStore,
+        Metrics metrics)
     {
-        private readonly ITrackStore _store;
-        private readonly IIdempotency _idempotencyStore;
+        _store = store;
+        _idempotencyStore = idempotencyStore;
+        _metrics = metrics;
+    }
 
-        // Keeps the contribution check and write together
-        // while using the in-memory implementation.
-        private readonly SemaphoreSlim _contributionLock = new(1, 1);
-
-        public TrackService(
-            ITrackStore store,
-            IIdempotency idempotencyStore)
+    public async Task<User> AddMemberAsync(Guid stokvelId, Guid userId)
         {
-            _store = store;
-            _idempotencyStore = idempotencyStore;
+            var stokvel =
+                await _store.GetStokvelByIdAsync(stokvelId);
+
+            if (stokvel is null)
+            {
+                throw new ResourceNotFoundException(
+                    "The stokvel was not found.");
+            }
+
+            var user =
+                await _store.GetUserByIdAsync(userId);
+
+            if (user is null)
+            {
+                throw new ResourceNotFoundException("The user was not found.");
+            }
+
+            // Relationship business rule.
+            var existingMembership = await _store.GetStokvelMemberAsync(stokvelId, userId);
+
+            if (existingMembership is not null)
+            {
+                throw new DuplicateMembershipException();
+            }
+
+            var membership = new StokvelMember(
+                    stokvelId,
+                    userId,
+                    StokvelMemberRole.Member);
+
+            await _store.AddStokvelMemberAsync(membership);
+
+            return user;
         }
 
-        public async Task<User> AddMemberAsync(Guid stokvelId, Guid userId)
+        public async Task RemoveMemberAsync(Guid stokvelId,Guid userId)
+        {
+            var stokvel =
+                await _store.GetStokvelByIdAsync(stokvelId);
+
+            if (stokvel is null)
             {
+                throw new ResourceNotFoundException(
+                    "The stokvel was not found.");
+            }
+
+            var removed = await _store.DeleteStokvelMemberAsync(stokvelId, userId);
+
+            if (!removed)
+            {
+                throw new ResourceNotFoundException("The user is not a member of this stokvel.");
+            }
+        }
+
+
+    public async Task DeleteUserAsync(Guid userId)
+    {
+        var user =
+            await _store.GetUserByIdAsync(userId);
+
+        if (user is null)
+        {
+            throw new ResourceNotFoundException(
+                "The user was not found.");
+        }
+
+        var belongsToStokvel =
+            await _store
+                .IsUserMemberOfAnyStokvelAsync(userId);
+
+        if (belongsToStokvel)
+        {
+            throw new ConflictException(
+                "The user cannot be deleted while they are still a member of a stokvel.");
+        }
+
+        await _store.DeleteUserAsync(userId);
+    }
+
+    public async Task<Contribution> RecordContributionAsync(
+            Guid stokvelId,
+            Guid userId,
+            Guid contributionCycleId,
+            decimal amount,
+            string idempotencyKey)
+        {
+            var signature =
+                new ContributionRequestSignature(
+                    stokvelId,
+                    userId,
+                    contributionCycleId,
+                    amount);
+
+            await _contributionLock.WaitAsync();
+
+            try
+            {
+                var previous =
+                    await _idempotencyStore
+                        .GetAsync(idempotencyKey);
+
+                if (previous is not null)
+                {
+                    // Same key must always represent the same request.
+                    if (previous.Signature != signature)
+                    {
+                        throw new IdempotencyConflictException();
+                    }
+
+                    // Safe retry: return the original payment.
+                    return previous.Contribution;
+                }
+
                 var stokvel =
                     await _store.GetStokvelByIdAsync(stokvelId);
 
                 if (stokvel is null)
                 {
-                    throw new ResourceNotFoundException(
-                        "The stokvel was not found.");
+                    throw new ResourceNotFoundException("The stokvel was not found.");
                 }
 
                 var user =
@@ -41,170 +156,60 @@
                     throw new ResourceNotFoundException("The user was not found.");
                 }
 
-                // Relationship business rule.
-                var existingMembership = await _store.GetStokvelMemberAsync(stokvelId, userId);
-
-                if (existingMembership is not null)
-                {
-                    throw new DuplicateMembershipException();
-                }
-
-                var membership = new StokvelMember(
+                var cycle = await _store
+                    .GetContributionCycleByIdAsync(
                         stokvelId,
-                        userId,
-                        StokvelMemberRole.Member);
-
-                await _store.AddStokvelMemberAsync(membership);
-
-                return user;
-            }
-
-            public async Task RemoveMemberAsync(Guid stokvelId,Guid userId)
-            {
-                var stokvel =
-                    await _store.GetStokvelByIdAsync(stokvelId);
-
-                if (stokvel is null)
-                {
-                    throw new ResourceNotFoundException(
-                        "The stokvel was not found.");
-                }
-
-                var removed = await _store.DeleteStokvelMemberAsync(stokvelId, userId);
-
-                if (!removed)
-                {
-                    throw new ResourceNotFoundException("The user is not a member of this stokvel.");
-                }
-            }
-    
-
-        public async Task DeleteUserAsync(Guid userId)
-        {
-            var user =
-                await _store.GetUserByIdAsync(userId);
-
-            if (user is null)
-            {
-                throw new ResourceNotFoundException(
-                    "The user was not found.");
-            }
-
-            var belongsToStokvel =
-                await _store
-                    .IsUserMemberOfAnyStokvelAsync(userId);
-
-            if (belongsToStokvel)
-            {
-                throw new ConflictException(
-                    "The user cannot be deleted while they are still a member of a stokvel.");
-            }
-
-            await _store.DeleteUserAsync(userId);
-        }
-
-        public async Task<Contribution> RecordContributionAsync(
-                Guid stokvelId,
-                Guid userId,
-                Guid contributionCycleId,
-                decimal amount,
-                string idempotencyKey)
-            {
-                var signature =
-                    new ContributionRequestSignature(
-                        stokvelId,
-                        userId,
-                        contributionCycleId,
-                        amount);
-
-                await _contributionLock.WaitAsync();
-
-                try
-                {
-                    var previous =
-                        await _idempotencyStore
-                            .GetAsync(idempotencyKey);
-
-                    if (previous is not null)
-                    {
-                        // Same key must always represent the same request.
-                        if (previous.Signature != signature)
-                        {
-                            throw new IdempotencyConflictException();
-                        }
-
-                        // Safe retry: return the original payment.
-                        return previous.Contribution;
-                    }
-
-                    var stokvel =
-                        await _store.GetStokvelByIdAsync(stokvelId);
-
-                    if (stokvel is null)
-                    {
-                        throw new ResourceNotFoundException("The stokvel was not found.");
-                    }
-
-                    var user =
-                        await _store.GetUserByIdAsync(userId);
-
-                    if (user is null)
-                    {
-                        throw new ResourceNotFoundException("The user was not found.");
-                    }
-
-                    var cycle = await _store
-                        .GetContributionCycleByIdAsync(
-                            stokvelId,
-                            contributionCycleId);
-
-                    if (cycle is null)
-                    {
-                        throw new ResourceNotFoundException("The contribution cycle was not found.");
-                    }
-
-                    var membership = await _store.GetStokvelMemberAsync(stokvelId, userId);
-
-                    if (membership is null)
-                    {
-                        throw new BusinessRuleException("The user is not a member of this stokvel.");
-                    }
-
-                    if (amount != stokvel.MonthlyContribution)
-                    {
-                        throw new BusinessRuleException($"The required contribution is R{stokvel.MonthlyContribution:0.00}.");
-                    }
-
-                    var existingContribution = await _store.GetContributionAsync(
-                        stokvelId,
-                        userId,
                         contributionCycleId);
 
-                    if (existingContribution is not null)
-                    {
-                        throw new DuplicateContributionException(); 
-                    }
-
-                    var contribution =
-                        new Contribution(
-                        stokvelId,
-                        userId,
-                        contributionCycleId,
-                        amount);
-
-                   await _store.AddContributionAsync(contribution);
-
-                    await _idempotencyStore.SaveAsync(
-                    idempotencyKey,
-                    new IdempotencyRecord(
-                        signature,
-                        contribution));
-
-                   return contribution;
+                if (cycle is null)
+                {
+                    throw new ResourceNotFoundException("The contribution cycle was not found.");
                 }
-                      finally
-                    {
-                        _contributionLock.Release();
-                    }
-    }
+
+                var membership = await _store.GetStokvelMemberAsync(stokvelId, userId);
+
+                if (membership is null)
+                {
+                    throw new BusinessRuleException("The user is not a member of this stokvel.");
+                }
+
+                if (amount != stokvel.MonthlyContribution)
+                {
+                    throw new BusinessRuleException($"The required contribution is R{stokvel.MonthlyContribution:0.00}.");
+                }
+
+                var existingContribution = await _store.GetContributionAsync(
+                    stokvelId,
+                    userId,
+                    contributionCycleId);
+
+                if (existingContribution is not null)
+                {
+                    throw new DuplicateContributionException(); 
+                }
+
+                var contribution =
+                    new Contribution(
+                    stokvelId,
+                    userId,
+                    contributionCycleId,
+                    amount);
+
+                await _store.AddContributionAsync(contribution);
+
+                await _idempotencyStore.SaveAsync(
+                idempotencyKey,
+                new IdempotencyRecord(
+                    signature,
+                    contribution));
+
+                _metrics.ContributionRecorded();
+                
+                return contribution;
+            }
+                    finally
+                {
+                    _contributionLock.Release();
+                }
+}
 }

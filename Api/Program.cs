@@ -196,6 +196,9 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     StokvelAccessAuthorizer>();
 
+builder.Services.AddSingleton<
+    Metrics>();
+
 var openTelemetry = builder.Services
         .AddOpenTelemetry()
         .ConfigureResource(resource => resource.AddService(Telemetry.ServiceName))
@@ -216,7 +219,8 @@ var openTelemetry = builder.Services
         {
             metrics
                 .AddAspNetCoreInstrumentation()
-                .AddMeter("System.Runtime");
+                .AddMeter("System.Runtime")
+                .AddMeter(Metrics.MeterName);
         })
         .WithLogging();
 
