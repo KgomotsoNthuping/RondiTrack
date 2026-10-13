@@ -3,6 +3,8 @@ using Domain.Exceptions;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Infrastructure.Data;
+using System.Diagnostics;
+using Api.Observability;
 
 namespace Api.Services;
 
@@ -18,39 +20,56 @@ public sealed class PayoutService : IPayoutService
         _transaction = transaction;
     }
 
-    public async Task<Payout> ProcessPayoutAsync(
-        Guid stokvelId,
-        Guid contributionCycleId)
+    public async Task<Payout> ProcessPayoutAsync(Guid stokvelId, Guid contributionCycleId)
     {
-        
-        var strategy = _dbContext.Database.CreateExecutionStrategy();
+        using var activity = Telemetry.ActivitySource.StartActivity("payout.process", ActivityKind.Internal);
 
-        return await strategy.ExecuteAsync(async () =>
-            {
-                await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+        activity?.SetTag("payout.outcome", "started");
 
-                try
-                {
-                    var payout = await ProcessInsideTransactionAsync(
-                            stokvelId,
-                            contributionCycleId);
+        try
+        {
+            var strategy = _dbContext.Database.CreateExecutionStrategy();
 
-                    await transaction.CommitAsync();
+            var payout = await strategy.ExecuteAsync(async () =>
+                    {
+                        await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
-                    return payout;
-                }
-                catch
-                {
-                    await transaction.RollbackAsync();
+                        try
+                        {
+                            var result = await ProcessInsideTransactionAsync(
+                                    stokvelId,
+                                    contributionCycleId,
+                                    activity);
 
-                    throw;
-                }
-            });
+                            await transaction.CommitAsync();
+
+                            return result;
+                        }
+                        catch
+                        {
+                            await transaction.RollbackAsync();
+
+                            throw;
+                        }
+                    });
+
+            activity?.SetTag("payout.outcome", "success");
+
+            activity?.SetStatus(ActivityStatusCode.Ok);
+
+            return payout;
+        }
+        catch
+        {
+            activity?.SetTag("payout.outcome", "failure");
+
+            activity?.SetStatus(ActivityStatusCode.Error);
+
+            throw;
+        }
     }
 
-    private async Task<Payout> ProcessInsideTransactionAsync(
-            Guid stokvelId,
-            Guid contributionCycleId)
+    private async Task<Payout> ProcessInsideTransactionAsync(Guid stokvelId, Guid contributionCycleId, Activity? activity)
     {
         var stokvelExists = await _dbContext.Stokvels.AnyAsync(stokvel => stokvel.Id == stokvelId);
 
@@ -67,6 +86,8 @@ public sealed class PayoutService : IPayoutService
         {
             throw new ResourceNotFoundException($"Contribution cycle '{contributionCycleId}' was not found.");
         }
+
+        activity?.SetTag("payout.cycle_number", cycle.CycleNumber);
 
         if (cycle.Status == ContributionCycleStatus.PaidOut)
         {
