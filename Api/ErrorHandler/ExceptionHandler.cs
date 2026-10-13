@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Api.Observability;
 
 namespace Api.ErrorHandling;
 
@@ -26,8 +27,7 @@ public sealed class ExceptionHandler : IExceptionHandler
         Exception exception,
         CancellationToken cancellationToken)
     {
-        var correlationId =
-            httpContext.TraceIdentifier;
+        var correlationId = Correlation.GetId(httpContext);
 
         var (statusCode, title, detail) =
             exception switch

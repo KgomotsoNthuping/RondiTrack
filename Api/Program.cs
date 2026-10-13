@@ -74,7 +74,7 @@ builder.Services.AddProblemDetails(options =>
     options.CustomizeProblemDetails = context =>
     {
         context.ProblemDetails.Extensions["correlationId"] =
-            context.HttpContext.TraceIdentifier;
+            Correlation.GetId(context.HttpContext);
 
         context.ProblemDetails.Instance ??=
             context.HttpContext.Request.Path;
