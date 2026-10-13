@@ -2,24 +2,38 @@ using Infrastructure.Data;
 using Domain.Exceptions;
 using Api.Services;
 using Api.Data;
+using Api.Observability;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Api.Tests.Unit;
 
 public sealed class TrackServiceTests
 {
     private static TrackService CreateService(
-        out InMemoryTrackStore store)
-    {
-        store =
-            new InMemoryTrackStore();
+    out InMemoryTrackStore store)
+{
+    store = new InMemoryTrackStore();
 
-        var idempotencyStore =
-            new InMemoryIdempotency();
+    var idempotency =
+        new InMemoryIdempotency();
 
-        return new TrackService(
-            store,
-            idempotencyStore);
-    }
+    var services =
+        new ServiceCollection();
+
+    services.AddMetrics();
+    services.AddSingleton<Metrics>();
+
+    var provider =
+        services.BuildServiceProvider();
+
+    var metrics =
+        provider.GetRequiredService<Metrics>();
+
+    return new TrackService(
+        store,
+        idempotency,
+        metrics);
+}
 
     /// <summary>
     /// The service must reject an attempt to add someone who is already a member of that stokvel.

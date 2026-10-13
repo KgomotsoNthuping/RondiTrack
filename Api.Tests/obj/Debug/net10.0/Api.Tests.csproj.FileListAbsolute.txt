@@ -106,8 +106,6 @@ C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.Extensions.Configuration.Ini.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.Extensions.Configuration.KeyPerFile.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.Extensions.Configuration.Xml.dll
-C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.dll
-C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.Extensions.Diagnostics.HealthChecks.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.Extensions.Features.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.Extensions.FileProviders.Composite.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\refs\Microsoft.Extensions.FileProviders.Embedded.dll
@@ -462,3 +460,6 @@ C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\OpenTelemetry.A
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\OpenTelemetry.Exporter.OpenTelemetryProtocol.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\OpenTelemetry.Extensions.Hosting.dll
 C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\OpenTelemetry.Instrumentation.AspNetCore.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.Extensions.Diagnostics.HealthChecks.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.dll
+C:\Users\KG\Desktop\Repos\RondiTrack\Api.Tests\bin\Debug\net10.0\Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.dll
