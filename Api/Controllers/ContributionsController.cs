@@ -6,6 +6,7 @@ using Api.Services;
 using Api.Extensions;
 using Api.Validation;
 using Domain.Repositories;
+using Api.Auth;
 
 namespace Api.Controllers;
 

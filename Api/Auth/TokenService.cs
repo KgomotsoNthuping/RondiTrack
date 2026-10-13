@@ -29,7 +29,7 @@ public sealed class TokenService
 
                 new(JwtRegisteredClaimNames.Email, user.Email),
 
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
 
                 new("role", user.PlatformRole.ToString()),
             };

@@ -1,3 +1,5 @@
+using Npgsql;
+using OpenTelemetry;
 using System.Text;
 using Api.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -15,6 +17,11 @@ using Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Api.Observability;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -188,7 +195,37 @@ builder.Services.AddScoped<
 
 builder.Services.AddScoped<
     StokvelAccessAuthorizer>();
-    
+
+var openTelemetry = builder.Services
+        .AddOpenTelemetry()
+        .ConfigureResource(resource => resource.AddService(Telemetry.ServiceName))
+        .WithTracing(tracing =>
+        {
+            tracing
+                .AddSource(Telemetry.ActivitySourceName)
+                .AddAspNetCoreInstrumentation(options =>
+                    {
+                        options.Filter = httpContext => !httpContext
+                                    .Request
+                                    .Path
+                                    .StartsWithSegments("/health");
+                    })
+                .AddNpgsql();
+        })
+        .WithMetrics(metrics =>
+        {
+            metrics
+                .AddAspNetCoreInstrumentation()
+                .AddMeter("System.Runtime");
+        })
+        .WithLogging();
+
+if (!string.IsNullOrWhiteSpace(
+        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]))
+{
+    openTelemetry.UseOtlpExporter();
+}
+
 var app = builder.Build();
 
 // Recreates the development data previously provided
