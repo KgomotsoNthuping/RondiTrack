@@ -87,27 +87,17 @@ public sealed class ExceptionHandler : IExceptionHandler
                     (
                         StatusCodes.Status500InternalServerError,
                         "Internal Server Error",
-                        "An unexpected error occurred."
+                        "Something went wrong on our side. An unexpected error occurred."
                     )
             };
 
-        // Use structured logging so the correlation ID
-        // can be searched independently in the logs.
-        if (statusCode >= 500)
+        if (statusCode >= StatusCodes.Status500InternalServerError)
         {
-            _logger.LogError(
-                exception,
-                "Request failed with status {StatusCode}. CorrelationId={CorrelationId}",
-                statusCode,
-                correlationId);
+            _logger.LogError(exception,"Request {CorrelationId} failed with {StatusCode}",correlationId,statusCode);
         }
         else
         {
-            _logger.LogWarning(
-                exception,
-                "Request failed with status {StatusCode}. CorrelationId={CorrelationId}",
-                statusCode,
-                correlationId);
+            _logger.LogInformation("Request {CorrelationId} rejected with {StatusCode} ({ExceptionType})",correlationId,statusCode,exception.GetType().Name);
         }
 
         var problemDetails =

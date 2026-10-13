@@ -17,12 +17,15 @@ public sealed class AuthService
 
     private readonly TokenService _tokenService;
 
-    public AuthService(ITrackStore store, IPasswordHasher<User> passwordHasher, IRefreshTokenRepository refreshTokens, TokenService tokenService)
+    private readonly ILogger<AuthService> _logger;
+
+    public AuthService(ITrackStore store, IPasswordHasher<User> passwordHasher, IRefreshTokenRepository refreshTokens, TokenService tokenService, ILogger<AuthService> logger)
     {
         _store = store;
         _passwordHasher = passwordHasher;
         _refreshTokens = refreshTokens;
         _tokenService = tokenService;
+        _logger = logger;
     }
 
     public async Task<User> RegisterAsync(RegisterRequest request)
@@ -58,6 +61,7 @@ public sealed class AuthService
 
         if (user is null)
         {
+            _logger.LogInformation("Sign-in failed: no matching account");
             throw InvalidLogin();
         }
 
@@ -70,6 +74,7 @@ public sealed class AuthService
         if (verification ==
             PasswordVerificationResult.Failed)
         {
+            _logger.LogInformation("Sign-in failed for user {UserId}", user.Id);
             throw InvalidLogin();
         }
 
@@ -89,6 +94,8 @@ public sealed class AuthService
 
         await _refreshTokens.AddAsync(
             refreshToken);
+
+        _logger.LogInformation("User {UserId} signed in",user.Id);
 
         return new AuthResult(
             accessToken.Token,
@@ -123,9 +130,8 @@ public sealed class AuthService
                 .RevokeFamilyAsync(
                     current.FamilyId,
                     now);
-
-            throw new AuthenticationFailedException(
-                "Refresh token was already used. Please sign in again.");
+            _logger.LogWarning("Refresh token reuse detected for user {UserId}", current.UserId);
+            throw new AuthenticationFailedException("Refresh token was already used. Please sign in again.");
         }
 
         if (current.IsExpired(now))

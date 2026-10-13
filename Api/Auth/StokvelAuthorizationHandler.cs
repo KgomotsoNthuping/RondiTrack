@@ -9,11 +9,13 @@ public class StokvelAuthorizationHandler : AuthorizationHandler<StokvelAccessReq
 {
     private readonly ITrackStore _store;
     private readonly Metrics _metrics;
+    private readonly ILogger<StokvelAuthorizationHandler> _logger;
 
-    public StokvelAuthorizationHandler(ITrackStore store, Metrics metrics)
+    public StokvelAuthorizationHandler(ITrackStore store, Metrics metrics, ILogger<StokvelAuthorizationHandler> logger)
     {
         _store = store;
         _metrics = metrics;
+        _logger = logger;
     }
 
     protected override async Task HandleRequirementAsync(
@@ -36,6 +38,7 @@ public class StokvelAuthorizationHandler : AuthorizationHandler<StokvelAccessReq
         if (membership is null)
         {
             _metrics.AuthorizationNotFound();
+            _logger.LogInformation("Stokvel authorization refused for user {UserId} with result {Result}",userId,"not_found");
 
             context.Fail(
                 new AuthorizationFailureReason(
@@ -61,6 +64,7 @@ public class StokvelAuthorizationHandler : AuthorizationHandler<StokvelAccessReq
         }
 
         _metrics.AuthorizationForbidden();
+        _logger.LogInformation("Stokvel authorization refused for user {UserId} with result {Result}", userId,"forbidden");
         
         context.Fail(
             new AuthorizationFailureReason(
