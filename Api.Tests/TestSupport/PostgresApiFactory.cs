@@ -41,6 +41,22 @@ public class PostgresApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         {
             logging.AddProvider(Logs);
         });
+
+        builder.UseSetting(
+            "Cors:AllowedOrigins:0",
+            "http://localhost:3000");
+
+        builder.UseSetting(
+            "RateLimiting:Login:PermitLimit",
+            "1000");
+
+        builder.UseSetting(
+            "RateLimiting:Contribution:PermitLimit",
+            "1000");
+
+        builder.UseSetting(
+            "RateLimiting:Payout:PermitLimit",
+            "1000");
     }
     async Task IAsyncLifetime.DisposeAsync()
     {
