@@ -466,6 +466,13 @@ builder.Services.AddRateLimiter(
             };
     });
 
+builder.Services.AddSingleton(
+    TimeProvider.System);
+
+builder.Services.AddScoped<
+    IMemberHomeService,
+    MemberHomeService>();
+
 var app = builder.Build();
 
 // Recreates the development data previously provided
