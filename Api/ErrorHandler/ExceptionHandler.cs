@@ -4,6 +4,7 @@ using Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Api.Observability;
+using System.Text.Json;
 
 namespace Api.ErrorHandling;
 
@@ -100,27 +101,54 @@ public sealed class ExceptionHandler : IExceptionHandler
             _logger.LogInformation("Request {CorrelationId} rejected with {StatusCode} ({ExceptionType})",correlationId,statusCode,exception.GetType().Name);
         }
 
-        var problemDetails =
-            new ProblemDetails
+        ProblemDetails problemDetails;
+
+            if (exception
+                is ValidationException validationException)
             {
-                Status = statusCode,
-                Title = title,
-                Detail = detail,
-                Instance =
-                    httpContext.Request.Path
-            };
+                var errors =
+                    validationException.Errors
+                        .ToDictionary(
+                            error =>
+                                JsonNamingPolicy.CamelCase
+                                    .ConvertName(
+                                        error.Key),
+                            error =>
+                                error.Value);
 
-        // Same identifier appears in the response and log.
-        problemDetails.Extensions[
-            "correlationId"] = correlationId;
+                problemDetails =
+                    new ValidationProblemDetails(
+                        errors)
+                    {
+                        Status =
+                            StatusCodes.Status400BadRequest,
 
-        // Add field-by-field validation errors when relevant.
-        if (exception
-            is ValidationException validationException)
-        {
-            problemDetails.Extensions["errors"] =
-                validationException.Errors;
-        }
+                        Title =
+                            "Validation Failed",
+
+                        Detail =
+                            "One or more fields are invalid.",
+
+                        Instance =
+                            httpContext.Request.Path
+                    };
+            }
+            else
+            {
+                problemDetails =
+                    new ProblemDetails
+                    {
+                        Status = statusCode,
+                        Title = title,
+                        Detail = detail,
+                        Instance =
+                            httpContext.Request.Path
+                    };
+            }
+
+            problemDetails.Extensions[
+                "correlationId"] =
+                    correlationId;
 
         httpContext.Response.StatusCode =
             statusCode;

@@ -27,6 +27,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Api.Common;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,8 +53,23 @@ builder.Services.AddControllers(options =>
 })
 .ConfigureApiBehaviorOptions(options =>
 {
-    options.SuppressModelStateInvalidFilter = true;
+    options.SuppressModelStateInvalidFilter = false;
+})
+.AddJsonOptions(options =>
+{
+    options.AllowInputFormatterExceptionMessages =
+        false;
+
+    options.JsonSerializerOptions.NumberHandling =
+        JsonNumberHandling.Strict;
 });
+
+builder.Services.ConfigureHttpJsonOptions(
+    options =>
+    {
+        options.SerializerOptions.NumberHandling =
+            JsonNumberHandling.Strict;
+    });
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateUserRequestValidator>(); 
 
