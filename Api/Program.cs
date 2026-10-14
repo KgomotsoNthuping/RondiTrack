@@ -25,6 +25,8 @@ using OpenTelemetry.Trace;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Api.Common;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -276,6 +278,116 @@ builder.Services.AddCors(options =>
             });
     });
 
+var loginPermitLimit =
+    builder.Configuration.GetValue(
+        "RateLimiting:Login:PermitLimit",
+        5);
+
+var loginWindowSeconds =
+    builder.Configuration.GetValue(
+        "RateLimiting:Login:WindowSeconds",
+        60);
+
+var loginWindow =
+    TimeSpan.FromSeconds(
+        loginWindowSeconds);
+
+builder.Services.AddRateLimiter(
+    options =>
+    {
+        options.AddPolicy(
+            RateLimitPolicies.Login,
+            httpContext =>
+                RateLimitPartition
+                    .GetFixedWindowLimiter(
+                        partitionKey:
+                            httpContext.Connection
+                                .RemoteIpAddress?
+                                .ToString()
+                            ?? "unknown",
+
+                        factory: _ =>
+                            new FixedWindowRateLimiterOptions
+                            {
+                                PermitLimit =
+                                    loginPermitLimit,
+
+                                Window =
+                                    loginWindow,
+
+                                QueueLimit = 0,
+
+                                AutoReplenishment = true
+                            }));
+
+        options.RejectionStatusCode =
+            StatusCodes.Status429TooManyRequests;
+
+        options.OnRejected =
+            async (
+                context,
+                cancellationToken) =>
+            {
+                var retryAfter =
+                    loginWindow;
+
+                if (context.Lease.TryGetMetadata(
+                        MetadataName.RetryAfter,
+                        out var metadataRetryAfter))
+                {
+                    retryAfter =
+                        metadataRetryAfter;
+                }
+
+                var retrySeconds =
+                    Math.Max(
+                        1,
+                        (int)Math.Ceiling(
+                            retryAfter.TotalSeconds));
+
+                context.HttpContext
+                    .Response
+                    .Headers
+                    .RetryAfter =
+                        retrySeconds.ToString();
+
+                var problemDetailsService =
+                    context.HttpContext
+                        .RequestServices
+                        .GetRequiredService<
+                            IProblemDetailsService>();
+
+                var problem =
+                    new ProblemDetails
+                    {
+                        Status =
+                            StatusCodes
+                                .Status429TooManyRequests,
+
+                        Title =
+                            "Too Many Requests",
+
+                        Detail =
+                            $"Too many attempts. Try again in {retrySeconds} seconds.",
+
+                        Instance =
+                            context.HttpContext
+                                .Request.Path
+                    };
+
+                await problemDetailsService
+                    .TryWriteAsync(
+                        new ProblemDetailsContext
+                        {
+                            HttpContext =
+                                context.HttpContext,
+
+                            ProblemDetails =
+                                problem
+                        });
+            };
+    });
+
 var app = builder.Build();
 
 // Recreates the development data previously provided
@@ -371,7 +483,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 app.UseHsts();
 app.UseCors(CorsPolicies.Frontend);
 app.UseAuthentication();
-
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapControllers();
