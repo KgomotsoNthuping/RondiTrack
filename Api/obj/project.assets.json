@@ -3062,32 +3062,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\KG\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\LCBitcube\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Api\\Api.csproj",
+      "projectUniqueName": "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Api\\Api.csproj",
       "projectName": "Api",
-      "projectPath": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Api\\Api.csproj",
-      "packagesPath": "C:\\Users\\KG\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Api\\obj\\",
+      "projectPath": "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Api\\Api.csproj",
+      "packagesPath": "C:\\Users\\LCBitcube\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Api\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\KG\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\LCBitcube\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -3095,11 +3087,11 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Domain\\Domain.csproj": {
-              "projectPath": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Domain\\Domain.csproj"
+            "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Domain\\Domain.csproj": {
+              "projectPath": "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Domain\\Domain.csproj"
             },
-            "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Infrastructure\\Infrastructure.csproj": {
-              "projectPath": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Infrastructure\\Infrastructure.csproj"
+            "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Infrastructure\\Infrastructure.csproj": {
+              "projectPath": "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Infrastructure\\Infrastructure.csproj"
             }
           }
         }
@@ -3199,7 +3191,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.401/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
