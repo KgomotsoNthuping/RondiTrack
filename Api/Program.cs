@@ -24,8 +24,13 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Api.Common;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var allowedOrigins = builder.Configuration
+        .GetSection("Cors:AllowedOrigins")
+        .Get<string[]>() ?? [];
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
 
@@ -244,6 +249,33 @@ builder.Services.Configure< HealthCheckServiceOptions>(options =>
         }
     });
 
+builder.Services.AddCors(options =>
+    {
+        options.AddPolicy(
+            CorsPolicies.Frontend,
+            policy =>
+            {
+                policy
+                    .WithOrigins(
+                        allowedOrigins)
+                    .AllowCredentials()
+                    .WithMethods(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE")
+                    .WithHeaders(
+                        "Authorization",
+                        "Content-Type",
+                        "Idempotency-Key",
+                        "traceparent")
+                    .WithExposedHeaders(
+                        "Retry-After")
+                    .SetPreflightMaxAge(
+                        TimeSpan.FromMinutes(10));
+            });
+    });
+
 var app = builder.Build();
 
 // Recreates the development data previously provided
@@ -337,7 +369,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 // app.UseHttpsRedirection();
 
 app.UseHsts();
-
+app.UseCors(CorsPolicies.Frontend);
 app.UseAuthentication();
 
 app.UseAuthorization();
