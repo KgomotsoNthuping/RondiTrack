@@ -8,6 +8,7 @@ using Api.Validation;
 using Domain.Repositories;
 using Api.Auth;
 using Api.Common;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Api.Controllers;
 
@@ -60,6 +61,7 @@ public sealed class ContributionsController : ControllerBase
     // POST /api/stokvels/{stokvelId}/contributions
     [HttpPost]
     [RequireIdempotencyKey]
+    [EnableRateLimiting(RateLimitPolicies.Contribution)]
     public async Task<ActionResult<ContributionResponse>>
     RecordContribution(
         Guid stokvelId,

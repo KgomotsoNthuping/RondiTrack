@@ -292,6 +292,28 @@ var loginWindow =
     TimeSpan.FromSeconds(
         loginWindowSeconds);
 
+var contributionPermitLimit =
+    builder.Configuration.GetValue(
+        "RateLimiting:Contribution:PermitLimit",
+        30);
+
+var contributionWindow =
+    TimeSpan.FromSeconds(
+        builder.Configuration.GetValue(
+            "RateLimiting:Contribution:WindowSeconds",
+            60));
+
+var payoutPermitLimit =
+    builder.Configuration.GetValue(
+        "RateLimiting:Payout:PermitLimit",
+        5);
+
+var payoutWindow =
+    TimeSpan.FromSeconds(
+        builder.Configuration.GetValue(
+            "RateLimiting:Payout:WindowSeconds",
+            60));
+
 builder.Services.AddRateLimiter(
     options =>
     {
@@ -322,6 +344,62 @@ builder.Services.AddRateLimiter(
 
         options.RejectionStatusCode =
             StatusCodes.Status429TooManyRequests;
+
+        options.AddPolicy(
+            RateLimitPolicies.Contribution,
+            httpContext =>
+            {
+                var userId =
+                    httpContext.User
+                        .FindFirst("sub")?
+                        .Value
+                    ?? "anonymous";
+
+                return RateLimitPartition
+                    .GetFixedWindowLimiter(
+                        partitionKey: userId,
+                        factory: _ =>
+                            new FixedWindowRateLimiterOptions
+                            {
+                                PermitLimit =
+                                    contributionPermitLimit,
+
+                                Window =
+                                    contributionWindow,
+
+                                QueueLimit = 0,
+
+                                AutoReplenishment = true
+                            });
+            });
+
+            options.AddPolicy(
+                RateLimitPolicies.Payout,
+                httpContext =>
+                {
+                    var userId =
+                        httpContext.User
+                            .FindFirst("sub")?
+                            .Value
+                        ?? "anonymous";
+
+                    return RateLimitPartition
+                        .GetFixedWindowLimiter(
+                            partitionKey: userId,
+                            factory: _ =>
+                                new FixedWindowRateLimiterOptions
+                                {
+                                    PermitLimit =
+                                        payoutPermitLimit,
+
+                                    Window =
+                                        payoutWindow,
+
+                                    QueueLimit = 0,
+
+                                    AutoReplenishment = true
+                                });
+                });
 
         options.OnRejected =
             async (

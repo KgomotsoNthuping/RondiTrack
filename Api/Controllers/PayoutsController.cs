@@ -4,6 +4,7 @@ using Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Api.Auth;
 using Api.Common;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Api.Controllers;
 
@@ -31,6 +32,7 @@ public class PayoutsController : ControllerBase
     /// in one database transaction.
     /// </remarks>
     [HttpPost]
+    [EnableRateLimiting(RateLimitPolicies.Payout)]
     [ProducesResponseType(typeof(PayoutResponse),StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails),StatusCodes.Status404NotFound,"application/problem+json")]
     [ProducesResponseType(typeof(ProblemDetails),StatusCodes.Status409Conflict,"application/problem+json")]
