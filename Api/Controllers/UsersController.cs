@@ -5,11 +5,12 @@ using Domain.Exceptions;
 using Api.Mappings;
 using Api.Services;
 using Domain.Repositories;
+using Api.Common;
 
 namespace Api.Controllers;
 
 [ApiController]
-[Route("api/users")]
+[Route(ApiRoutes.V1 + "api/users")]
 public sealed class UsersController : ControllerBase
 {
     private readonly ITrackStore _store;

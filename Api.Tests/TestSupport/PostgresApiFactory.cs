@@ -37,18 +37,6 @@ public class PostgresApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             "Jwt:SigningKey",
             TestSigningKey);
 
-        builder.UseSetting(
-            "Jwt:Issuer",
-            "RondiTrack");
-
-        builder.UseSetting(
-            "Jwt:Audience",
-            "RondiTrack.Api");
-
-        builder.UseSetting(
-            "OTEL_EXPORTER_OTLP_ENDPOINT",
-            string.Empty);
-
         builder.ConfigureLogging(logging =>
         {
             logging.AddProvider(Logs);

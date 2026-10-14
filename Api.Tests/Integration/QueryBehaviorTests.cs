@@ -34,7 +34,7 @@ public sealed class QueryBehaviorTests
             await _client.GetFromJsonAsync<
                 PagedResponse<
                     CycleContributionResponse>>(
-                $"/api/stokvels/{data.StokvelId}" +
+                $"/api/v1/stokvels/{data.StokvelId}" +
                 $"/cycles/{data.CycleId}" +
                 "/contributions?pageSize=20" +
                 "&memberRole=Admin");
@@ -60,7 +60,7 @@ public sealed class QueryBehaviorTests
 
         var response =
             await _client.GetAsync(
-                $"/api/stokvels/{data.StokvelId}" +
+                $"/api/v1/stokvels/{data.StokvelId}" +
                 $"/cycles/{data.CycleId}" +
                 "/contributions?sort=randomField");
 
@@ -81,7 +81,7 @@ public sealed class QueryBehaviorTests
         var response =
             await _client.GetFromJsonAsync<
                 PagedResponse<UserResponse>>(
-                $"/api/stokvels/{data.StokvelId}" +
+                $"/api/v1/stokvels/{data.StokvelId}" +
                 "/members?pageSize=20&sort=fullName");
 
         Assert.NotNull(response);

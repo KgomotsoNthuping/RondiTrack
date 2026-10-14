@@ -7,11 +7,12 @@ using Api.Extensions;
 using Api.Validation;
 using Domain.Repositories;
 using Api.Auth;
+using Api.Common;
 
 namespace Api.Controllers;
 
 [ApiController]
-[Route("api/stokvels/{stokvelId:guid}/contributions")]
+[Route(ApiRoutes.V1 + "api/stokvels/{stokvelId:guid}/contributions")]
 public sealed class ContributionsController : ControllerBase
 {
     private readonly ITrackStore _store;

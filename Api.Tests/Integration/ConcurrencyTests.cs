@@ -96,7 +96,7 @@ public sealed class ConcurrencyTests
         var current =
             await _client.GetFromJsonAsync<
                 ContributionCycleResponse>(
-                $"/api/stokvels/{data.StokvelId}" +
+                $"/api/v1/stokvels/{data.StokvelId}" +
                 $"/cycles/{data.CycleId}");
 
         Assert.NotNull(current);
@@ -116,7 +116,7 @@ public sealed class ConcurrencyTests
 
         var firstResponse =
             await _client.PutAsJsonAsync(
-                $"/api/stokvels/{data.StokvelId}" +
+                $"/api/v1/stokvels/{data.StokvelId}" +
                 $"/cycles/{data.CycleId}",
                 firstUpdate);
 
@@ -151,7 +151,7 @@ public sealed class ConcurrencyTests
 
         var staleResponse =
             await _client.PutAsJsonAsync(
-                $"/api/stokvels/{data.StokvelId}" +
+                $"/api/v1/stokvels/{data.StokvelId}" +
                 $"/cycles/{data.CycleId}",
                 staleUpdate);
 

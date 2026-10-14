@@ -4,11 +4,12 @@ using Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Domain.Exceptions;
+using Api.Common;
 
 namespace Api.Controllers;
 
 [ApiController]
-[Route("api/auth")]
+[Route(ApiRoutes.V1 + "api/auth")]
 public sealed class AuthController : ControllerBase
 {
     private readonly AuthService _authService;
@@ -71,7 +72,7 @@ public sealed class AuthController : ControllerBase
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
-                Path = "/api/auth"
+                Path = "/" + ApiRoutes.V1 + "/auth",
             });
 
         return NoContent();

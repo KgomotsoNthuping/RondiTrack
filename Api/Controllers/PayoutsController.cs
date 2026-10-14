@@ -3,11 +3,12 @@ using Api.Mappings;
 using Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Api.Auth;
+using Api.Common;
 
 namespace Api.Controllers;
 
 [ApiController]
-[Route("api/stokvels/{stokvelId:guid}/cycles/{cycleId:guid}/payout")]
+[Route(ApiRoutes.V1 +"api/stokvels/{stokvelId:guid}/cycles/{cycleId:guid}/payout")]
 public class PayoutsController : ControllerBase
 {
     private readonly IPayoutService _payoutService;

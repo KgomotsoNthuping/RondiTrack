@@ -33,7 +33,7 @@ public sealed class EdgeCaseTests
 
         var createResponse =
             await client.PostAsJsonAsync(
-                "/api/stokvels",
+                "/api/v1/stokvels",
                 createRequest);
 
         Assert.Equal(
@@ -49,7 +49,7 @@ public sealed class EdgeCaseTests
         // Ask for the membership collection.
         var response =
             await client.GetAsync(
-                $"/api/stokvels/{stokvel.Id}/members");
+                $"/api/v1/stokvels/{stokvel.Id}/members");
 
         Assert.Equal(
             HttpStatusCode.OK,
@@ -82,7 +82,7 @@ public sealed class EdgeCaseTests
         // Use an existing seeded stokvel.
         var stokvels =
             await client.GetFromJsonAsync<List<StokvelResponse>>(
-                "/api/stokvels");
+                "/api/v1/stokvels");
 
         Assert.NotNull(stokvels);
         Assert.NotEmpty(stokvels);
@@ -101,7 +101,7 @@ public sealed class EdgeCaseTests
 
         var response =
             await client.PostAsJsonAsync(
-                $"/api/stokvels/{stokvel.Id}/cycles",
+                $"/api/v1/stokvels/{stokvel.Id}/cycles",
                 request);
 
         // 1 must be accepted because only values below 1 are invalid.
@@ -141,7 +141,7 @@ public sealed class EdgeCaseTests
         // Get an existing stokvel.
         var stokvels =
             await client.GetFromJsonAsync<List<StokvelResponse>>(
-                "/api/stokvels");
+                "/api/v1/stokvels");
 
         Assert.NotNull(stokvels);
         Assert.NotEmpty(stokvels);
@@ -161,7 +161,7 @@ public sealed class EdgeCaseTests
 
         var createUserResponse =
             await client.PostAsJsonAsync(
-                "/api/users",
+                "/api/v1/users",
                 createUserRequest);
 
         Assert.Equal(
@@ -178,7 +178,7 @@ public sealed class EdgeCaseTests
         var cycles =
             await client.GetFromJsonAsync<
                 List<ContributionCycleResponse>>(
-                    $"/api/stokvels/{stokvel.Id}/cycles");
+                    $"/api/v1/stokvels/{stokvel.Id}/cycles");
 
         Assert.NotNull(cycles);
         Assert.NotEmpty(cycles);
@@ -198,7 +198,7 @@ public sealed class EdgeCaseTests
         using var request =
             new HttpRequestMessage(
                 HttpMethod.Post,
-                $"/api/stokvels/{stokvel.Id}/contributions");
+                $"/api/v1/stokvels/{stokvel.Id}/contributions");
 
         request.Headers.Add(
             "Idempotency-Key",

@@ -31,7 +31,7 @@ public sealed class UserEndpointTests
         // Act
         var response =
             await client.PostAsJsonAsync(
-                "/api/users",
+                "/api/v1/users",
                 request);
 
         // Assert
@@ -81,7 +81,7 @@ public sealed class UserEndpointTests
 
         var response =
             await client.PostAsJsonAsync(
-                "/api/users",
+                "/api/v1/users",
                 request);
 
         Assert.Equal(

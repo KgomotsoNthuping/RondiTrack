@@ -32,7 +32,7 @@ public sealed class PaginationTests
             await _client.GetFromJsonAsync<
                 PagedResponse<
                     CycleContributionResponse>>(
-                $"/api/stokvels/{data.StokvelId}" +
+                $"/api/v1/stokvels/{data.StokvelId}" +
                 $"/cycles/{data.CycleId}" +
                 "/contributions?pageSize=2");
 
@@ -46,7 +46,7 @@ public sealed class PaginationTests
             await _client.GetFromJsonAsync<
                 PagedResponse<
                     CycleContributionResponse>>(
-                $"/api/stokvels/{data.StokvelId}" +
+                $"/api/v1/stokvels/{data.StokvelId}" +
                 $"/cycles/{data.CycleId}" +
                 "/contributions?pageSize=2" +
                 $"&pageToken={Uri.EscapeDataString(first.NextPageToken)}");
@@ -58,7 +58,7 @@ public sealed class PaginationTests
             await _client.GetFromJsonAsync<
                 PagedResponse<
                     CycleContributionResponse>>(
-                $"/api/stokvels/{data.StokvelId}" +
+                $"/api/v1/stokvels/{data.StokvelId}" +
                 $"/cycles/{data.CycleId}" +
                 "/contributions?pageSize=2" +
                 $"&pageToken={Uri.EscapeDataString(second.NextPageToken)}");
@@ -94,7 +94,7 @@ public sealed class PaginationTests
         var response =
             await _client.GetFromJsonAsync<
                 PagedResponse<UserResponse>>(
-                $"/api/stokvels/{data.StokvelId}" +
+                $"/api/v1/stokvels/{data.StokvelId}" +
                 "/members?pageSize=2");
 
         Assert.NotNull(response);
@@ -114,7 +114,7 @@ public sealed class PaginationTests
 
         var response =
             await _client.GetAsync(
-                $"/api/stokvels/{data.StokvelId}" +
+                $"/api/v1/stokvels/{data.StokvelId}" +
                 $"/cycles/{data.CycleId}" +
                 "/contributions?pageSize=-1");
 
@@ -142,7 +142,7 @@ public sealed class PaginationTests
             await _client.GetFromJsonAsync<
                 PagedResponse<
                     CycleContributionResponse>>(
-                $"/api/stokvels/{data.StokvelId}" +
+                $"/api/v1/stokvels/{data.StokvelId}" +
                 $"/cycles/{data.CycleId}" +
                 "/contributions?pageSize=2&sort=userId");
 
@@ -150,7 +150,7 @@ public sealed class PaginationTests
 
         var response =
             await _client.GetAsync(
-                $"/api/stokvels/{data.StokvelId}" +
+                $"/api/v1/stokvels/{data.StokvelId}" +
                 $"/cycles/{data.CycleId}" +
                 "/contributions?pageSize=2" +
                 "&sort=amount" +

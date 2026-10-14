@@ -22,7 +22,7 @@ public sealed class ContributionEndpointTests
         // Get one of the seeded stokvels.
         var stokvels =
             await client.GetFromJsonAsync<List<StokvelResponse>>(
-                "/api/stokvels");
+                "/api/v1/stokvels");
 
         Assert.NotNull(stokvels);
         Assert.NotEmpty(stokvels);
@@ -33,7 +33,7 @@ public sealed class ContributionEndpointTests
         // Get an existing member of that stokvel.
         var members =
             (await client.GetFromJsonAsync<PagedResponse<UserResponse>>(
-                $"/api/stokvels/{stokvel.Id}/members"))
+                $"/api/v1/stokvels/{stokvel.Id}/members"))
                 ?.Items;
 
         Assert.NotNull(members);
@@ -46,7 +46,7 @@ public sealed class ContributionEndpointTests
         var cycles =
             await client.GetFromJsonAsync<
                 List<ContributionCycleResponse>>(
-                    $"/api/stokvels/{stokvel.Id}/cycles");
+                    $"/api/v1/stokvels/{stokvel.Id}/cycles");
 
         Assert.NotNull(cycles);
         Assert.NotEmpty(cycles);
@@ -69,7 +69,7 @@ public sealed class ContributionEndpointTests
         using var firstRequest =
             new HttpRequestMessage(
                 HttpMethod.Post,
-                $"/api/stokvels/{stokvel.Id}/contributions");
+                $"/api/v1/stokvels/{stokvel.Id}/contributions");
 
         firstRequest.Headers.Add(
             "Idempotency-Key",
@@ -94,7 +94,7 @@ public sealed class ContributionEndpointTests
         using var secondRequest =
             new HttpRequestMessage(
                 HttpMethod.Post,
-                $"/api/stokvels/{stokvel.Id}/contributions");
+                $"/api/v1/stokvels/{stokvel.Id}/contributions");
 
         secondRequest.Headers.Add(
             "Idempotency-Key",
@@ -135,7 +135,7 @@ public sealed class ContributionEndpointTests
 
         var stokvels =
             await client.GetFromJsonAsync<List<StokvelResponse>>(
-                "/api/stokvels");
+                "/api/v1/stokvels");
 
         Assert.NotNull(stokvels);
         Assert.NotEmpty(stokvels);
@@ -145,7 +145,7 @@ public sealed class ContributionEndpointTests
 
         var memberPage =
             await client.GetFromJsonAsync<PagedResponse<UserResponse>>(
-                $"/api/stokvels/{stokvel.Id}/members");
+                $"/api/v1/stokvels/{stokvel.Id}/members");
 
             var members = memberPage?.Items;
 
@@ -158,7 +158,7 @@ public sealed class ContributionEndpointTests
         var cycles =
             await client.GetFromJsonAsync<
                 List<ContributionCycleResponse>>(
-                    $"/api/stokvels/{stokvel.Id}/cycles");
+                    $"/api/v1/stokvels/{stokvel.Id}/cycles");
 
         Assert.NotNull(cycles);
         Assert.NotEmpty(cycles);
@@ -181,7 +181,7 @@ public sealed class ContributionEndpointTests
         using var firstRequest =
             new HttpRequestMessage(
                 HttpMethod.Post,
-                $"/api/stokvels/{stokvel.Id}/contributions");
+                $"/api/v1/stokvels/{stokvel.Id}/contributions");
 
         firstRequest.Headers.Add(
             "Idempotency-Key",
@@ -210,7 +210,7 @@ public sealed class ContributionEndpointTests
         using var secondRequest =
             new HttpRequestMessage(
                 HttpMethod.Post,
-                $"/api/stokvels/{stokvel.Id}/contributions");
+                $"/api/v1/stokvels/{stokvel.Id}/contributions");
 
         secondRequest.Headers.Add(
             "Idempotency-Key",

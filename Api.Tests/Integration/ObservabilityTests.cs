@@ -85,7 +85,7 @@ public sealed class ObservabilityTests
         using var request =
             new HttpRequestMessage(
                 HttpMethod.Get,
-                "/api/users");
+                "/api/v1/users");
 
         request.Headers.TryAddWithoutValidation(
             "traceparent",
@@ -111,7 +111,7 @@ public sealed class ObservabilityTests
         using var request =
             new HttpRequestMessage(
                 HttpMethod.Get,
-                $"/api/stokvels/{Guid.NewGuid()}" +
+                $"/api/v1/stokvels/{Guid.NewGuid()}" +
                 $"/contributions/{Guid.NewGuid()}");
 
         request.Headers.Authorization =
@@ -227,7 +227,7 @@ public sealed class ObservabilityTests
 
         var registerResponse =
             await _client.PostAsJsonAsync(
-                "/api/auth/register",
+                "/api/v1/auth/register",
                 register);
 
         Assert.Equal(
@@ -243,7 +243,7 @@ public sealed class ObservabilityTests
 
         var loginResponse =
             await _client.PostAsJsonAsync(
-                "/api/auth/login",
+                "/api/v1/auth/login",
                 login);
 
         Assert.Equal(

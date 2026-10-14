@@ -6,11 +6,12 @@ using Api.Mappings;
 using Api.Services;
 using Domain.Repositories;
 using Api.Auth;
+using Api.Common;
 
 namespace Api.Controllers;
 
 [ApiController]
-[Route("api/stokvels/{stokvelId:guid}/members")]
+[Route(ApiRoutes.V1 + "api/stokvels/{stokvelId:guid}/members")]
 public sealed class StokvelMember : ControllerBase
 {
     private readonly ITrackStore _store;
