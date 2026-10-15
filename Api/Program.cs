@@ -124,6 +124,10 @@ builder.Services.AddScoped<
     ITrackService,
     TrackService>();
 
+builder.Services.AddScoped<
+    ICycleCloseRepository,
+    EfCycleCloseRepository>();
+
 // Processes payouts inside an explicit database transaction.
 builder.Services.AddScoped<
     IPayoutService,

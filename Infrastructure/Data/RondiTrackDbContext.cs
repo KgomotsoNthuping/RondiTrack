@@ -108,6 +108,18 @@ public class RondiTrackDbContext : DbContext
         entity.Property(cycle => cycle.TargetAmount)
             .HasPrecision(18, 2);
 
+        entity.Property(cycle => cycle.EndDate)
+            .HasColumnType("date");
+
+        entity.HasIndex(cycle => new
+        {
+            cycle.StokvelId,
+            cycle.CycleNumber
+        })
+        .IsUnique()
+        .HasDatabaseName(
+            "UX_ContributionCycles_Stokvel_CycleNumber");
+
         entity.HasMany(cycle => cycle.Contributions)
             .WithOne(contribution =>
                 contribution.ContributionCycle)

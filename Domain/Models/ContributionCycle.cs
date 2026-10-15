@@ -14,6 +14,10 @@ public sealed class ContributionCycle
 
     public ContributionCycleStatus Status { get; private set; }
 
+    public DateOnly? EndDate { get; private set; }
+
+    public DateTime? ClosedAtUtc { get; private set; }
+
     public uint Version { get; private set; }
 
     [JsonIgnore]
@@ -22,7 +26,8 @@ public sealed class ContributionCycle
     public ContributionCycle(
         Guid stokvelId,
         int cycleNumber,
-        decimal targetAmount)
+        decimal targetAmount,
+         DateOnly? endDate = null)
     {
         if (stokvelId == Guid.Empty)
         {
@@ -44,6 +49,7 @@ public sealed class ContributionCycle
         CycleNumber = cycleNumber;
         TargetAmount = targetAmount;
         Status = ContributionCycleStatus.Open;
+        EndDate = endDate;
     }
 
     public void Update(
@@ -61,6 +67,11 @@ public sealed class ContributionCycle
         }
         CycleNumber = cycleNumber;
         TargetAmount = targetAmount;
+    }
+
+    public void SetEndDate(DateOnly endDate)
+    {
+        EndDate = endDate;
     }
 
     public void MarkPaidOut()

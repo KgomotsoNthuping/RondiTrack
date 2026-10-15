@@ -60,8 +60,14 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("ClosedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("CycleNumber")
                         .HasColumnType("integer");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -80,6 +86,10 @@ namespace Infrastructure.Migrations
                         .HasColumnName("xmin");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("StokvelId", "CycleNumber")
+                        .IsUnique()
+                        .HasDatabaseName("UX_ContributionCycles_Stokvel_CycleNumber");
 
                     b.ToTable("ContributionCycles");
                 });
