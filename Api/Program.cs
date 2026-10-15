@@ -28,6 +28,7 @@ using Api.Common;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Text.Json.Serialization;
+using Api.Background;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -235,6 +236,7 @@ var openTelemetry = builder.Services
         {
             tracing
                 .AddSource(Telemetry.ActivitySourceName)
+                .AddSource(CycleCloseBackgroundService.ActivitySourceName);
                 .AddAspNetCoreInstrumentation(options =>
                     {
                         options.Filter = httpContext => !httpContext
@@ -249,6 +251,7 @@ var openTelemetry = builder.Services
             metrics
                 .AddAspNetCoreInstrumentation()
                 .AddMeter("System.Runtime")
+                .AddMeter(CycleCloseMetrics.MeterName)
                 .AddMeter(Metrics.MeterName);
         })
         .WithLogging();
@@ -492,6 +495,25 @@ builder.Services.AddSingleton(
 builder.Services.AddScoped<
     IMemberHomeService,
     MemberHomeService>();
+
+builder.Services.AddSingleton(
+    new CycleCloseOptions(
+        TimeSpan.FromMinutes(
+            builder.Configuration.GetValue(
+                "BackgroundJobs:CycleClose:IntervalMinutes",
+                5))));
+
+builder.Services.AddSingleton<
+    CycleCloseMetrics>();
+
+builder.Services.AddSingleton<
+    CycleCloseBackgroundService>();
+
+builder.Services.AddHostedService(
+    provider =>
+        provider.GetRequiredService<
+            CycleCloseBackgroundService>());
+
 
 var app = builder.Build();
 

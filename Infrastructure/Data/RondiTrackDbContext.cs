@@ -25,6 +25,8 @@ public class RondiTrackDbContext : DbContext
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
+    public DbSet<Arrear> Arrears => Set<Arrear>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -35,6 +37,7 @@ public class RondiTrackDbContext : DbContext
         ConfigureContributions(modelBuilder);
         ConfigurePayouts(modelBuilder);
         ConfigureRefreshTokens(modelBuilder);
+        ConfigureArrears(modelBuilder);
     }
 
     private static void ConfigureUsers(ModelBuilder modelBuilder)
@@ -201,6 +204,49 @@ public class RondiTrackDbContext : DbContext
 
         entity.Property(token => token.Version)
             .IsRowVersion();
+    }
+
+    private static void ConfigureArrears(
+    ModelBuilder modelBuilder)
+    {
+        var entity =
+            modelBuilder.Entity<Arrear>();
+
+        entity.HasKey(
+            arrear => arrear.Id);
+
+        entity.HasIndex(arrear => new
+        {
+            arrear.StokvelId,
+            arrear.ContributionCycleId,
+            arrear.UserId
+        })
+        .IsUnique()
+        .HasDatabaseName(
+            "UX_Arrears_Stokvel_Cycle_User");
+
+        entity.HasOne<ContributionCycle>()
+            .WithMany()
+            .HasForeignKey(
+                arrear =>
+                    arrear.ContributionCycleId)
+            .OnDelete(
+                DeleteBehavior.Cascade);
+
+        entity.HasOne<StokvelMember>()
+            .WithMany()
+            .HasForeignKey(arrear => new
+            {
+                arrear.UserId,
+                arrear.StokvelId
+            })
+            .HasPrincipalKey(member => new
+            {
+                member.UserId,
+                member.StokvelId
+            })
+            .OnDelete(
+                DeleteBehavior.Restrict);
     }
 
     
