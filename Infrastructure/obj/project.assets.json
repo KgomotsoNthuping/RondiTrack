@@ -2665,24 +2665,32 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\LCBitcube\\.nuget\\packages\\": {}
+    "C:\\Users\\KG\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Infrastructure\\Infrastructure.csproj",
+      "projectUniqueName": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Infrastructure\\Infrastructure.csproj",
       "projectName": "Infrastructure",
-      "projectPath": "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Infrastructure\\Infrastructure.csproj",
-      "packagesPath": "C:\\Users\\LCBitcube\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Infrastructure\\obj\\",
+      "projectPath": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Infrastructure\\Infrastructure.csproj",
+      "packagesPath": "C:\\Users\\KG\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "C:\\Users\\LCBitcube\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\KG\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -2690,8 +2698,8 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Domain\\Domain.csproj": {
-              "projectPath": "C:\\Users\\LCBitcube\\Desktop\\Repos\\RondiTrack\\Domain\\Domain.csproj"
+            "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Domain\\Domain.csproj": {
+              "projectPath": "C:\\Users\\KG\\Desktop\\Repos\\RondiTrack\\Domain\\Domain.csproj"
             }
           }
         }
@@ -2740,7 +2748,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.401/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",

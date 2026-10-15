@@ -1,0 +1,14 @@
+**/bin/
+**/obj/
+**/TestResults/
+
+.git/
+.github/
+.vs/
+.vscode/
+.idea/
+
+**/*.user
+.env
+
+clients/typescript/node_modules/
