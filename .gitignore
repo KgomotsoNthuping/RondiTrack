@@ -1,1 +1,9 @@
+# .NET build output
+**/bin/
+**/obj/
+
+# Node.js dependencies
+**/node_modules/
+
+# Local secrets
 .env

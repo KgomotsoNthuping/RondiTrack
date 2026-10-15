@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace Api.Controllers;
 
 [ApiController]
-[Route(ApiRoutes.V1 +"api/stokvels/{stokvelId:guid}/cycles/{cycleId:guid}/payout")]
+[Route(ApiRoutes.V1 + "/stokvels/{stokvelId:guid}/cycles/{cycleId:guid}/payout")]
 public class PayoutsController : ControllerBase
 {
     private readonly IPayoutService _payoutService;

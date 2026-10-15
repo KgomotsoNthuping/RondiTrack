@@ -40,10 +40,14 @@ var jwtSection = builder.Configuration.GetSection("Jwt");
 
 var jwtOptions = jwtSection.Get<JwtOptions>() ?? throw new InvalidOperationException("JWT configuration is missing.");
 
-if (string.IsNullOrWhiteSpace(jwtOptions.SigningKey) || Encoding.UTF8.GetByteCount(jwtOptions.SigningKey) < 32)
+if (string.IsNullOrWhiteSpace(
+        jwtOptions.SigningKey) ||
+    Encoding.UTF8.GetByteCount(
+        jwtOptions.SigningKey) < 32)
 {
-    throw new InvalidOperationException("JWT signing key is missing or too short. " +
-        "Set Jwt:SigningKey using dotnet user-secrets.");
+    throw new InvalidOperationException(
+        "Missing required setting: Jwt__SigningKey. " +
+        "It must contain at least 32 bytes.");
 }
 
 builder.Services.AddSingleton(jwtOptions);
@@ -78,9 +82,13 @@ builder.Services.AddScoped<ValidationFilter>();
 
 builder.Services.AddOpenApi();
 
-var connectionString = builder.Configuration.GetConnectionString("RondiTrack") ??
-     throw new InvalidOperationException("The RondiTrack database connection string is missing.");
-
+var connectionString =
+    builder.Configuration
+        .GetConnectionString(
+            "RondiTrack")
+    ?? throw new InvalidOperationException(
+        "Missing required setting: " +
+        "ConnectionStrings__RondiTrack.");
 builder.Services.AddDbContext<RondiTrackDbContext>(options =>
     {
         options.UseNpgsql(
@@ -115,10 +123,10 @@ builder.Services.AddScoped<
     ITrackStore,
     EfTrackStore>();
 
-// Stores Idempotency-Key results in memory.
-builder.Services.AddSingleton<
+// Stores Idempotency-Key results in PostgreSQL.
+builder.Services.AddScoped<
     IIdempotencyRepository,
-    InMemoryIdempotency>();
+    EfIdempotencyRepository>();
 
 builder.Services.AddSingleton(
     new HousekeepingOptions(
@@ -262,7 +270,7 @@ var openTelemetry = builder.Services
         {
             tracing
                 .AddSource(Telemetry.ActivitySourceName)
-                .AddSource(CycleCloseBackgroundService.ActivitySourceName);
+                .AddSource(CycleCloseBackgroundService.ActivitySourceName)
                 .AddAspNetCoreInstrumentation(options =>
                     {
                         options.Filter = httpContext => !httpContext
@@ -518,6 +526,10 @@ builder.Services.AddRateLimiter(
 builder.Services.AddSingleton(
     TimeProvider.System);
 
+builder.Services.AddSingleton<
+    ICycleSchedule,
+    JohannesburgMonthlyCycleSchedule>();
+
 builder.Services.AddScoped<
     IMemberHomeService,
     MemberHomeService>();
@@ -547,11 +559,26 @@ var app = builder.Build();
 // by InMemoryTrackStore when the database is empty.
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<RondiTrackDbContext>();
+    var dbContext =
+        scope.ServiceProvider
+            .GetRequiredService<
+                RondiTrackDbContext>();
+
+    var passwordHasher =
+        scope.ServiceProvider
+            .GetRequiredService<
+                IPasswordHasher<User>>();
+
+    var demoPassword =
+        app.Configuration[
+            "Seed:DemoPassword"];
 
     await dbContext.Database.MigrateAsync();
 
-    await DbSeeder.SeedAsync(dbContext);
+    await DbSeeder.SeedAsync(
+        dbContext,
+        passwordHasher,
+        demoPassword);
 }
 
 app.UseExceptionHandler();

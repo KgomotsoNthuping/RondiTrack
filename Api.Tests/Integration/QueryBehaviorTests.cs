@@ -4,7 +4,6 @@ using Api.DTO;
 using Domain.Models;
 using Api.Tests.TestSupport;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Api.Tests.TestSupport;
 
 namespace Api.Tests;
 
@@ -13,12 +12,9 @@ public sealed class QueryBehaviorTests
 {
     private readonly PostgresApiFactory _factory;
 
-    private readonly HttpClient _client;
-
     public QueryBehaviorTests(PostgresApiFactory factory)
     {
         _factory = factory;
-        _client = factory.CreateClient();
     }
 
     [Fact]
@@ -30,8 +26,11 @@ public sealed class QueryBehaviorTests
                 _factory.Services,
                 memberCount: 5);
 
+        using var client = _factory.CreateAuthenticatedClient(
+            data.UserIds.First());
+
         var response =
-            await _client.GetFromJsonAsync<
+            await client.GetFromJsonAsync<
                 PagedResponse<
                     CycleContributionResponse>>(
                 $"/api/v1/stokvels/{data.StokvelId}" +
@@ -58,8 +57,11 @@ public sealed class QueryBehaviorTests
             await TestData.CreateAsync(
                 _factory.Services);
 
+        using var client = _factory.CreateAuthenticatedClient(
+            data.UserIds.First());
+
         var response =
-            await _client.GetAsync(
+            await client.GetAsync(
                 $"/api/v1/stokvels/{data.StokvelId}" +
                 $"/cycles/{data.CycleId}" +
                 "/contributions?sort=randomField");
@@ -78,8 +80,11 @@ public sealed class QueryBehaviorTests
                 _factory.Services,
                 memberCount: 5);
 
+        using var client = _factory.CreateAuthenticatedClient(
+            data.UserIds.First());
+
         var response =
-            await _client.GetFromJsonAsync<
+            await client.GetFromJsonAsync<
                 PagedResponse<UserResponse>>(
                 $"/api/v1/stokvels/{data.StokvelId}" +
                 "/members?pageSize=20&sort=fullName");

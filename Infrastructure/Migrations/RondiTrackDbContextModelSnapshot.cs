@@ -22,6 +22,40 @@ namespace Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Domain.Models.Arrear", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ContributionCycleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("RecordedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("ShortfallInCents")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("StokvelId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContributionCycleId");
+
+                    b.HasIndex("UserId", "StokvelId");
+
+                    b.HasIndex("StokvelId", "ContributionCycleId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Arrears_Stokvel_Cycle_User");
+
+                    b.ToTable("Arrears");
+                });
+
             modelBuilder.Entity("Domain.Models.Contribution", b =>
                 {
                     b.Property<Guid>("Id")
@@ -47,9 +81,12 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UserId", "StokvelId");
 
-                    b.HasIndex("StokvelId", "UserId", "ContributionCycleId", "Id")
-                        .IsUnique()
+                    b.HasIndex("StokvelId", "ContributionCycleId", "Id")
                         .HasDatabaseName("IX_Contributions_PagedCycleQuery");
+
+                    b.HasIndex("StokvelId", "UserId", "ContributionCycleId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Contributions_Stokvel_User_Cycle");
 
                     b.ToTable("Contributions");
                 });
@@ -94,6 +131,49 @@ namespace Infrastructure.Migrations
                     b.ToTable("ContributionCycles");
                 });
 
+            modelBuilder.Entity("Domain.Models.IdempotencyEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<Guid>("ContributionCycleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ContributionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("StokvelId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContributionId");
+
+                    b.HasIndex("CreatedAtUtc");
+
+                    b.HasIndex("Key")
+                        .IsUnique()
+                        .HasDatabaseName("UX_IdempotencyEntries_Key");
+
+                    b.ToTable("IdempotencyEntries");
+                });
+
             modelBuilder.Entity("Domain.Models.Payout", b =>
                 {
                     b.Property<Guid>("Id")
@@ -110,12 +190,6 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("PaidAtUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("RecipientMemberStokvelId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("RecipientMemberUserId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("RecipientUserId")
                         .HasColumnType("uuid");
 
@@ -130,7 +204,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RecipientMemberUserId", "RecipientMemberStokvelId");
+                    b.HasIndex("RecipientUserId", "StokvelId");
 
                     b.HasIndex("StokvelId", "ContributionCycleId")
                         .IsUnique()
@@ -287,6 +361,21 @@ namespace Infrastructure.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Domain.Models.Arrear", b =>
+                {
+                    b.HasOne("Domain.Models.ContributionCycle", null)
+                        .WithMany()
+                        .HasForeignKey("ContributionCycleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Models.StokvelMember", null)
+                        .WithMany()
+                        .HasForeignKey("UserId", "StokvelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Domain.Models.Contribution", b =>
                 {
                     b.HasOne("Domain.Models.ContributionCycle", "ContributionCycle")
@@ -306,12 +395,21 @@ namespace Infrastructure.Migrations
                     b.Navigation("Member");
                 });
 
+            modelBuilder.Entity("Domain.Models.IdempotencyEntry", b =>
+                {
+                    b.HasOne("Domain.Models.Contribution", null)
+                        .WithMany()
+                        .HasForeignKey("ContributionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Domain.Models.Payout", b =>
                 {
                     b.HasOne("Domain.Models.StokvelMember", "RecipientMember")
                         .WithMany("Payouts")
-                        .HasForeignKey("RecipientMemberUserId", "RecipientMemberStokvelId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("RecipientUserId", "StokvelId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("RecipientMember");

@@ -1,12 +1,16 @@
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Infrastructure.Data;
+using Microsoft.AspNetCore.Identity;
 
 namespace Api.Data;
 
 public static class DbSeeder
 {
-    public static async Task SeedAsync(RondiTrackDbContext dbContext)
+    public static async Task SeedAsync(
+        RondiTrackDbContext dbContext,
+        IPasswordHasher<User> passwordHasher,
+        string? demoPassword)
     {
         if (await dbContext.Users.AnyAsync())
         {
@@ -27,6 +31,25 @@ public static class DbSeeder
             "Kgomotso Nthuping",
             "kgomotso@ronditrack.co.za",
             "0733333333");
+
+        if (!string.IsNullOrWhiteSpace(
+                demoPassword))
+        {
+            testOne.SetPasswordHash(
+                passwordHasher.HashPassword(
+                    testOne,
+                    demoPassword));
+
+            testTwo.SetPasswordHash(
+                passwordHasher.HashPassword(
+                    testTwo,
+                    demoPassword));
+
+            testThree.SetPasswordHash(
+                passwordHasher.HashPassword(
+                    testThree,
+                    demoPassword));
+        }
 
         await dbContext.Users.AddRangeAsync(
             testOne,
@@ -51,23 +74,26 @@ public static class DbSeeder
             ubuntuSavers,
             communitySavers);
 
-        // Membership used to live only inside Stokvel.
-        // It is now persisted through StokvelMember.
         await dbContext.StokvelMembers.AddRangeAsync(
             new StokvelMember(
-            ubuntuSavers.Id,
-            testOne.Id,
-            StokvelMemberRole.Admin),
+                ubuntuSavers.Id,
+                testOne.Id,
+                StokvelMemberRole.Admin),
 
             new StokvelMember(
-            ubuntuSavers.Id,
-            testTwo.Id,
-            StokvelMemberRole.Treasurer),
+                ubuntuSavers.Id,
+                testTwo.Id,
+                StokvelMemberRole.Treasurer),
 
             new StokvelMember(
-            communitySavers.Id,
-            testThree.Id,
-            StokvelMemberRole.Member));
+                communitySavers.Id,
+                testThree.Id,
+                StokvelMemberRole.Member),
+
+            new StokvelMember(
+                communitySavers.Id,
+                testOne.Id,
+                StokvelMemberRole.Member));
 
         var septemberCycle =
             new ContributionCycle(

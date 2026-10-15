@@ -11,12 +11,9 @@ public sealed class PaginationTests
 {
     private readonly PostgresApiFactory _factory;
 
-    private readonly HttpClient _client;
-
     public PaginationTests(PostgresApiFactory factory)
     {
         _factory = factory;
-        _client = factory.CreateClient();
     }
 
     [Fact]
@@ -28,8 +25,11 @@ public sealed class PaginationTests
                 _factory.Services,
                 memberCount: 5);
 
+        using var client = _factory.CreateAuthenticatedClient(
+            data.UserIds.First());
+
         var first =
-            await _client.GetFromJsonAsync<
+            await client.GetFromJsonAsync<
                 PagedResponse<
                     CycleContributionResponse>>(
                 $"/api/v1/stokvels/{data.StokvelId}" +
@@ -43,7 +43,7 @@ public sealed class PaginationTests
                 first.NextPageToken));
 
         var second =
-            await _client.GetFromJsonAsync<
+            await client.GetFromJsonAsync<
                 PagedResponse<
                     CycleContributionResponse>>(
                 $"/api/v1/stokvels/{data.StokvelId}" +
@@ -55,7 +55,7 @@ public sealed class PaginationTests
         Assert.Equal(2, second.Items.Count);
 
         var third =
-            await _client.GetFromJsonAsync<
+            await client.GetFromJsonAsync<
                 PagedResponse<
                     CycleContributionResponse>>(
                 $"/api/v1/stokvels/{data.StokvelId}" +
@@ -91,8 +91,11 @@ public sealed class PaginationTests
                 _factory.Services,
                 memberCount: 5);
 
+        using var client = _factory.CreateAuthenticatedClient(
+            data.UserIds.First());
+
         var response =
-            await _client.GetFromJsonAsync<
+            await client.GetFromJsonAsync<
                 PagedResponse<UserResponse>>(
                 $"/api/v1/stokvels/{data.StokvelId}" +
                 "/members?pageSize=2");
@@ -112,8 +115,11 @@ public sealed class PaginationTests
             await TestData.CreateAsync(
                 _factory.Services);
 
+        using var client = _factory.CreateAuthenticatedClient(
+            data.UserIds.First());
+
         var response =
-            await _client.GetAsync(
+            await client.GetAsync(
                 $"/api/v1/stokvels/{data.StokvelId}" +
                 $"/cycles/{data.CycleId}" +
                 "/contributions?pageSize=-1");
@@ -138,8 +144,11 @@ public sealed class PaginationTests
                 _factory.Services,
                 memberCount: 5);
 
+        using var client = _factory.CreateAuthenticatedClient(
+            data.UserIds.First());
+
         var first =
-            await _client.GetFromJsonAsync<
+            await client.GetFromJsonAsync<
                 PagedResponse<
                     CycleContributionResponse>>(
                 $"/api/v1/stokvels/{data.StokvelId}" +
@@ -149,7 +158,7 @@ public sealed class PaginationTests
         Assert.NotNull(first);
 
         var response =
-            await _client.GetAsync(
+            await client.GetAsync(
                 $"/api/v1/stokvels/{data.StokvelId}" +
                 $"/cycles/{data.CycleId}" +
                 "/contributions?pageSize=2" +

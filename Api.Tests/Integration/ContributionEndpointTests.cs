@@ -1,249 +1,97 @@
 using System.Net;
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Api.DTO;
+using Api.Tests.TestSupport;
 
 namespace Api.Tests.Integration;
 
+[Collection("Postgres collection")]
 public sealed class ContributionEndpointTests
 {
+    private readonly PostgresApiFactory _factory;
+
+    public ContributionEndpointTests(PostgresApiFactory factory)
+    {
+        _factory = factory;
+    }
+
     [Fact]
     public async Task RecordContribution_WhenSameRequestIsRetried_ReturnsIdenticalResponse()
     {
-        // testing the exact same contribution with the same Idempotency-Key 
-        // must return the original contribution instead of recording the payment twice.
+        // Create a genuine member and a cycle with no existing contributions.
+        var data = await TestData.CreateAsync(
+            _factory.Services,
+            memberCount: 1,
+            createContributions: false);
 
-        using var factory =
-            new WebApplicationFactory<Program>();
+        using var client = _factory.CreateAuthenticatedClient(
+            data.UserIds.First());
 
-        using var client =
-            factory.CreateClient();
+        var request = new RecordContributionRequest
+        {
+            UserId = data.UserIds.First(),
+            ContributionCycleId = data.CycleId,
+            Amount = 500m
+        };
 
-        // Get one of the seeded stokvels.
-        var stokvels =
-            await client.GetFromJsonAsync<List<StokvelResponse>>(
-                "/api/v1/stokvels");
+        var idempotencyKey = $"same-contribution-{Guid.NewGuid():N}";
+        var endpoint = $"/api/v1/stokvels/{data.StokvelId}/contributions";
 
-        Assert.NotNull(stokvels);
-        Assert.NotEmpty(stokvels);
+        async Task<HttpResponseMessage> SendAsync()
+        {
+            using var message = new HttpRequestMessage(HttpMethod.Post, endpoint);
+            message.Headers.Add("Idempotency-Key", idempotencyKey);
+            message.Content = JsonContent.Create(request);
+            return await client.SendAsync(message);
+        }
 
-        var stokvel =
-            stokvels.First();
+        using var first = await SendAsync();
+        Assert.Equal(HttpStatusCode.Created, first.StatusCode);
+        var firstBody = await first.Content.ReadAsStringAsync();
 
-        // Get an existing member of that stokvel.
-        var members =
-            (await client.GetFromJsonAsync<PagedResponse<UserResponse>>(
-                $"/api/v1/stokvels/{stokvel.Id}/members"))
-                ?.Items;
+        using var second = await SendAsync();
+        Assert.Equal(HttpStatusCode.Created, second.StatusCode);
+        var secondBody = await second.Content.ReadAsStringAsync();
 
-        Assert.NotNull(members);
-        Assert.NotEmpty(members);
-
-        var member =
-            members.First();
-
-        // Get an existing contribution cycle.
-        var cycles =
-            await client.GetFromJsonAsync<
-                List<ContributionCycleResponse>>(
-                    $"/api/v1/stokvels/{stokvel.Id}/cycles");
-
-        Assert.NotNull(cycles);
-        Assert.NotEmpty(cycles);
-
-        var cycle =
-            cycles.First();
-
-        var request =
-            new RecordContributionRequest
-            {
-                UserId = member.Id,
-                ContributionCycleId = cycle.Id,
-                Amount = stokvel.MonthlyContribution
-            };
-
-        const string idempotencyKey =
-            "same-contribution-request-test";
-
-        // Send the contribution for the first time.
-        using var firstRequest =
-            new HttpRequestMessage(
-                HttpMethod.Post,
-                $"/api/v1/stokvels/{stokvel.Id}/contributions");
-
-        firstRequest.Headers.Add(
-            "Idempotency-Key",
-            idempotencyKey);
-
-        firstRequest.Content =
-            JsonContent.Create(request);
-
-        var firstResponse =
-            await client.SendAsync(firstRequest);
-
-        Assert.Equal(
-            HttpStatusCode.Created,
-            firstResponse.StatusCode);
-
-        var firstBody =
-            await firstResponse.Content
-                .ReadAsStringAsync();
-
-        // Send exactly the same request again
-        // using exactly the same Idempotency-Key.
-        using var secondRequest =
-            new HttpRequestMessage(
-                HttpMethod.Post,
-                $"/api/v1/stokvels/{stokvel.Id}/contributions");
-
-        secondRequest.Headers.Add(
-            "Idempotency-Key",
-            idempotencyKey);
-
-        secondRequest.Content =
-            JsonContent.Create(request);
-
-        var secondResponse =
-            await client.SendAsync(secondRequest);
-
-        Assert.Equal(
-            HttpStatusCode.Created,
-            secondResponse.StatusCode);
-
-        var secondBody =
-            await secondResponse.Content
-                .ReadAsStringAsync();
-
-        // The second response must be the exact original result.
-        Assert.Equal(
-            firstBody,
-            secondBody);
+        // A replay must be byte-for-byte identical, not merely numerically equal.
+        Assert.Equal(firstBody, secondBody);
     }
-
 
     [Fact]
     public async Task RecordContribution_WhenIdempotencyKeyIsReusedWithDifferentPayload_Returns409ProblemJson()
     {
-        // The same Idempotency-Key cannot be reused for a different
-        // contribution request. A changed payload must return 409 Conflict.
+        var data = await TestData.CreateAsync(
+            _factory.Services,
+            memberCount: 1,
+            createContributions: false);
 
-        using var factory =
-            new WebApplicationFactory<Program>();
+        using var client = _factory.CreateAuthenticatedClient(
+            data.UserIds.First());
 
-        using var client =
-            factory.CreateClient();
+        var endpoint = $"/api/v1/stokvels/{data.StokvelId}/contributions";
+        var idempotencyKey = $"different-payload-{Guid.NewGuid():N}";
 
-        var stokvels =
-            await client.GetFromJsonAsync<List<StokvelResponse>>(
-                "/api/v1/stokvels");
-
-        Assert.NotNull(stokvels);
-        Assert.NotEmpty(stokvels);
-
-        var stokvel =
-            stokvels.First();
-
-        var memberPage =
-            await client.GetFromJsonAsync<PagedResponse<UserResponse>>(
-                $"/api/v1/stokvels/{stokvel.Id}/members");
-
-            var members = memberPage?.Items;
-
-        Assert.NotNull(members);
-        Assert.NotEmpty(members);
-
-        var member =
-            members.First();
-
-        var cycles =
-            await client.GetFromJsonAsync<
-                List<ContributionCycleResponse>>(
-                    $"/api/v1/stokvels/{stokvel.Id}/cycles");
-
-        Assert.NotNull(cycles);
-        Assert.NotEmpty(cycles);
-
-        var cycle =
-            cycles.First();
-
-        const string idempotencyKey =
-            "different-payload-test";
-
-        var originalRequest =
-            new RecordContributionRequest
+        async Task<HttpResponseMessage> SendAsync(decimal amount)
+        {
+            using var message = new HttpRequestMessage(HttpMethod.Post, endpoint);
+            message.Headers.Add("Idempotency-Key", idempotencyKey);
+            message.Content = JsonContent.Create(new RecordContributionRequest
             {
-                UserId = member.Id,
-                ContributionCycleId = cycle.Id,
-                Amount = stokvel.MonthlyContribution
-            };
+                UserId = data.UserIds.First(),
+                ContributionCycleId = data.CycleId,
+                Amount = amount
+            });
+            return await client.SendAsync(message);
+        }
 
-        // First request is valid and should succeed.
-        using var firstRequest =
-            new HttpRequestMessage(
-                HttpMethod.Post,
-                $"/api/v1/stokvels/{stokvel.Id}/contributions");
+        using var original = await SendAsync(500m);
+        Assert.Equal(HttpStatusCode.Created, original.StatusCode);
 
-        firstRequest.Headers.Add(
-            "Idempotency-Key",
-            idempotencyKey);
-
-        firstRequest.Content =
-            JsonContent.Create(originalRequest);
-
-        var firstResponse =
-            await client.SendAsync(firstRequest);
-
-        Assert.Equal(
-            HttpStatusCode.Created,
-            firstResponse.StatusCode);
-
-        // Reuse the same key but change the contribution amount.
-        var changedRequest =
-            new RecordContributionRequest
-            {
-                UserId = member.Id,
-                ContributionCycleId = cycle.Id,
-                Amount =
-                    stokvel.MonthlyContribution + 100m
-            };
-
-        using var secondRequest =
-            new HttpRequestMessage(
-                HttpMethod.Post,
-                $"/api/v1/stokvels/{stokvel.Id}/contributions");
-
-        secondRequest.Headers.Add(
-            "Idempotency-Key",
-            idempotencyKey);
-
-        secondRequest.Content =
-            JsonContent.Create(changedRequest);
-
-        var secondResponse =
-            await client.SendAsync(secondRequest);
-
-        // Same key + different payload must be rejected.
-        Assert.Equal(
-            HttpStatusCode.Conflict,
-            secondResponse.StatusCode);
-
-        // All API failures should use the centralized problem+json shape.
-        Assert.Equal(
-            "application/problem+json",
-            secondResponse.Content.Headers
-                .ContentType?
-                .MediaType);
-
-        var body =
-            await secondResponse.Content
-                .ReadAsStringAsync();
-
-        Assert.Contains(
-            "\"status\":409",
-            body);
-
-        Assert.Contains(
-            "correlationId",
-            body);
+        using var changed = await SendAsync(600m);
+        Assert.Equal(HttpStatusCode.Conflict, changed.StatusCode);
+        Assert.Equal("application/problem+json", changed.Content.Headers.ContentType?.MediaType);
+        var body = await changed.Content.ReadAsStringAsync();
+        Assert.Contains("\"status\":409", body);
+        Assert.Contains("correlationId", body);
     }
 }

@@ -7,7 +7,6 @@ using Api.Tests.TestSupport;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Api.Tests.TestSupport;
 
 namespace Api.Tests;
 
@@ -16,12 +15,9 @@ public sealed class ConcurrencyTests
 {
     private readonly PostgresApiFactory _factory;
 
-    private readonly HttpClient _client;
-
     public ConcurrencyTests(PostgresApiFactory factory)
     {
         _factory = factory;
-        _client = factory.CreateClient();
     }
 
     [Fact]
@@ -93,8 +89,11 @@ public sealed class ConcurrencyTests
                 _factory.Services,
                 memberCount: 1);
 
+        using var client = _factory.CreateAuthenticatedClient(
+            data.UserIds.First());
+
         var current =
-            await _client.GetFromJsonAsync<
+            await client.GetFromJsonAsync<
                 ContributionCycleResponse>(
                 $"/api/v1/stokvels/{data.StokvelId}" +
                 $"/cycles/{data.CycleId}");
@@ -115,7 +114,7 @@ public sealed class ConcurrencyTests
             };
 
         var firstResponse =
-            await _client.PutAsJsonAsync(
+            await client.PutAsJsonAsync(
                 $"/api/v1/stokvels/{data.StokvelId}" +
                 $"/cycles/{data.CycleId}",
                 firstUpdate);
@@ -150,7 +149,7 @@ public sealed class ConcurrencyTests
             };
 
         var staleResponse =
-            await _client.PutAsJsonAsync(
+            await client.PutAsJsonAsync(
                 $"/api/v1/stokvels/{data.StokvelId}" +
                 $"/cycles/{data.CycleId}",
                 staleUpdate);

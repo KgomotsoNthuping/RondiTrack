@@ -4,6 +4,13 @@ using Testcontainers.PostgreSql;
 using Xunit;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
+using System.Security.Claims;
+using System.Text;
+using Api.Auth;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Api.Tests.TestSupport;
 
@@ -15,7 +22,7 @@ public class PostgresApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     public TestLogProvider Logs { get; } =
         new();
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
+    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:17")
             .WithImage("postgres:17")
             .WithDatabase("ronditrack_test")
             .WithUsername("postgres")
@@ -58,13 +65,53 @@ public class PostgresApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             "RateLimiting:Payout:PermitLimit",
             "1000");
     }
+
+    public HttpClient CreateAuthenticatedClient(
+    Guid userId,
+    string role = "User")
+    {
+        var client = CreateClient();
+
+        var jwt = Services.GetRequiredService<JwtOptions>();
+
+        var key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(jwt.SigningKey));
+
+        var credentials = new SigningCredentials(
+            key,
+            SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
+            new Claim("sub", userId.ToString()),
+            new Claim("role", role)
+        };
+
+        var token = new JwtSecurityToken(
+            issuer: jwt.Issuer,
+            audience: jwt.Audience,
+            claims: claims,
+            notBefore: DateTime.UtcNow.AddMinutes(-1),
+            expires: DateTime.UtcNow.AddMinutes(30),
+            signingCredentials: credentials);
+
+        var tokenValue = new JwtSecurityTokenHandler()
+            .WriteToken(token);
+
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue(
+                "Bearer",
+                tokenValue);
+
+        return client;
+    }
     async Task IAsyncLifetime.DisposeAsync()
     {
         await _container.DisposeAsync();
     }
-}
 
-[CollectionDefinition("Postgres collection")]
-public class PostgresCollection : ICollectionFixture<PostgresApiFactory>
-{
+    [CollectionDefinition("Postgres collection")]
+    public class PostgresCollection : ICollectionFixture<PostgresApiFactory>
+    {
+    }
 }

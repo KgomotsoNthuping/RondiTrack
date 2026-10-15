@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace Api.Controllers;
 
 [ApiController]
-[Route(ApiRoutes.V1 + "api/auth")]
+[Route(ApiRoutes.V1 + "/auth")]
 public sealed class AuthController : ControllerBase
 {
     private readonly AuthService _authService;
@@ -29,7 +29,7 @@ public sealed class AuthController : ControllerBase
     {
         var user = await _authService.RegisterAsync(request);
 
-        return Created($"/api/users/{user.Id}", user.ToResponse());
+        return Created($"/{ApiRoutes.V1}/users/{user.Id}", user.ToResponse());
     }
 
     [AllowAnonymous]
@@ -87,7 +87,7 @@ public sealed class AuthController : ControllerBase
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
-                Path = "/api/auth",
+                Path = "/" + ApiRoutes.V1 + "/auth",
                 Expires = result.RefreshTokenExpiresAtUtc
             });
     }

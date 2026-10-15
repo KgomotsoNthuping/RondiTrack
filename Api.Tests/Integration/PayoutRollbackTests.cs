@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Api.Tests.TestSupport;
+using Microsoft.AspNetCore.TestHost;
 
 namespace Api.Tests.Integration;
 
@@ -135,11 +137,13 @@ public sealed class PayoutRollbackTests : IClassFixture<PayoutRollbackTests.Roll
         }
     }
 
-    public sealed class RollbackWebApplicationFactory : WebApplicationFactory<Program>
+    public sealed class RollbackWebApplicationFactory : PostgresApiFactory
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            builder.ConfigureServices(services =>
+            base.ConfigureWebHost(builder);
+
+            builder.ConfigureTestServices(services =>
             {
                 services.RemoveAll<IPayoutTransaction>();
 

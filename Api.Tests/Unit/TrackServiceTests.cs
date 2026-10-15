@@ -1,164 +1,134 @@
-using Infrastructure.Data;
-using Domain.Exceptions;
 using Api.Services;
-using Api.Data;
-using Api.Observability;
+using Api.Tests.TestSupport;
+using Domain.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Api.Tests.Unit;
 
+[Collection("Postgres collection")]
 public sealed class TrackServiceTests
 {
-    private static TrackService CreateService(
-    out InMemoryTrackStore store)
-{
-    store = new InMemoryTrackStore();
+    private readonly PostgresApiFactory _factory;
 
-    var idempotency =
-        new InMemoryIdempotency();
-
-    var services =
-        new ServiceCollection();
-
-    services.AddMetrics();
-    services.AddSingleton<Metrics>();
-
-    var provider =
-        services.BuildServiceProvider();
-
-    var metrics =
-        provider.GetRequiredService<Metrics>();
-
-    return new TrackService(
-        store,
-        idempotency,
-        metrics);
-}
-
-    /// <summary>
-    /// The service must reject an attempt to add someone who is already a member of that stokvel.
-    /// </summary>
-    [Fact]
-    public async Task AddMember_WhenMemberAlreadyExists_ThrowsDuplicateMembershipException()
+    public TrackServiceTests(
+        PostgresApiFactory factory)
     {
-        // Arrange
+        _factory = factory;
+    }
+
+    [Fact]
+    public async Task
+        AddMember_WhenMemberAlreadyExists_ThrowsDuplicateMembershipException()
+    {
+        var scenario =
+            await TestData.CreateAsync(
+                _factory.Services,
+                memberCount: 1,
+                createContributions: false);
+
+        using var scope =
+            _factory.Services.CreateScope();
+
         var service =
-            CreateService(out var store);
+            scope.ServiceProvider
+                .GetRequiredService<ITrackService>();
 
-        var stokvel =
-            (await store.GetStokvelsAsync())
-                .First();
+        var userId =
+            scenario.UserIds.Single();
 
-        var existingMember =
-            stokvel.Members.First();
-
-        // Act
         async Task Action()
         {
             await service.AddMemberAsync(
-                stokvel.Id,
-                existingMember.Id);
+                scenario.StokvelId,
+                userId);
         }
 
-        // Assert
         await Assert.ThrowsAsync<
             DuplicateMembershipException>(
                 Action);
     }
 
-
-    /// <summary>
-    /// A member cannot have two contributions recorded for the same contribution cycle, even when a different idempotency key is used.
-    /// </summary>
     [Fact]
-    public async Task RecordContribution_WhenSameMemberAlreadyPaidCycle_ThrowsDuplicateContributionException()
+    public async Task
+        RecordContribution_WhenSameMemberAlreadyPaidCycle_ThrowsDuplicateContributionException()
     {
-        // Arrange
+        var scenario =
+            await TestData.CreateAsync(
+                _factory.Services,
+                memberCount: 1,
+                createContributions: false);
+
+        using var scope =
+            _factory.Services.CreateScope();
+
         var service =
-            CreateService(out var store);
+            scope.ServiceProvider
+                .GetRequiredService<ITrackService>();
 
-        var stokvel =
-            (await store.GetStokvelsAsync())
-                .First();
+        var userId =
+            scenario.UserIds.Single();
 
-        var member =
-            stokvel.Members.First();
-
-        var cycles =
-            await store.GetContributionCyclesAsync(
-                stokvel.Id);
-
-        var cycle =
-            cycles.First();
-
-        // First contribution succeeds.
         await service.RecordContributionAsync(
-            stokvel.Id,
-            member.Id,
-            cycle.Id,
-            stokvel.MonthlyContribution,
-            "first-key");
+            scenario.StokvelId,
+            userId,
+            scenario.CycleId,
+            500m,
+            Guid.NewGuid().ToString("N"));
 
-        // Act
         async Task Action()
         {
             await service.RecordContributionAsync(
-                stokvel.Id,
-                member.Id,
-                cycle.Id,
-                stokvel.MonthlyContribution,
-                "second-key");
+                scenario.StokvelId,
+                userId,
+                scenario.CycleId,
+                500m,
+                Guid.NewGuid().ToString("N"));
         }
 
-        // Assert
         await Assert.ThrowsAsync<
             DuplicateContributionException>(
                 Action);
     }
 
-    /// <summary>
-    /// Retrying the exact same contribution request with the same idempotency key must return the original contribution instead of creating another payment.
-    /// </summary>
     [Fact]
-    public async Task RecordContribution_WhenSameIdempotencyKeyAndPayloadAreRepeated_ReturnsOriginalContribution()
+    public async Task
+        RecordContribution_WhenSameIdempotencyKeyAndPayloadAreRepeated_ReturnsOriginalContribution()
     {
-        // Arrange
+        var scenario =
+            await TestData.CreateAsync(
+                _factory.Services,
+                memberCount: 1,
+                createContributions: false);
+
+        using var scope =
+            _factory.Services.CreateScope();
+
         var service =
-            CreateService(out var store);
+            scope.ServiceProvider
+                .GetRequiredService<ITrackService>();
 
-        var stokvel =
-            (await store.GetStokvelsAsync())
-                .First();
+        var userId =
+            scenario.UserIds.Single();
 
-        var member =
-            stokvel.Members.First();
+        var key =
+            Guid.NewGuid().ToString("N");
 
-        var cycle =
-            (await store.GetContributionCyclesAsync(
-                stokvel.Id))
-                .First();
-
-        const string key =
-            "same-payment-key";
-
-        // Act
         var first =
             await service.RecordContributionAsync(
-                stokvel.Id,
-                member.Id,
-                cycle.Id,
-                stokvel.MonthlyContribution,
+                scenario.StokvelId,
+                userId,
+                scenario.CycleId,
+                500m,
                 key);
 
         var second =
             await service.RecordContributionAsync(
-                stokvel.Id,
-                member.Id,
-                cycle.Id,
-                stokvel.MonthlyContribution,
+                scenario.StokvelId,
+                userId,
+                scenario.CycleId,
+                500m,
                 key);
 
-        // Assert
         Assert.Equal(
             first.Id,
             second.Id);
@@ -168,50 +138,46 @@ public sealed class TrackServiceTests
             second.Amount);
     }
 
-    /// <summary>
-    /// The same idempotency key cannot be reused for a different contribution request. Changing the amount or other request data must cause a conflict.
-    /// </summary>
     [Fact]
-    public async Task RecordContribution_WhenSameKeyHasDifferentPayload_ThrowsIdempotencyConflictException()
+    public async Task
+        RecordContribution_WhenSameKeyHasDifferentPayload_ThrowsIdempotencyConflictException()
     {
-        // Arrange
+        var scenario =
+            await TestData.CreateAsync(
+                _factory.Services,
+                memberCount: 1,
+                createContributions: false);
+
+        using var scope =
+            _factory.Services.CreateScope();
+
         var service =
-            CreateService(out var store);
+            scope.ServiceProvider
+                .GetRequiredService<ITrackService>();
 
-        var stokvel =
-            (await store.GetStokvelsAsync())
-                .First();
+        var userId =
+            scenario.UserIds.Single();
 
-        var member =
-            stokvel.Members.First();
-
-        var cycle =
-            (await store.GetContributionCyclesAsync(
-                stokvel.Id))
-                .First();
-
-        const string key =
-            "payment-key";
+        var key =
+            Guid.NewGuid().ToString("N");
 
         await service.RecordContributionAsync(
-            stokvel.Id,
-            member.Id,
-            cycle.Id,
-            stokvel.MonthlyContribution,
+            scenario.StokvelId,
+            userId,
+            scenario.CycleId,
+            500m,
             key);
 
-        // Act
         async Task Action()
         {
             await service.RecordContributionAsync(
-                stokvel.Id,
-                member.Id,
-                cycle.Id,
-                stokvel.MonthlyContribution + 50m,
+                scenario.StokvelId,
+                userId,
+                scenario.CycleId,
+                550m,
                 key);
         }
 
-        // Assert
         await Assert.ThrowsAsync<
             IdempotencyConflictException>(
                 Action);

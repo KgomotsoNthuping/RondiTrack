@@ -1,24 +1,31 @@
 using System.Net;
 using System.Net.Http.Json;
 using Api.DTO;
+using Api.Tests.TestSupport;
+
 
 namespace Api.Tests.Integration;
 
+[Collection("Postgres collection")]
 public sealed class UserEndpointTests
 {
+
+     private readonly PostgresApiFactory _factory;
+
+    public UserEndpointTests(PostgresApiFactory factory)
+    {
+        _factory = factory;
+    }
     /// <summary>
     /// A correctly formed user request successfully creates a user and returns 201 Created with the new user's details.
     /// </summary>
     [Fact]
     public async Task CreateUser_WithValidRequest_Returns201AndCreatedUser()
     {
-        // A new factory gives this test its own in-memory application.
-        using var factory =
-            new Microsoft.AspNetCore.Mvc.Testing
-                .WebApplicationFactory<Program>();
+        
 
-        using var client =
-            factory.CreateClient();
+        using var client = _factory.CreateAuthenticatedClient(
+    Guid.NewGuid());
 
         var request =
             new CreateUserRequest
@@ -64,12 +71,10 @@ public sealed class UserEndpointTests
     [Fact]
     public async Task CreateUser_WithMalformedRequest_Returns400ProblemJson()
     {
-        using var factory =
-            new Microsoft.AspNetCore.Mvc.Testing
-                .WebApplicationFactory<Program>();
+        
 
-        using var client =
-            factory.CreateClient();
+        using var client = _factory.CreateAuthenticatedClient(
+    Guid.NewGuid());
 
         var request =
             new CreateUserRequest

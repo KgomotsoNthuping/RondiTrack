@@ -145,12 +145,18 @@ public class RondiTrackDbContext : DbContext
         entity.Property(contribution => contribution.Amount).HasPrecision(18, 2);
 
         entity.HasIndex(contribution => new
-            {
-                contribution.StokvelId,
-                contribution.UserId,
-                contribution.ContributionCycleId,
-                contribution.Id
-            }).IsUnique().HasDatabaseName("IX_Contributions_PagedCycleQuery");
+        {
+            contribution.StokvelId,
+            contribution.UserId,
+            contribution.ContributionCycleId
+        }).IsUnique().HasDatabaseName("UX_Contributions_Stokvel_User_Cycle");
+
+        entity.HasIndex(contribution => new
+        {
+            contribution.StokvelId,
+            contribution.ContributionCycleId,
+            contribution.Id
+        }).HasDatabaseName("IX_Contributions_PagedCycleQuery");
 
         entity.HasOne(contribution =>contribution.Member)
               .WithMany(member =>
@@ -183,6 +189,20 @@ public class RondiTrackDbContext : DbContext
             payout.StokvelId,
             payout.ContributionCycleId
         }).IsUnique().HasDatabaseName("UX_Payouts_Stokvel_Cycle");
+
+        entity.HasOne(payout => payout.RecipientMember)
+            .WithMany(member => member.Payouts)
+            .HasForeignKey(payout => new
+            {
+                payout.RecipientUserId,
+                payout.StokvelId
+            })
+            .HasPrincipalKey(member => new
+            {
+                member.UserId,
+                member.StokvelId
+            })
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
     private static void ConfigureRefreshTokens(ModelBuilder modelBuilder)

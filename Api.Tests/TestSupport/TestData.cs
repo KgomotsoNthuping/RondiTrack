@@ -9,7 +9,8 @@ public static class TestData
     public static async Task<TestScenario> CreateAsync(
         IServiceProvider services,
         int memberCount = 5,
-        bool createPayout = false)
+        bool createPayout = false,
+        bool createContributions = true)
     {
         using var scope = services.CreateScope();
 
@@ -60,22 +61,21 @@ public static class TestData
                     ? StokvelMemberRole.Admin
                     : StokvelMemberRole.Member;
 
-            var membership =
+            memberships.Add(
                 new StokvelMember(
                     stokvel.Id,
                     user.Id,
-                    role);
+                    role));
 
-            memberships.Add(membership);
-
-            var contribution =
-                new Contribution(
-                    stokvel.Id,
-                    user.Id,
-                    cycle.Id,
-                    500m + index);
-
-            contributions.Add(contribution);
+            if (createContributions)
+            {
+                contributions.Add(
+                    new Contribution(
+                        stokvel.Id,
+                        user.Id,
+                        cycle.Id,
+                        500m + index));
+            }
         }
 
         await dbContext.Stokvels
@@ -90,8 +90,11 @@ public static class TestData
         await dbContext.StokvelMembers
             .AddRangeAsync(memberships);
 
-        await dbContext.Contributions
-            .AddRangeAsync(contributions);
+        if (createContributions)
+        {
+            await dbContext.Contributions
+                .AddRangeAsync(contributions);
+        }
 
         Payout? payout = null;
 

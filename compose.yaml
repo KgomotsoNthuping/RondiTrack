@@ -24,7 +24,7 @@ services:
       dockerfile: Containerfile
 
     ports:
-      - "8080:8080"
+      - "8080-8081:8080"
 
     environment:
       ASPNETCORE_ENVIRONMENT: Development
@@ -33,6 +33,8 @@ services:
       ConnectionStrings__RondiTrack: "Host=postgres;Port=5432;Database=ronditrack;Username=postgres;Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}"
 
       Jwt__SigningKey: ${JWT_SIGNING_KEY:?Set JWT_SIGNING_KEY in .env}
+
+      Seed__DemoPassword: ${DEMO_PASSWORD:?Set DEMO_PASSWORD in .env}
 
       Cors__AllowedOrigins__0: http://localhost:3000
 

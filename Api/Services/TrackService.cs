@@ -197,15 +197,25 @@ public sealed class TrackService : ITrackService
 
                 await _store.AddContributionAsync(contribution);
 
-                await _idempotencyStore.SaveAsync(
-                idempotencyKey,
-                new IdempotencyRecord(
-                    signature,
-                    contribution));
+                    await _idempotencyStore.SaveAsync(
+                        idempotencyKey,
+                        new IdempotencyRecord(
+                            signature,
+                            contribution));
 
-                _metrics.ContributionRecorded();
-                
-                return contribution;
+                    var persisted =
+                        await _idempotencyStore.GetAsync(
+                            idempotencyKey);
+
+                    if (persisted is null)
+                    {
+                        throw new InvalidOperationException(
+                            "The saved idempotency record could not be reloaded.");
+                    }
+
+                    _metrics.ContributionRecorded();
+
+                    return persisted.Contribution;
             }
                     finally
                 {

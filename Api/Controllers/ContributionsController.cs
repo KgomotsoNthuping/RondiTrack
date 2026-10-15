@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace Api.Controllers;
 
 [ApiController]
-[Route(ApiRoutes.V1 + "api/stokvels/{stokvelId:guid}/contributions")]
+[Route(ApiRoutes.V1 + "/stokvels/{stokvelId:guid}/contributions")]
 public sealed class ContributionsController : ControllerBase
 {
     private readonly ITrackStore _store;

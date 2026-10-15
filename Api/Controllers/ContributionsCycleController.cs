@@ -11,7 +11,7 @@ using Api.Common;
 namespace Api.Controllers;
 
 [ApiController]
-[Route(ApiRoutes.V1 +"api/stokvels/{stokvelId:guid}/cycles")]
+[Route(ApiRoutes.V1 + "/stokvels/{stokvelId:guid}/cycles")]
 public sealed class ContributionsCycleController : ControllerBase
 {
     private readonly ITrackStore _store;

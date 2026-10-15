@@ -17,10 +17,7 @@ public sealed class CycleCloseBackgroundService
         ActivitySource =
             new(ActivitySourceName);
 
-    private static readonly TimeZoneInfo
-        SouthAfricaTimeZone =
-            TimeZoneInfo.FindSystemTimeZoneById(
-                "Africa/Johannesburg");
+    private readonly ICycleSchedule _schedule;
 
     private readonly IServiceScopeFactory
         _scopeFactory;
@@ -40,12 +37,14 @@ public sealed class CycleCloseBackgroundService
     public CycleCloseBackgroundService(
         IServiceScopeFactory scopeFactory,
         TimeProvider timeProvider,
+        ICycleSchedule schedule,
         CycleCloseOptions options,
         CycleCloseMetrics metrics,
         ILogger<
             CycleCloseBackgroundService> logger)
     {
         _scopeFactory = scopeFactory;
+        _schedule = schedule;
         _timeProvider = timeProvider;
         _options = options;
         _metrics = metrics;
@@ -93,14 +92,9 @@ public sealed class CycleCloseBackgroundService
             var now =
                 _timeProvider.GetUtcNow();
 
-            var localNow =
-                TimeZoneInfo.ConvertTime(
-                    now,
-                    SouthAfricaTimeZone);
-
             var localDate =
-                DateOnly.FromDateTime(
-                    localNow.DateTime);
+                _schedule.GetLocalDate(
+                    now);
 
             List<Guid> stokvelIds;
 
@@ -272,8 +266,8 @@ public sealed class CycleCloseBackgroundService
                         }
 
                         var closeInstant =
-                            GetCloseInstantUtc(
-                                cycle.EndDate!.Value);
+                            _schedule.GetCloseInstantUtc(
+                                cycle.EndDate.Value);
 
                         if (now <
                             closeInstant)
@@ -385,8 +379,8 @@ public sealed class CycleCloseBackgroundService
                             cycle.CycleNumber + 1;
 
                         var nextEndDate =
-                            cycle.EndDate.Value
-                                .AddMonths(1);
+                            _schedule.GetNextEndDate(
+                                cycle.EndDate.Value);
 
                         db.ContributionCycles.Add(
                             new ContributionCycle(
@@ -423,27 +417,6 @@ public sealed class CycleCloseBackgroundService
                             cyclesClosed,
                             arrearsRecorded);
                 });
-    }
-
-    private static DateTimeOffset
-        GetCloseInstantUtc(
-            DateOnly endDate)
-    {
-        var nextDay =
-            endDate.AddDays(1);
-
-        var localClose =
-            nextDay.ToDateTime(
-                TimeOnly.MinValue,
-                DateTimeKind.Unspecified);
-
-        var utc =
-            TimeZoneInfo.ConvertTimeToUtc(
-                localClose,
-                SouthAfricaTimeZone);
-
-        return new DateTimeOffset(
-            utc);
     }
 
     private static long ToCents(

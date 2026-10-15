@@ -10,7 +10,7 @@ using Api.Common;
 namespace Api.Controllers;
 
 [ApiController]
-[Route(ApiRoutes.V1 + "api/users")]
+[Route(ApiRoutes.V1 + "/users")]
 public sealed class UsersController : ControllerBase
 {
     private readonly ITrackStore _store;

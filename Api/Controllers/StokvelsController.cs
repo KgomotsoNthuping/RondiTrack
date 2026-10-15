@@ -8,7 +8,7 @@ using Api.Common;
 namespace Api.Controllers;
 
 [ApiController]
-[Route(ApiRoutes.V1 +"api/stokvels")]
+[Route(ApiRoutes.V1 +"/stokvels")]
 public sealed class StokvelsController : ControllerBase
 {
     private readonly ITrackStore _store;
