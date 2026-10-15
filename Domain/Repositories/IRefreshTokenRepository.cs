@@ -17,4 +17,8 @@ public interface IRefreshTokenRepository
     Task RevokeFamilyAsync(
         Guid familyId,
         DateTime revokedAtUtc);
+
+    Task<int> DeleteExpiredBeforeAsync(
+        DateTime cutoff,
+        CancellationToken cancellationToken = default);
 }

@@ -9,7 +9,7 @@ namespace Api.Services;
 public sealed class TrackService : ITrackService
 {
     private readonly ITrackStore _store;
-    private readonly IIdempotency _idempotencyStore;
+    private readonly IIdempotencyRepository _idempotencyStore;
     private readonly Metrics _metrics;
 
     // Keeps the contribution check and write together while using the in-memory implementation.
@@ -17,7 +17,7 @@ public sealed class TrackService : ITrackService
 
     public TrackService(
         ITrackStore store,
-        IIdempotency idempotencyStore,
+        IIdempotencyRepository idempotencyStore,
         Metrics metrics)
     {
         _store = store;

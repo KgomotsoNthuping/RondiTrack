@@ -117,9 +117,35 @@ builder.Services.AddScoped<
 
 // Stores Idempotency-Key results in memory.
 builder.Services.AddSingleton<
-    IIdempotency,
+    IIdempotencyRepository,
     InMemoryIdempotency>();
 
+builder.Services.AddSingleton(
+    new HousekeepingOptions(
+        Interval:
+            TimeSpan.FromMinutes(
+                builder.Configuration
+                    .GetValue(
+                        "BackgroundJobs:Housekeeping:IntervalMinutes",
+                        60)),
+
+        RefreshTokenRetention:
+            TimeSpan.FromDays(
+                builder.Configuration
+                    .GetValue(
+                        "BackgroundJobs:Housekeeping:RefreshTokenRetainExpiredDays",
+                        30)),
+
+        IdempotencyRetention:
+            TimeSpan.FromHours(
+                builder.Configuration
+                    .GetValue(
+                        "BackgroundJobs:Housekeeping:IdempotencyRetentionHours",
+                        48))));
+
+builder.Services.AddHostedService<
+    HousekeepingBackgroundService>();
+    
 // Contains RondiTrack business decisions.
 builder.Services.AddScoped<
     ITrackService,

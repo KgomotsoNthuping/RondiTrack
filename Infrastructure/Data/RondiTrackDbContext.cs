@@ -27,6 +27,8 @@ public class RondiTrackDbContext : DbContext
 
     public DbSet<Arrear> Arrears => Set<Arrear>();
 
+    public DbSet<IdempotencyEntry> IdempotencyEntries => Set<IdempotencyEntry>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -38,6 +40,7 @@ public class RondiTrackDbContext : DbContext
         ConfigurePayouts(modelBuilder);
         ConfigureRefreshTokens(modelBuilder);
         ConfigureArrears(modelBuilder);
+        ConfigureIdempotencyEntries(modelBuilder);
     }
 
     private static void ConfigureUsers(ModelBuilder modelBuilder)
@@ -249,5 +252,39 @@ public class RondiTrackDbContext : DbContext
                 DeleteBehavior.Restrict);
     }
 
-    
+    private static void ConfigureIdempotencyEntries(ModelBuilder modelBuilder)
+    {
+        var entity =
+            modelBuilder.Entity<
+                IdempotencyEntry>();
+
+        entity.HasKey(
+            value => value.Id);
+
+        entity.Property(
+                value => value.Key)
+            .IsRequired()
+            .HasMaxLength(200);
+
+        entity.HasIndex(
+                value => value.Key)
+            .IsUnique()
+            .HasDatabaseName(
+                "UX_IdempotencyEntries_Key");
+
+        entity.Property(
+                value => value.Amount)
+            .HasPrecision(18, 2);
+
+        entity.HasIndex(
+            value => value.CreatedAtUtc);
+
+        entity.HasOne<Contribution>()
+            .WithMany()
+            .HasForeignKey(
+                value =>
+                    value.ContributionId)
+            .OnDelete(
+                DeleteBehavior.Restrict);
+    }
 }

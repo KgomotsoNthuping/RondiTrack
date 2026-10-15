@@ -43,4 +43,17 @@ public sealed class EfRefreshTokenRepository : IRefreshTokenRepository
             .ExecuteUpdateAsync(setters => setters.SetProperty(
                     token => token.RevokedAtUtc, revokedAtUtc));
     }
+
+    public async Task<int>
+    DeleteExpiredBeforeAsync(
+        DateTime cutoff,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext
+            .RefreshTokens
+            .Where(token =>
+                token.ExpiresAtUtc < cutoff)
+            .ExecuteDeleteAsync(
+                cancellationToken);
+    }
 }
