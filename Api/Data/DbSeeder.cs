@@ -12,10 +12,17 @@ public static class DbSeeder
         IPasswordHasher<User> passwordHasher,
         string? demoPassword)
     {
+        
         if (await dbContext.Users.AnyAsync())
         {
+            await FrontendSeeder.SeedAsync(
+                dbContext,
+                passwordHasher,
+                demoPassword);
+
             return;
         }
+
 
         var testOne = new User(
             "Test One",
@@ -105,5 +112,12 @@ public static class DbSeeder
             .AddAsync(septemberCycle);
 
         await dbContext.SaveChangesAsync();
+
+        
+        await FrontendSeeder.SeedAsync(
+            dbContext,
+            passwordHasher,
+            demoPassword);
+
     }
 }
