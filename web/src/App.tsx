@@ -8,16 +8,13 @@ function App() {
   // are displayed below the dashboard.
   const familyStokvel = home.find(
     (stokvel) =>
-      stokvel.name === 'Lerato Family Savers (Demo)'
+      stokvel.name === 'Family Savers'
   )
 
   return (
     <main className="app">
       <header>
         <h1>RondiTrack</h1>
-        <p>
-          Your stokvel contributions, all in one place.
-        </p>
       </header>
 
       {/* STOKVEL DASHBOARD */}
