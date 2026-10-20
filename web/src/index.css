@@ -38,3 +38,48 @@ section {
   border-radius: 12px;
   background-color: white;
 }
+
+
+.stokvel-card {
+  padding: 24px;
+  border: 1px solid #dce2e8;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.stokvel-card__header {
+  margin-bottom: 18px;
+}
+
+.stokvel-card__header h2 {
+  margin: 0 0 8px;
+}
+
+.stokvel-card h3 {
+  font-size: 1rem;
+  margin: 0 0 10px;
+}
+
+.stokvel-card__cycle,
+.stokvel-card__payout,
+.stokvel-card__treasurer {
+  padding-top: 16px;
+  margin-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.stokvel-card__success {
+  color: #176d46;
+  font-weight: 600;
+}
+
+.stokvel-card__treasurer {
+  background: #f2f7fd;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.stokvel-card__treasurer ul {
+  padding-left: 20px;
+}
