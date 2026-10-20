@@ -83,3 +83,71 @@ section {
 .stokvel-card__treasurer ul {
   padding-left: 20px;
 }
+
+
+/* DASHBOARD SECTIONS */
+
+.dashboard-section {
+  margin-bottom: 28px;
+}
+
+.dashboard-section h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+/* STOKVEL CARD GRID */
+
+.stokvel-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+/* CONTRIBUTION LIST */
+
+.contribution-list {
+  display: grid;
+  gap: 14px;
+}
+
+/* CONTRIBUTION CARD */
+
+.contribution-card {
+  background: #ffffff;
+  border: 1px solid #dce2e8;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.contribution-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.contribution-card__header h3 {
+  margin: 0;
+}
+
+.contribution-card__status {
+  font-weight: 600;
+}
+
+.contribution-card p {
+  margin-bottom: 0;
+}
+
+/* RESPONSIVE DESIGN */
+
+@media (max-width: 700px) {
+  .stokvel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contribution-card__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
