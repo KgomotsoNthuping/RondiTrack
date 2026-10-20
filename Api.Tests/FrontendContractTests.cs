@@ -641,6 +641,26 @@ public sealed class FrontendContractTests
                 stokvel.TryGetProperty(
                     "nextPayoutDateUtc",
                     out _));
+
+            Assert.True(
+                stokvel.TryGetProperty(
+                    "stokvelId",
+                    out var stokvelId));
+
+            Assert.NotEqual(
+                Guid.Empty,
+                stokvelId.GetGuid());
+
+            Assert.True(
+                stokvel.TryGetProperty(
+                    "cycleStatus",
+                    out _));
+
+            Assert.True(
+                stokvel.TryGetProperty(
+                    "cycleDueDate",
+                    out _));
+
         }
     }
 

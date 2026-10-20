@@ -73,11 +73,23 @@ public sealed class MemberHomeService
 
                     membership.Role,
 
+                    StokvelId = stokvel.Id,
+
                     CurrentCycle =
                         stokvel.CurrentPeriod,
 
                     MonthlyContribution =
                         stokvel.MonthlyContribution,
+
+                    CycleDueDate =
+                        cycle == null
+                            ? (DateOnly?)null
+                            : cycle.EndDate,
+
+                    CycleClosedAtUtc =
+                        cycle == null
+                            ? (DateTime?)null
+                            : cycle.ClosedAtUtc,
 
                     CycleId =
                         cycle == null
@@ -127,43 +139,48 @@ public sealed class MemberHomeService
                     item => item.CycleId,
                     item => item.Amount);
 
-        var response =
-            stokvels
+        
+            var response = stokvels
                 .Select(item =>
                 {
+                    var hasCycle = item.CycleId.HasValue;
+
                     var paid =
-                        item.CycleId.HasValue &&
+                        hasCycle &&
                         payments.TryGetValue(
-                            item.CycleId.Value,
+                            item.CycleId!.Value,
                             out var amount)
                             ? amount
                             : 0m;
 
-                    var stillOwed =
-                        Math.Max(
-                            0m,
-                            item.MonthlyContribution -
-                            paid);
+                    var status = !hasCycle
+                        ? null
+                        : item.CycleClosedAtUtc.HasValue
+                            ? "Closed"
+                            : item.CycleStatus?.ToString();
 
-                    return new
-                        MemberStokvelHomeResponse(
-                            item.Name,
+                    var isOpen = status == "Open";
 
-                            item.Role.ToString(),
+                    var stillOwed = Math.Max(
+                        0m,
+                        item.MonthlyContribution - paid);
 
-                            item.CurrentCycle,
-
-                            ToCents(paid),
-
-                            ToCents(stillOwed),
-
-                            CalculateNextPayoutDate(
-                                item.CycleStatus));
+                    return new MemberStokvelHomeResponse(
+                        item.StokvelId,
+                        item.Name,
+                        item.Role.ToString(),
+                        hasCycle ? item.CurrentCycle : null,
+                        status,
+                        item.CycleDueDate,
+                        isOpen ? ToCents(paid) : null,
+                        isOpen ? ToCents(stillOwed) : null,
+                        isOpen
+                            ? CalculateNextPayoutDate(
+                                item.CycleStatus)
+                            : null);
                 })
                 .ToList();
-
-        return new MemberHomeResponse(
-            response);
+                return new MemberHomeResponse(response);
     }
 
     private static long ToCents(
