@@ -552,6 +552,7 @@ builder.Services.AddHostedService(
         provider.GetRequiredService<
             CycleCloseBackgroundService>());
 
+builder.Services.AddScoped<ContributionListService>();
 
 var app = builder.Build();
 

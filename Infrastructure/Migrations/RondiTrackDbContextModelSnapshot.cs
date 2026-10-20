@@ -69,6 +69,16 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("ContributionCycleId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("PaidAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasDefaultValue("Paid");
+
                     b.Property<Guid>("StokvelId")
                         .HasColumnType("uuid");
 

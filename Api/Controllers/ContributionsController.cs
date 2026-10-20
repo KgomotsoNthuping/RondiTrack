@@ -19,16 +19,61 @@ public sealed class ContributionsController : ControllerBase
     private readonly ITrackStore _store;
     private readonly ITrackService _service;
     private readonly StokvelAccessAuthorizer _access;
+    private readonly ContributionListService _listService;
 
     public ContributionsController(
         ITrackStore store,
         ITrackService service,
-        StokvelAccessAuthorizer access)
+        StokvelAccessAuthorizer access,
+        ContributionListService listService)
     {
         _store = store;
         _service = service;
         _access = access;
+        _listService = listService;
     }
+
+    [HttpGet]
+    public async Task<
+        ActionResult<PagedResponse<ContributionListItemResponse>>>
+        GetAll(
+            Guid stokvelId,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? pageToken = null)
+    {
+        if (!await _access.AuthorizeAsync(
+            User,
+            stokvelId,
+            Policies.StokvelMember))
+        {
+            return Forbid();
+        }
+
+        if (pageSize < 1 || pageSize > 100)
+        {
+            return BadRequest(
+                "pageSize must be between 1 and 100.");
+        }
+
+        var offset = 0;
+
+        if (!string.IsNullOrWhiteSpace(pageToken) &&
+            (!int.TryParse(pageToken, out offset) ||
+            offset < 0 ||
+            offset > int.MaxValue - pageSize))
+        {
+            return BadRequest(
+                "Invalid pageToken.");
+        }
+
+        var result = await _listService.GetAsync(
+            stokvelId,
+            pageSize,
+            offset);
+
+        return Ok(result);
+    }
+
 
     // GET /api/stokvels/{stokvelId}/contributions/{contributionId}
     [HttpGet("{contributionId:guid}")]

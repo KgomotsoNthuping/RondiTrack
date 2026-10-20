@@ -26,6 +26,14 @@ namespace Api.DTO;
     string UserFullName,
     StokvelMemberRole MemberRole,
     decimal Amount);
+    
+    public sealed record ContributionListItemResponse(
+        Guid Id,
+        long AmountInCents,
+        string Status,
+        DateTime? PaidAtUtc,
+        int CycleNumber);
+
 
     public class CycleContributionPageRequest
     {

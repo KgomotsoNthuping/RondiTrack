@@ -115,13 +115,11 @@ public sealed class MemberHomeService
         var payments =
             await _dbContext
                 .Contributions
-                .AsNoTracking()
+                .AsNoTracking()                
                 .Where(contribution =>
-                    contribution.UserId ==
-                        userId &&
-                    cycleIds.Contains(
-                        contribution
-                            .ContributionCycleId))
+                    contribution.UserId == userId &&
+                    contribution.Status != ContributionStatus.Pending &&
+                    cycleIds.Contains(contribution.ContributionCycleId))
                 .GroupBy(contribution =>
                     contribution
                         .ContributionCycleId)

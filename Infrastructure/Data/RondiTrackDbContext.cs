@@ -143,6 +143,15 @@ public class RondiTrackDbContext : DbContext
         entity.HasKey(contribution => contribution.Id);
 
         entity.Property(contribution => contribution.Amount).HasPrecision(18, 2);
+        
+        entity.Property(contribution => contribution.Status)
+            .HasConversion<string>()
+            .HasMaxLength(16)
+            .HasDefaultValue(ContributionStatus.Paid);
+
+        entity.Property(contribution => contribution.PaidAtUtc)
+            .HasColumnType("timestamp with time zone");
+
 
         entity.HasIndex(contribution => new
         {
