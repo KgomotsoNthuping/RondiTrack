@@ -6,6 +6,7 @@ import { ContributionCard } from './ContributionCard'
 
 const payment: ContributionItem = {
   id: '11111111-1111-1111-1111-111111111111',
+  contributionCycleId: 'cycle-001',
   amountInCents: 10,
   status: 'Paid',
   paidAtUtc: '2026-10-31T22:30:00Z',

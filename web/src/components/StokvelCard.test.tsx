@@ -14,6 +14,7 @@ const sample: MeHomeEntry = {
   paidThisCycleInCents: 50000,
   stillOwedInCents: 0,
   nextPayoutDateUtc: '2026-10-31T12:00:00Z',
+  arrearsInCents: 0,
 }
 
 describe('StokvelCard', () => {

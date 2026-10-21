@@ -14,6 +14,7 @@ export const home: MeHomeEntry[] = [
     paidThisCycleInCents: null,
     stillOwedInCents: null,
     nextPayoutDateUtc: null,
+    arrearsInCents: 0,
   },
   {
     stokvelId: '222-222',
@@ -25,6 +26,7 @@ export const home: MeHomeEntry[] = [
     paidThisCycleInCents: null,
     stillOwedInCents: null,
     nextPayoutDateUtc: null,
+    arrearsInCents: 0,
   }
 ]
 
@@ -32,6 +34,7 @@ export const home: MeHomeEntry[] = [
 export const contributions: ContributionItem[] = [
     {
         id: '3333-333',
+        contributionCycleId: 'cycle-001',
         amountInCents: 15050,
         status : 'Pending',
         paidAtUtc : '2026-10-20',

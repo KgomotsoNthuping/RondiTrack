@@ -1149,10 +1149,19 @@ export interface components {
             targetAmount: number;
             /** Format: uint32 */
             version: number;
+            status: string;
+            /** Format: date */
+            dueDate: null | string;
+            /** Format: int64 */
+            totalCollectedInCents: number;
+            /** Format: int64 */
+            amountDueInCents: number;
         };
         ContributionListItemResponse: {
             /** Format: uuid */
             id: string;
+            /** Format: uuid */
+            contributionCycleId: string;
             /** Format: int64 */
             amountInCents: number;
             status: string;
@@ -1225,6 +1234,8 @@ export interface components {
             stillOwedInCents: null | number;
             /** Format: date-time */
             nextPayoutDateUtc: null | string;
+            /** Format: int64 */
+            arrearsInCents: number;
         };
         PagedResponseOfContributionListItemResponse: {
             items: components["schemas"]["ContributionListItemResponse"][];
