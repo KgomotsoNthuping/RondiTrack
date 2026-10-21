@@ -580,6 +580,8 @@ using (var scope = app.Services.CreateScope())
         dbContext,
         passwordHasher,
         demoPassword);
+
+        await CycleSeeder.SeedAsync(dbContext);
 }
 
 app.UseExceptionHandler();
