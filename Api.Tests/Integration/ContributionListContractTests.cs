@@ -45,11 +45,28 @@ public sealed class ContributionListContractTests
         Assert.NotNull(first);
         Assert.Equal(2, first.Items.Count);
         Assert.NotEmpty(first.NextPageToken);
+        var cycles = await client.GetFromJsonAsync<
+    List<ContributionCycleResponse>>(
+        $"/api/v1/stokvels/{data.StokvelId}/cycles");
+
+Assert.NotNull(cycles);
+Assert.NotEmpty(cycles);
+
+var cycleIds = cycles
+    .Select(cycle => cycle.Id)
+    .ToHashSet();
 
         Assert.All(first.Items, item =>
         {
             Assert.Equal("Paid", item.Status);
             Assert.Equal(1, item.CycleNumber);
+            Assert.NotEqual(
+        Guid.Empty,
+        item.ContributionCycleId);
+
+        Assert.Contains(
+    item.ContributionCycleId,
+    cycleIds);
             Assert.NotNull(item.PaidAtUtc);
             Assert.Equal(
                 DateTimeKind.Utc,

@@ -28,11 +28,12 @@ namespace Api.DTO;
     decimal Amount);
     
     public sealed record ContributionListItemResponse(
-        Guid Id,
-        long AmountInCents,
-        string Status,
-        DateTime? PaidAtUtc,
-        int CycleNumber);
+    Guid Id,
+    Guid ContributionCycleId,
+    long AmountInCents,
+    string Status,
+    DateTime? PaidAtUtc,
+    int CycleNumber);
 
 
     public class CycleContributionPageRequest

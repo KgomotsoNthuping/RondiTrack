@@ -31,6 +31,7 @@ public sealed class ContributionListService
         var items = rows.Take(pageSize)
             .Select(c => new ContributionListItemResponse(
                 c.Id,
+                c.ContributionCycleId,
                 checked((long)decimal.Round(
                     c.Amount * 100m,
                     0,
