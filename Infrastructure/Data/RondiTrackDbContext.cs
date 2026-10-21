@@ -238,14 +238,11 @@ public class RondiTrackDbContext : DbContext
             .IsRowVersion();
     }
 
-    private static void ConfigureArrears(
-    ModelBuilder modelBuilder)
+    private static void ConfigureArrears(ModelBuilder modelBuilder)
     {
-        var entity =
-            modelBuilder.Entity<Arrear>();
+        var entity = modelBuilder.Entity<Arrear>();
 
-        entity.HasKey(
-            arrear => arrear.Id);
+        entity.HasKey( arrear => arrear.Id);
 
         entity.HasIndex(arrear => new
         {
@@ -254,16 +251,12 @@ public class RondiTrackDbContext : DbContext
             arrear.UserId
         })
         .IsUnique()
-        .HasDatabaseName(
-            "UX_Arrears_Stokvel_Cycle_User");
+        .HasDatabaseName("UX_Arrears_Stokvel_Cycle_User");
 
         entity.HasOne<ContributionCycle>()
             .WithMany()
-            .HasForeignKey(
-                arrear =>
-                    arrear.ContributionCycleId)
-            .OnDelete(
-                DeleteBehavior.Cascade);
+            .HasForeignKey(arrear =>arrear.ContributionCycleId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         entity.HasOne<StokvelMember>()
             .WithMany()
