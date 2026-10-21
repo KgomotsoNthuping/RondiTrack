@@ -301,6 +301,7 @@ public sealed class InMemoryTrackStore : ITrackStore
             _contributionCycles
                 .Where(cycle =>
                     cycle.StokvelId == stokvelId)
+                .OrderByDescending(cycle => cycle.CycleNumber)
                 .ToList()
                 .AsReadOnly();
 

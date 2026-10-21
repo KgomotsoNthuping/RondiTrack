@@ -29,17 +29,17 @@ describe('StokvelCard', () => {
     )
 
     expect(treasurer).toContain(
-      "You're the Treasurer",
+    'You&#x27;re the Treasurer',
     )
     expect(treasurer).toContain(
-      "Treasurer's next jobs",
+      'Treasurer&#x27;s next jobs',
     )
 
     expect(member).toContain(
-      "You're a Member",
+      'You&#x27;re a Member',
     )
     expect(member).not.toContain(
-      "Treasurer's next jobs",
+      'Treasurer&#x27;s next jobs',
     )
   })
 

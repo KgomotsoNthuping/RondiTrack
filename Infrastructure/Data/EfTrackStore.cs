@@ -214,13 +214,15 @@ public sealed class EfTrackStore : ITrackStore
     }
 
     // Contribution Cycles
-    public async Task<IReadOnlyCollection<ContributionCycle>> GetContributionCyclesAsync( Guid stokvelId)
-    {
-        return await _dbContext.ContributionCycles
-            .AsNoTracking()
-            .Where(cycle => cycle.StokvelId == stokvelId)
-            .ToListAsync();
-    }
+    public async Task<IReadOnlyCollection<ContributionCycle>>
+    GetContributionCyclesAsync(Guid stokvelId)
+{
+    return await _dbContext.ContributionCycles
+        .AsNoTracking()
+        .Where(cycle => cycle.StokvelId == stokvelId)
+        .OrderByDescending(cycle => cycle.CycleNumber)
+        .ToListAsync();
+}
 
     public async Task<ContributionCycle?> GetContributionCycleByIdAsync(
         Guid stokvelId,
