@@ -1,0 +1,4 @@
+/* Load after shadcn's index.css. Use shared semantic tokens in light and dark. */
+:root { --primary: #a3e635; --primary-foreground: #182014; --ring: #65a30d; }
+.dark { --primary: #bef264; --primary-foreground: #182014; --ring: #bef264; }
+html, body, #root { min-width: 0; }
