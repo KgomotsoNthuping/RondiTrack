@@ -190,14 +190,14 @@ public sealed class CycleCloseBackgroundServiceTests : IAsyncLifetime
         var scenario =
             await SeedTwoMemberCycleAsync(
                 new DateOnly(
-                    2099,
+                    2000,
                     1,
                     26));
 
         var clock =
             new FixedTimeProvider(
                 new DateTimeOffset(
-                    2099,
+                    2000,
                     1,
                     25,
                     10,

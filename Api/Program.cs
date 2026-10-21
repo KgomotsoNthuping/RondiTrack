@@ -33,17 +33,17 @@ using Api.Background;
 var builder = WebApplication.CreateBuilder(args);
 
 var allowedOrigins = builder.Configuration
-        .GetSection("Cors:AllowedOrigins")
-        .Get<string[]>() ?? [];
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? [];
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
 
-var jwtOptions = jwtSection.Get<JwtOptions>() ?? throw new InvalidOperationException("JWT configuration is missing.");
+var jwtOptions = jwtSection.Get<JwtOptions>()
+    ?? throw new InvalidOperationException(
+        "JWT configuration is missing.");
 
-if (string.IsNullOrWhiteSpace(
-        jwtOptions.SigningKey) ||
-    Encoding.UTF8.GetByteCount(
-        jwtOptions.SigningKey) < 32)
+if (string.IsNullOrWhiteSpace(jwtOptions.SigningKey) ||
+    Encoding.UTF8.GetByteCount(jwtOptions.SigningKey) < 32)
 {
     throw new InvalidOperationException(
         "Missing required setting: Jwt__SigningKey. " +
@@ -62,47 +62,44 @@ builder.Services.AddControllers(options =>
 })
 .AddJsonOptions(options =>
 {
-    options.AllowInputFormatterExceptionMessages =
-        false;
+    options.AllowInputFormatterExceptionMessages = false;
 
     options.JsonSerializerOptions.NumberHandling =
         JsonNumberHandling.Strict;
 });
 
-builder.Services.ConfigureHttpJsonOptions(
-    options =>
-    {
-        options.SerializerOptions.NumberHandling =
-            JsonNumberHandling.Strict;
-    });
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.NumberHandling =
+        JsonNumberHandling.Strict;
+});
 
-builder.Services.AddValidatorsFromAssemblyContaining<CreateUserRequestValidator>(); 
+builder.Services.AddValidatorsFromAssemblyContaining<
+    CreateUserRequestValidator>();
 
 builder.Services.AddScoped<ValidationFilter>();
 
 builder.Services.AddOpenApi();
 
-var connectionString =
-    builder.Configuration
-        .GetConnectionString(
-            "RondiTrack")
+var connectionString = builder.Configuration
+    .GetConnectionString("RondiTrack")
     ?? throw new InvalidOperationException(
         "Missing required setting: " +
         "ConnectionStrings__RondiTrack.");
-builder.Services.AddDbContext<RondiTrackDbContext>(options =>
-    {
-        options.UseNpgsql(
-            connectionString,
-            npgsqlOptions =>
-            {
-                npgsqlOptions.EnableRetryOnFailure(
-                    maxRetryCount: 3,
-                    maxRetryDelay: TimeSpan.FromSeconds(5),
-                    errorCodesToAdd: null);
-            });
-    });
 
-// Enables standardized Problem Details output.
+builder.Services.AddDbContext<RondiTrackDbContext>(options =>
+{
+    options.UseNpgsql(
+        connectionString,
+        npgsqlOptions =>
+        {
+            npgsqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 3,
+                maxRetryDelay: TimeSpan.FromSeconds(5),
+                errorCodesToAdd: null);
+        });
+});
+
 builder.Services.AddProblemDetails(options =>
 {
     options.CustomizeProblemDetails = context =>
@@ -115,15 +112,12 @@ builder.Services.AddProblemDetails(options =>
     };
 });
 
-// One centralized exception handler.
 builder.Services.AddExceptionHandler<ExceptionHandler>();
 
-// To use inmemory store instance 
 builder.Services.AddScoped<
     ITrackStore,
     EfTrackStore>();
 
-// Stores Idempotency-Key results in PostgreSQL.
 builder.Services.AddScoped<
     IIdempotencyRepository,
     EfIdempotencyRepository>();
@@ -132,29 +126,25 @@ builder.Services.AddSingleton(
     new HousekeepingOptions(
         Interval:
             TimeSpan.FromMinutes(
-                builder.Configuration
-                    .GetValue(
-                        "BackgroundJobs:Housekeeping:IntervalMinutes",
-                        60)),
+                builder.Configuration.GetValue(
+                    "BackgroundJobs:Housekeeping:IntervalMinutes",
+                    60)),
 
         RefreshTokenRetention:
             TimeSpan.FromDays(
-                builder.Configuration
-                    .GetValue(
-                        "BackgroundJobs:Housekeeping:RefreshTokenRetainExpiredDays",
-                        30)),
+                builder.Configuration.GetValue(
+                    "BackgroundJobs:Housekeeping:RefreshTokenRetainExpiredDays",
+                    30)),
 
         IdempotencyRetention:
             TimeSpan.FromHours(
-                builder.Configuration
-                    .GetValue(
-                        "BackgroundJobs:Housekeeping:IdempotencyRetentionHours",
-                        48))));
+                builder.Configuration.GetValue(
+                    "BackgroundJobs:Housekeeping:IdempotencyRetentionHours",
+                    48))));
 
 builder.Services.AddHostedService<
     HousekeepingBackgroundService>();
-    
-// Contains RondiTrack business decisions.
+
 builder.Services.AddScoped<
     ITrackService,
     TrackService>();
@@ -163,7 +153,6 @@ builder.Services.AddScoped<
     ICycleCloseRepository,
     EfCycleCloseRepository>();
 
-// Processes payouts inside an explicit database transaction.
 builder.Services.AddScoped<
     IPayoutService,
     PayoutService>();
@@ -171,10 +160,6 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     IPayoutTransaction,
     NoOpPayoutTransaction>();
-
-builder.Services.AddScoped<
-    IPayoutService,
-    PayoutService>();
 
 builder.Services.AddScoped<
     IContributionQueryService,
@@ -192,7 +177,8 @@ builder.Services.AddScoped<AuthService>();
 
 builder.Services.AddAuthorization(options =>
 {
-    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+    options.FallbackPolicy =
+        new AuthorizationPolicyBuilder()
             .RequireAuthenticatedUser()
             .Build();
 
@@ -219,8 +205,7 @@ builder.Services.AddAuthorization(options =>
         });
 });
 
-builder.Services.AddSingleton<
-    TokenService>();
+builder.Services.AddSingleton<TokenService>();
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -228,7 +213,8 @@ builder.Services
     {
         options.MapInboundClaims = false;
 
-        options.TokenValidationParameters = new TokenValidationParameters
+        options.TokenValidationParameters =
+            new TokenValidationParameters
             {
                 ValidateIssuer = true,
                 ValidIssuer = jwtOptions.Issuer,
@@ -237,15 +223,19 @@ builder.Services
                 ValidAudience = jwtOptions.Audience,
 
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
 
                 ValidateLifetime = true,
 
                 ClockSkew = TimeSpan.FromSeconds(30),
 
-                 RoleClaimType = "role",
+                RoleClaimType = "role",
 
-                ValidAlgorithms = [ SecurityAlgorithms.HmacSha256 ]
+                ValidAlgorithms =
+                [
+                    SecurityAlgorithms.HmacSha256
+                ]
             };
     });
 
@@ -257,83 +247,83 @@ builder.Services.AddScoped<
     IAuthorizationHandler,
     StokvelAuthorizationHandler>();
 
-builder.Services.AddScoped<
-    StokvelAccessAuthorizer>();
+builder.Services.AddScoped<StokvelAccessAuthorizer>();
 
-builder.Services.AddSingleton<
-    Metrics>();
+builder.Services.AddSingleton<Metrics>();
 
 var openTelemetry = builder.Services
-        .AddOpenTelemetry()
-        .ConfigureResource(resource => resource.AddService(Telemetry.ServiceName))
-        .WithTracing(tracing =>
-        {
-            tracing
-                .AddSource(Telemetry.ActivitySourceName)
-                .AddSource(CycleCloseBackgroundService.ActivitySourceName)
-                .AddAspNetCoreInstrumentation(options =>
-                    {
-                        options.Filter = httpContext => !httpContext
-                                    .Request
-                                    .Path
-                                    .StartsWithSegments("/health");
-                    })
-                .AddNpgsql();
-        })
-        .WithMetrics(metrics =>
-        {
-            metrics
-                .AddAspNetCoreInstrumentation()
-                .AddMeter("System.Runtime")
-                .AddMeter(CycleCloseMetrics.MeterName)
-                .AddMeter(Metrics.MeterName);
-        })
-        .WithLogging();
+    .AddOpenTelemetry()
+    .ConfigureResource(
+        resource =>
+            resource.AddService(Telemetry.ServiceName))
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddSource(Telemetry.ActivitySourceName)
+            .AddSource(CycleCloseBackgroundService.ActivitySourceName)
+            .AddAspNetCoreInstrumentation(options =>
+            {
+                options.Filter = httpContext =>
+                    !httpContext.Request.Path
+                        .StartsWithSegments("/health");
+            })
+            .AddNpgsql();
+    })
+    .WithMetrics(metrics =>
+    {
+        metrics
+            .AddAspNetCoreInstrumentation()
+            .AddMeter("System.Runtime")
+            .AddMeter(CycleCloseMetrics.MeterName)
+            .AddMeter(Metrics.MeterName);
+    })
+    .WithLogging();
 
 if (!string.IsNullOrWhiteSpace(
-        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]))
+    builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]))
 {
     openTelemetry.UseOtlpExporter();
 }
 
 builder.Services
     .AddHealthChecks()
-    .AddDbContextCheck<RondiTrackDbContext>("database",tags: ["ready"]);
+    .AddDbContextCheck<RondiTrackDbContext>(
+        "database",
+        tags: ["ready"]);
 
-builder.Services.Configure< HealthCheckServiceOptions>(options =>
+builder.Services.Configure<HealthCheckServiceOptions>(options =>
+{
+    foreach (var registration in options.Registrations)
     {
-        foreach (var registration in options.Registrations)
-        {
-            registration.Timeout = TimeSpan.FromSeconds(3);
-        }
-    });
+        registration.Timeout = TimeSpan.FromSeconds(3);
+    }
+});
 
 builder.Services.AddCors(options =>
-    {
-        options.AddPolicy(
-            CorsPolicies.Frontend,
-            policy =>
-            {
-                policy
-                    .WithOrigins(
-                        allowedOrigins)
-                    .AllowCredentials()
-                    .WithMethods(
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "DELETE")
-                    .WithHeaders(
-                        "Authorization",
-                        "Content-Type",
-                        "Idempotency-Key",
-                        "traceparent")
-                    .WithExposedHeaders(
-                        "Retry-After")
-                    .SetPreflightMaxAge(
-                        TimeSpan.FromMinutes(10));
-            });
-    });
+{
+    options.AddPolicy(
+        CorsPolicies.Frontend,
+        policy =>
+        {
+            policy
+                .WithOrigins(allowedOrigins)
+                .AllowCredentials()
+                .WithMethods(
+                    "GET",
+                    "POST",
+                    "PUT",
+                    "DELETE")
+                .WithHeaders(
+                    "Authorization",
+                    "Content-Type",
+                    "Idempotency-Key",
+                    "traceparent")
+                .WithExposedHeaders(
+                    "Retry-After")
+                .SetPreflightMaxAge(
+                    TimeSpan.FromMinutes(10));
+        });
+});
 
 var loginPermitLimit =
     builder.Configuration.GetValue(
@@ -346,8 +336,7 @@ var loginWindowSeconds =
         60);
 
 var loginWindow =
-    TimeSpan.FromSeconds(
-        loginWindowSeconds);
+    TimeSpan.FromSeconds(loginWindowSeconds);
 
 var contributionPermitLimit =
     builder.Configuration.GetValue(
@@ -371,160 +360,116 @@ var payoutWindow =
             "RateLimiting:Payout:WindowSeconds",
             60));
 
-builder.Services.AddRateLimiter(
-    options =>
-    {
-        options.AddPolicy(
-            RateLimitPolicies.Login,
-            httpContext =>
-                RateLimitPartition
-                    .GetFixedWindowLimiter(
-                        partitionKey:
-                            httpContext.Connection
-                                .RemoteIpAddress?
-                                .ToString()
-                            ?? "unknown",
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy(
+        RateLimitPolicies.Login,
+        httpContext =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey:
+                    httpContext.Connection.RemoteIpAddress?
+                        .ToString() ?? "unknown",
 
-                        factory: _ =>
-                            new FixedWindowRateLimiterOptions
-                            {
-                                PermitLimit =
-                                    loginPermitLimit,
-
-                                Window =
-                                    loginWindow,
-
-                                QueueLimit = 0,
-
-                                AutoReplenishment = true
-                            }));
-
-        options.RejectionStatusCode =
-            StatusCodes.Status429TooManyRequests;
-
-        options.AddPolicy(
-            RateLimitPolicies.Contribution,
-            httpContext =>
-            {
-                var userId =
-                    httpContext.User
-                        .FindFirst("sub")?
-                        .Value
-                    ?? "anonymous";
-
-                return RateLimitPartition
-                    .GetFixedWindowLimiter(
-                        partitionKey: userId,
-                        factory: _ =>
-                            new FixedWindowRateLimiterOptions
-                            {
-                                PermitLimit =
-                                    contributionPermitLimit,
-
-                                Window =
-                                    contributionWindow,
-
-                                QueueLimit = 0,
-
-                                AutoReplenishment = true
-                            });
-            });
-
-            options.AddPolicy(
-                RateLimitPolicies.Payout,
-                httpContext =>
-                {
-                    var userId =
-                        httpContext.User
-                            .FindFirst("sub")?
-                            .Value
-                        ?? "anonymous";
-
-                    return RateLimitPartition
-                        .GetFixedWindowLimiter(
-                            partitionKey: userId,
-                            factory: _ =>
-                                new FixedWindowRateLimiterOptions
-                                {
-                                    PermitLimit =
-                                        payoutPermitLimit,
-
-                                    Window =
-                                        payoutWindow,
-
-                                    QueueLimit = 0,
-
-                                    AutoReplenishment = true
-                                });
-                });
-
-        options.OnRejected =
-            async (
-                context,
-                cancellationToken) =>
-            {
-                var retryAfter =
-                    loginWindow;
-
-                if (context.Lease.TryGetMetadata(
-                        MetadataName.RetryAfter,
-                        out var metadataRetryAfter))
-                {
-                    retryAfter =
-                        metadataRetryAfter;
-                }
-
-                var retrySeconds =
-                    Math.Max(
-                        1,
-                        (int)Math.Ceiling(
-                            retryAfter.TotalSeconds));
-
-                context.HttpContext
-                    .Response
-                    .Headers
-                    .RetryAfter =
-                        retrySeconds.ToString();
-
-                var problemDetailsService =
-                    context.HttpContext
-                        .RequestServices
-                        .GetRequiredService<
-                            IProblemDetailsService>();
-
-                var problem =
-                    new ProblemDetails
+                factory: _ =>
+                    new FixedWindowRateLimiterOptions
                     {
-                        Status =
-                            StatusCodes
-                                .Status429TooManyRequests,
+                        PermitLimit = loginPermitLimit,
+                        Window = loginWindow,
+                        QueueLimit = 0,
+                        AutoReplenishment = true
+                    }));
 
-                        Title =
-                            "Too Many Requests",
+    options.RejectionStatusCode =
+        StatusCodes.Status429TooManyRequests;
 
-                        Detail =
-                            $"Too many attempts. Try again in {retrySeconds} seconds.",
+    options.AddPolicy(
+        RateLimitPolicies.Contribution,
+        httpContext =>
+        {
+            var userId =
+                httpContext.User.FindFirst("sub")?.Value
+                ?? "anonymous";
 
-                        Instance =
-                            context.HttpContext
-                                .Request.Path
-                    };
+            return RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: userId,
+                factory: _ =>
+                    new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = contributionPermitLimit,
+                        Window = contributionWindow,
+                        QueueLimit = 0,
+                        AutoReplenishment = true
+                    });
+        });
 
-                await problemDetailsService
-                    .TryWriteAsync(
-                        new ProblemDetailsContext
-                        {
-                            HttpContext =
-                                context.HttpContext,
+    options.AddPolicy(
+        RateLimitPolicies.Payout,
+        httpContext =>
+        {
+            var userId =
+                httpContext.User.FindFirst("sub")?.Value
+                ?? "anonymous";
 
-                            ProblemDetails =
-                                problem
-                        });
+            return RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: userId,
+                factory: _ =>
+                    new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = payoutPermitLimit,
+                        Window = payoutWindow,
+                        QueueLimit = 0,
+                        AutoReplenishment = true
+                    });
+        });
+
+    options.OnRejected =
+        async (context, cancellationToken) =>
+        {
+            var retryAfter = loginWindow;
+
+            if (context.Lease.TryGetMetadata(
+                MetadataName.RetryAfter,
+                out var metadataRetryAfter))
+            {
+                retryAfter = metadataRetryAfter;
+            }
+
+            var retrySeconds = Math.Max(
+                1,
+                (int)Math.Ceiling(
+                    retryAfter.TotalSeconds));
+
+            context.HttpContext.Response.Headers.RetryAfter =
+                retrySeconds.ToString();
+
+            var problemDetailsService =
+                context.HttpContext.RequestServices
+                    .GetRequiredService<IProblemDetailsService>();
+
+            var problem = new ProblemDetails
+            {
+                Status =
+                    StatusCodes.Status429TooManyRequests,
+
+                Title = "Too Many Requests",
+
+                Detail =
+                    $"Too many attempts. Try again in {retrySeconds} seconds.",
+
+                Instance =
+                    context.HttpContext.Request.Path
             };
-    });
 
-builder.Services.AddSingleton(
-    TimeProvider.System);
+            await problemDetailsService.TryWriteAsync(
+                new ProblemDetailsContext
+                {
+                    HttpContext = context.HttpContext,
+                    ProblemDetails = problem
+                });
+        };
+});
+
+builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddSingleton<
     ICycleSchedule,
@@ -541,8 +486,7 @@ builder.Services.AddSingleton(
                 "BackgroundJobs:CycleClose:IntervalMinutes",
                 5))));
 
-builder.Services.AddSingleton<
-    CycleCloseMetrics>();
+builder.Services.AddSingleton<CycleCloseMetrics>();
 
 builder.Services.AddSingleton<
     CycleCloseBackgroundService>();
@@ -556,44 +500,43 @@ builder.Services.AddScoped<ContributionListService>();
 
 var app = builder.Build();
 
-// Recreates the development data previously provided
-// by InMemoryTrackStore when the database is empty.
 using (var scope = app.Services.CreateScope())
 {
     var dbContext =
         scope.ServiceProvider
-            .GetRequiredService<
-                RondiTrackDbContext>();
+            .GetRequiredService<RondiTrackDbContext>();
 
     var passwordHasher =
         scope.ServiceProvider
-            .GetRequiredService<
-                IPasswordHasher<User>>();
+            .GetRequiredService<IPasswordHasher<User>>();
 
     var demoPassword =
-        app.Configuration[
-            "Seed:DemoPassword"];
+        app.Configuration["Seed:DemoPassword"];
 
     await dbContext.Database.MigrateAsync();
 
-    await DbSeeder.SeedAsync(
-    dbContext,
-    passwordHasher,
-    demoPassword,
-    resetDemoPasswords:
-        app.Environment.IsDevelopment() &&
-        app.Configuration.GetValue<bool>(
-            "Seed:ResetDemoPasswords"));
+    if (app.Configuration.GetValue<bool>(
+        "Seed:Enabled",
+        true))
+    {
+        await DbSeeder.SeedAsync(
+            dbContext,
+            passwordHasher,
+            demoPassword,
+            resetDemoPasswords:
+                app.Environment.IsDevelopment() &&
+                app.Configuration.GetValue<bool>(
+                    "Seed:ResetDemoPasswords"));
 
         await CycleSeeder.SeedAsync(dbContext);
+    }
 }
 
 app.UseExceptionHandler();
 
 app.UseStatusCodePages(async context =>
 {
-    var response =
-        context.HttpContext.Response;
+    var response = context.HttpContext.Response;
 
     if (response.StatusCode !=
             StatusCodes.Status401Unauthorized &&
@@ -605,8 +548,7 @@ app.UseStatusCodePages(async context =>
 
     var problemDetailsService =
         context.HttpContext.RequestServices
-            .GetRequiredService<
-                IProblemDetailsService>();
+            .GetRequiredService<IProblemDetailsService>();
 
     var title =
         response.StatusCode ==
@@ -623,25 +565,15 @@ app.UseStatusCodePages(async context =>
     await problemDetailsService.TryWriteAsync(
         new ProblemDetailsContext
         {
-            HttpContext =
-                context.HttpContext,
+            HttpContext = context.HttpContext,
 
-            ProblemDetails =
-                new ProblemDetails
-                {
-                    Status =
-                        response.StatusCode,
-
-                    Title =
-                        title,
-
-                    Detail =
-                        detail,
-
-                    Instance =
-                        context.HttpContext
-                            .Request.Path
-                }
+            ProblemDetails = new ProblemDetails
+            {
+                Status = response.StatusCode,
+                Title = title,
+                Detail = detail,
+                Instance = context.HttpContext.Request.Path
+            }
         });
 });
 
@@ -655,27 +587,34 @@ if (app.Environment.IsDevelopment())
     }).AllowAnonymous();
 }
 
-app.MapHealthChecks("/health/live", new HealthCheckOptions
+app.MapHealthChecks(
+    "/health/live",
+    new HealthCheckOptions
     {
         Predicate = _ => false
-    }).AllowAnonymous();
+    })
+    .AllowAnonymous();
 
-app.MapHealthChecks("/health/ready", new HealthCheckOptions
+app.MapHealthChecks(
+    "/health/ready",
+    new HealthCheckOptions
     {
-        Predicate = check => check.Tags.Contains("ready")
-    }).AllowAnonymous();
-
-// app.UseHttpsRedirection();
+        Predicate = check =>
+            check.Tags.Contains("ready")
+    })
+    .AllowAnonymous();
 
 app.UseHsts();
+
 app.UseCors(CorsPolicies.Frontend);
+
 app.UseAuthentication();
+
 app.UseRateLimiter();
+
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
-
-// To makeentry point for integration tests
 public partial class Program { }
