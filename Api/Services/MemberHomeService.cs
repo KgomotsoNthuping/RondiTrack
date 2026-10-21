@@ -137,48 +137,71 @@ public sealed class MemberHomeService
                     item => item.CycleId,
                     item => item.Amount);
 
-        
-            var response = stokvels
-                .Select(item =>
-                {
-                    var hasCycle = item.CycleId.HasValue;
+        var stokvelIds = stokvels
+            .Select(item => item.StokvelId)
+            .Distinct()
+            .ToList();
 
-                    var paid =
-                        hasCycle &&
-                        payments.TryGetValue(
-                            item.CycleId!.Value,
-                            out var amount)
-                            ? amount
-                            : 0m;
+        // Only the signed-in member's recorded shortfalls are returned.
+        var arrearsByStokvel = await _dbContext
+            .Arrears
+            .AsNoTracking()
+            .Where(arrear =>
+                arrear.UserId == userId &&
+                stokvelIds.Contains(arrear.StokvelId))
+            .GroupBy(arrear => arrear.StokvelId)
+            .Select(group => new
+            {
+                StokvelId = group.Key,
+                TotalInCents = group.Sum(arrear => arrear.ShortfallInCents)
+            })
+            .ToDictionaryAsync(
+                item => item.StokvelId,
+                item => item.TotalInCents);
 
-                    var status = !hasCycle
-                        ? null
+        var response = stokvels
+            .Select(item =>
+            {
+                var hasCycle = item.CycleId.HasValue;
+
+                var paid = hasCycle &&
+                    payments.TryGetValue(item.CycleId!.Value, out var amount)
+                        ? amount
+                        : 0m;
+
+                var status = !hasCycle
+                    ? null
+                    : item.CycleStatus == ContributionCycleStatus.PaidOut
+                        ? "PaidOut"
                         : item.CycleClosedAtUtc.HasValue
                             ? "Closed"
-                            : item.CycleStatus?.ToString();
+                            : "Open";
 
-                    var isOpen = status == "Open";
+                var isOpen = status == "Open";
+                var stillOwed = Math.Max(0m, item.MonthlyContribution - paid);
+                var arrearsInCents = arrearsByStokvel.TryGetValue(
+                    item.StokvelId,
+                    out var total)
+                        ? total
+                        : 0L;
 
-                    var stillOwed = Math.Max(
-                        0m,
-                        item.MonthlyContribution - paid);
+                return new MemberStokvelHomeResponse(
+                    item.StokvelId,
+                    item.Name,
+                    item.Role.ToString(),
+                    hasCycle ? item.CurrentCycle : null,
+                    status,
+                    item.CycleDueDate,
+                    isOpen ? ToCents(paid) : null,
+                    isOpen ? ToCents(stillOwed) : null,
+                    isOpen
+                        ? CalculateNextPayoutDate(item.CycleStatus)
+                        : null,
+                    arrearsInCents);
+            })
+            .ToList();
 
-                    return new MemberStokvelHomeResponse(
-                        item.StokvelId,
-                        item.Name,
-                        item.Role.ToString(),
-                        hasCycle ? item.CurrentCycle : null,
-                        status,
-                        item.CycleDueDate,
-                        isOpen ? ToCents(paid) : null,
-                        isOpen ? ToCents(stillOwed) : null,
-                        isOpen
-                            ? CalculateNextPayoutDate(
-                                item.CycleStatus)
-                            : null);
-                })
-                .ToList();
-                return new MemberHomeResponse(response);
+        return new MemberHomeResponse(response);
     }
 
     private static long ToCents(

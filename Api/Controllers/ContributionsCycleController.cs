@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Domain.Models;
+using Infrastructure.Data;
 using Api.DTO;
 using Api.Data;
 using Domain.Exceptions;
@@ -16,6 +19,8 @@ public sealed class ContributionsCycleController : ControllerBase
 {
     private readonly ITrackStore _store;
 
+    private readonly RondiTrackDbContext _dbContext;
+
     private readonly IContributionQueryService _contributionQueryService;
 
     private readonly StokvelAccessAuthorizer _access;
@@ -23,11 +28,13 @@ public sealed class ContributionsCycleController : ControllerBase
     public ContributionsCycleController(
         ITrackStore store,
         IContributionQueryService contributionQueryService,
-        StokvelAccessAuthorizer access)
+        StokvelAccessAuthorizer access,
+        RondiTrackDbContext dbContext)
     {
         _store = store;
         _contributionQueryService = contributionQueryService;
         _access = access;
+        _dbContext = dbContext;
     }
 
     // GET /api/stokvels/{stokvelId}/cycles
@@ -52,11 +59,26 @@ public sealed class ContributionsCycleController : ControllerBase
                 .GetContributionCyclesAsync(
                     stokvelId);
 
-        return Ok(
-            cycles
-                .Select(cycle =>
-                    cycle.ToResponse())
-                .ToList());
+        // Aggregate once for the entire stokvel, not once per cycle.
+        // Pending payments have not been made and must not count as collected.
+        var totals = await _dbContext.Contributions
+            .AsNoTracking()
+            .Where(contribution =>
+                contribution.StokvelId == stokvelId &&
+                contribution.Status != ContributionStatus.Pending)
+            .GroupBy(contribution => contribution.ContributionCycleId)
+            .Select(group => new
+            {
+                CycleId = group.Key,
+                Amount = group.Sum(contribution => contribution.Amount)
+            })
+            .ToDictionaryAsync(item => item.CycleId, item => item.Amount);
+
+        return Ok(cycles
+            .OrderByDescending(cycle => cycle.CycleNumber)
+            .Select(cycle => cycle.ToResponse(
+                totals.TryGetValue(cycle.Id, out var amount) ? amount : 0m))
+            .ToList());
     }
 
     // GET /api/stokvels/{stokvelId}/cycles/{cycleId}
@@ -87,7 +109,8 @@ public sealed class ContributionsCycleController : ControllerBase
                 "The contribution cycle was not found.");
         }
 
-        return Ok(cycle.ToResponse());
+        var collected = await GetCollectedAmountAsync(stokvelId, cycle.Id);
+        return Ok(cycle.ToResponse(collected));
     }
 
     // GET /api/stokvels/{stokvelId}/cycles/{cycleId}/contributions
@@ -178,7 +201,8 @@ public sealed class ContributionsCycleController : ControllerBase
         await _store
             .UpdateContributionCycleAsync(cycle, request.Version);
 
-        return Ok(cycle.ToResponse());
+        var collected = await GetCollectedAmountAsync(stokvelId, cycle.Id);
+        return Ok(cycle.ToResponse(collected));
     }
 
     // DELETE /api/stokvels/{stokvelId}/cycles/{cycleId}
@@ -208,6 +232,19 @@ public sealed class ContributionsCycleController : ControllerBase
         }
 
         return NoContent();
+    }
+
+    private async Task<decimal> GetCollectedAmountAsync(
+        Guid stokvelId,
+        Guid cycleId)
+    {
+        return await _dbContext.Contributions
+            .AsNoTracking()
+            .Where(contribution =>
+                contribution.StokvelId == stokvelId &&
+                contribution.ContributionCycleId == cycleId &&
+                contribution.Status != ContributionStatus.Pending)
+            .SumAsync(contribution => contribution.Amount);
     }
 
     // Resource existence check, not a complex business decision.

@@ -11,4 +11,5 @@ public sealed record MemberStokvelHomeResponse(
     DateOnly? CycleDueDate,
     long? PaidThisCycleInCents,
     long? StillOwedInCents,
-    DateTime? NextPayoutDateUtc);
+    DateTime? NextPayoutDateUtc,
+    long ArrearsInCents);

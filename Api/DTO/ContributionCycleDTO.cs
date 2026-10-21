@@ -23,4 +23,8 @@ public sealed record ContributionCycleResponse(
     Guid StokvelId,
     int CycleNumber,
     decimal TargetAmount,
-    uint Version);
+    uint Version,
+    string Status,
+    DateOnly? DueDate,
+    long TotalCollectedInCents,
+    long AmountDueInCents);
