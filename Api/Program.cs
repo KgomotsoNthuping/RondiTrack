@@ -577,9 +577,13 @@ using (var scope = app.Services.CreateScope())
     await dbContext.Database.MigrateAsync();
 
     await DbSeeder.SeedAsync(
-        dbContext,
-        passwordHasher,
-        demoPassword);
+    dbContext,
+    passwordHasher,
+    demoPassword,
+    resetDemoPasswords:
+        app.Environment.IsDevelopment() &&
+        app.Configuration.GetValue<bool>(
+            "Seed:ResetDemoPasswords"));
 
         await CycleSeeder.SeedAsync(dbContext);
 }

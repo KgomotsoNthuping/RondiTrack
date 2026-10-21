@@ -1,3 +1,4 @@
+
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Infrastructure.Data;
@@ -10,19 +11,25 @@ public static class DbSeeder
     public static async Task SeedAsync(
         RondiTrackDbContext dbContext,
         IPasswordHasher<User> passwordHasher,
-        string? demoPassword)
+        string? demoPassword,
+        bool resetDemoPasswords = false)
     {
-        
+        // If users already exist, do not recreate the database data.
+        // Only run the frontend demo seeder.
         if (await dbContext.Users.AnyAsync())
         {
             await FrontendSeeder.SeedAsync(
                 dbContext,
                 passwordHasher,
-                demoPassword);
+                demoPassword,
+                resetDemoPasswords);
 
             return;
         }
 
+        // =========================================
+        // INITIAL DEMO USERS
+        // =========================================
 
         var testOne = new User(
             "Test One",
@@ -39,8 +46,8 @@ public static class DbSeeder
             "kgomotso@ronditrack.co.za",
             "0733333333");
 
-        if (!string.IsNullOrWhiteSpace(
-                demoPassword))
+        // Set passwords when users are created for the first time.
+        if (!string.IsNullOrWhiteSpace(demoPassword))
         {
             testOne.SetPasswordHash(
                 passwordHasher.HashPassword(
@@ -63,6 +70,10 @@ public static class DbSeeder
             testTwo,
             testThree);
 
+        // =========================================
+        // INITIAL STOKVELS
+        // =========================================
+
         var ubuntuSavers = new Stokvel(
             "Ubuntu Savers",
             500.00m,
@@ -80,6 +91,10 @@ public static class DbSeeder
         await dbContext.Stokvels.AddRangeAsync(
             ubuntuSavers,
             communitySavers);
+
+        // =========================================
+        // STOKVEL MEMBERSHIPS
+        // =========================================
 
         await dbContext.StokvelMembers.AddRangeAsync(
             new StokvelMember(
@@ -102,22 +117,28 @@ public static class DbSeeder
                 testOne.Id,
                 StokvelMemberRole.Member));
 
-        var septemberCycle =
-            new ContributionCycle(
-                ubuntuSavers.Id,
-                9,
-                500.00m);
+        // =========================================
+        // CONTRIBUTION CYCLE
+        // =========================================
 
-        await dbContext.ContributionCycles
-            .AddAsync(septemberCycle);
+        var septemberCycle = new ContributionCycle(
+            ubuntuSavers.Id,
+            9,
+            500.00m);
+
+        await dbContext.ContributionCycles.AddAsync(
+            septemberCycle);
 
         await dbContext.SaveChangesAsync();
 
-        
+        // =========================================
+        // FRONTEND DEMO DATA
+        // =========================================
+
         await FrontendSeeder.SeedAsync(
             dbContext,
             passwordHasher,
-            demoPassword);
-
+            demoPassword,
+            resetDemoPasswords);
     }
 }

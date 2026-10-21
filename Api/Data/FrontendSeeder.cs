@@ -18,17 +18,43 @@ public static class FrontendSeeder
         "Lerato Work Savers (Demo)";
 
     public static async Task SeedAsync(
-        RondiTrackDbContext db,
-        IPasswordHasher<User> passwordHasher,
-        string? demoPassword)
+    RondiTrackDbContext db,
+    IPasswordHasher<User> passwordHasher,
+    string? demoPassword,
+    bool resetDemoPasswords = false)
     {
-        // Prevent duplicate demo records on restart.
-        if (await db.Users.AnyAsync(
-                user => user.Email == DemoEmail))
+        // Existing demo users: optionally reset their passwords
+// in Development when explicitly enabled.
+if (await db.Users.AnyAsync(
+        user => user.Email == DemoEmail))
+{
+    if (resetDemoPasswords &&
+        !string.IsNullOrWhiteSpace(demoPassword))
+    {
+        var demoEmails = new[]
         {
-            return;
+            DemoEmail,
+            "nandi.demo@ronditrack.test",
+            "thabo.demo@ronditrack.test"
+        };
+
+        var existingUsers = await db.Users
+            .Where(user => demoEmails.Contains(user.Email))
+            .ToListAsync();
+
+        foreach (var user in existingUsers)
+        {
+            user.SetPasswordHash(
+                passwordHasher.HashPassword(
+                    user,
+                    demoPassword));
         }
 
+        await db.SaveChangesAsync();
+    }
+
+    return;
+}
         var lerato = new User(
             "Lerato Demo",
             DemoEmail,
