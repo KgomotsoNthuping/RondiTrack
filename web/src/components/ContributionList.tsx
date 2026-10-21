@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ChevronDown, ChevronsDownUp, ChevronsUpDown } from 'lucide-react'
 import { ContributionCard } from './ContributionCard'
 import { StatusBadge } from './StatusBadge'
+import { DueCountdown } from './DueCountdown'
 import { groupContributionsByCycle, type Contribution, type Cycle } from '@/lib/groupContributions'
 import { formatCents } from '@/lib/money'
 
@@ -54,6 +55,7 @@ export function ContributionList({ cycles, contributions }: Props) {
                     </span>
                     {group.cycle && <span className="block space-y-1 text-sm text-muted-foreground">
                       <span className="block">Due date: {saDate(group.cycle.dueDate)}</span>
+                      <DueCountdown dueDate={group.cycle.dueDate} status={group.cycle.status} />
                       <span className="block">Collected: <span className="whitespace-nowrap font-semibold text-foreground">{formatCents(group.cycle.totalCollectedInCents)}</span>
                         {' / '} Due: <span className="whitespace-nowrap font-semibold text-foreground">{formatCents(group.cycle.amountDueInCents)}</span></span>
                     </span>}
