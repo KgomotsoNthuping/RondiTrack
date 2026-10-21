@@ -12,7 +12,7 @@
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "test": "vitest",
-    "generate:api": "openapi-typescript http://localhost:8080/openapi/v1.json -o src/api/schema.d.ts",
+    "api:types": "openapi-typescript http://localhost:5227/openapi/v1.json -o src/api/schema.d.ts",
     "preview": "vite preview"
   },
   "dependencies": {
