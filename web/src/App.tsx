@@ -18,7 +18,7 @@ function Dashboard() {
             <Wallet aria-hidden="true" className="size-6" />
           </span>
           <div className="min-w-0"><h1 className="break-words text-xl font-extrabold sm:text-2xl">RondiTrack</h1>
-            <p className="break-words text-sm font-medium">Your stokvels, all in one place</p></div>
+          </div>
         </div>
         <ThemeSwitcher />
       </div>
