@@ -1,8 +1,3 @@
-
-// RondiTrack rotates refresh cookies and rejects reused tokens.
-// If several requests refresh simultaneously, they can reuse an old cookie
-// and invalidate the session. Single-flight shares one refresh request.
-
 import { ApiError } from '../api/ApiError'
 
 const API_BASE_URL = (
@@ -52,7 +47,6 @@ export async function login(
   email: string,
   password: string,
 ): Promise<void> {
-  // Prevent an older refresh from restoring a previous session.
   const version = ++sessionVersion
   accessToken = null
 
@@ -82,7 +76,6 @@ export async function login(
   const data = (await response.json()) as AuthResponse
 
   if (version !== sessionVersion) {
-    // Login was superseded by a logout or another login.
     return
   }
 
@@ -142,7 +135,6 @@ export function refreshAccessToken(): Promise<string | null> {
   const current = doRefresh()
   refreshPromise = current
 
-  // Always clear the shared promise, on success or failure.
   void current.finally(() => {
     if (refreshPromise === current) {
       refreshPromise = null
@@ -155,15 +147,13 @@ export function refreshAccessToken(): Promise<string | null> {
 export async function logout(): Promise<void> {
   clearSession()
 
-  // The server must revoke its refresh cookie even though
-  // the browser has already forgotten the access token.
+
   try {
     await fetch(`${AUTH_URL}/logout`, {
       method: 'POST',
       credentials: 'include',
     })
   } catch {
-    // Local sign-out must succeed when the API is unavailable.
   }
 }
 
@@ -171,13 +161,11 @@ export async function authFetch(
   input: RequestInfo | URL,
   init?: RequestInit,
 ): Promise<Response> {
-  // Build a Request to support openapi-fetch, including Request objects.
   const request = new Request(input, {
     ...init,
     credentials: 'include',
   })
 
-  // Keep a readable copy for POST/PUT retries.
   const retryCopy = request.clone()
 
   let token = accessToken
@@ -198,15 +186,12 @@ export async function authFetch(
     return firstResponse
   }
 
-  // No token was sent. Do not refresh a second time:
-  // a first-time visitor may have no refresh cookie.
   if (token === null) {
     return firstResponse
   }
 
   let replacement = accessToken
 
-  // Another request may have refreshed while this one was running.
   if (replacement === token) {
     replacement = await refreshAccessToken()
   }
@@ -215,7 +200,6 @@ export async function authFetch(
     return firstResponse
   }
 
-  // Retry once using the preserved request body.
   retryCopy.headers.set(
     'Authorization',
     `Bearer ${replacement}`,

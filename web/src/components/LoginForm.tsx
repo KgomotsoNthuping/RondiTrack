@@ -39,8 +39,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   const description =
     error !== null ? describeError(error) : null
 
-  // Login must not reveal whether the email or
-  // password was incorrect.
   const loginMessage =
     description?.title === 'Session ended'
       ? 'Email or password is incorrect.'

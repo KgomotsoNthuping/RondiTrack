@@ -34,7 +34,6 @@ export class ApiError extends Error {
       try {
         problem = (await response.clone().json()) as ApiProblem
       } catch {
-        // The server did not return readable JSON.
       }
     }
 
