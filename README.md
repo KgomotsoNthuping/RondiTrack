@@ -1,394 +1,351 @@
 # RondiTrack
 
-RondiTrack is a Web API that manages stokvels and their members.
+**A full-stack application for managing stokvels, member contributions, savings cycles and payouts.**
 
-## API Structure Choice
+RondiTrack provides a central place for stokvel members and administrators to manage their savings-group activity. It combines an ASP.NET Core Web API with a React frontend and a PostgreSQL database, with an emphasis on clearly defined business rules, authenticated access, accurate financial values and reliable data retrieval.
 
-Controllers were selected because they provide clear separation between HTTP routing and domain logic. It also makes it easy to show attribute routing.
+The application supports member and stokvel management, contribution tracking, cycle administration, payout rotation, arrears reporting and a personalised dashboard. Its API is also designed for consumers beyond the web application through versioned endpoints and an OpenAPI contract.
 
-## Domain Rules
+## Technology stack
 
-### User
+| Area | Technologies |
+| --- | --- |
+| Backend | C# · .NET 10 · ASP.NET Core Web API |
+| Data access | Entity Framework Core 10 · Npgsql · PostgreSQL |
+| Authentication and security | JWT bearer authentication · Rotating refresh tokens · ASP.NET Core Identity password hashing · Policy-based authorization |
+| API validation and documentation | FluentValidation · RFC 9457 Problem Details · OpenAPI · Scalar |
+| Frontend | React 19 · TypeScript · Vite · Tailwind CSS |
+| Frontend data and forms | TanStack Query · `openapi-fetch` · React Hook Form · Zod |
+| Testing | .NET tests · PostgreSQL Testcontainers · Vitest · Mock Service Worker (MSW) |
+| Operations | Docker Compose · GitHub Actions · OpenTelemetry · ASP.NET Core background services |
 
-A User must:
+## Core functionality
 
-- Have a non-empty full name.
-- Have an email address.
-- Have a phone number.
+### Stokvel and membership management
 
-### Stokvel
+- Create, view and manage stokvels and their contribution settings.
+- Maintain user accounts and stokvel membership relationships.
+- Apply membership rules that prevent duplicate enrolment and protect users who still belong to a stokvel from inappropriate deletion.
+- Use stokvel-specific roles: **Member**, **Treasurer** and **Admin**.
+- Authorize access against the user's membership in the requested stokvel rather than relying on a single global role.
 
-A Stokvel must:
+### Contribution cycles and payments
 
-- Have a name.
-- Have a monthly contribution greater than zero.
-- Have at least one contribution period.
-- Have a current period within the total number of periods.
+- Maintain contribution cycles with their own identifiers, numbers, targets and lifecycle status.
+- Record a member's contribution against a specific stokvel and cycle.
+- Allow Members to record their own contributions and Treasurers to record contributions on behalf of members of their stokvel.
+- Restrict new contributions to open cycles and enforce payment and membership rules on the server.
+- Prevent duplicate contributions for the same member and cycle through application checks and a PostgreSQL unique index.
+- Use an `Idempotency-Key` to associate retries with the same intended contribution.
 
-### Membership
+### Payouts and arrears
 
-- A User cannot be added to the same Stokvel more than once.
-- A User cannot be deleted while they are still a member of a stokvel.
+- Select payout recipients using the stokvel's membership rotation.
+- Prevent the same cycle from being paid out more than once.
+- Process payout-related changes through a database transaction.
+- Close overdue cycles through a scheduled background service, calculate member shortfalls and create the next cycle.
+- Track outstanding amounts and arrears in the member dashboard.
 
-### Contribution
+### Personalised web dashboard
 
-- A contribution must belong to an existing stokvel, user and contribution cycle.
-- The user must be a member of the stokvel.
-- Duplicate contributions for the same member and cycle are not allowed.
+- Sign in and view the stokvels associated with the current account.
+- Switch between stokvels without mixing cached contribution histories.
+- View cycle status, due dates, contribution history, payments and outstanding amounts.
+- Browse paginated contributions and load additional history on demand.
+- Record contributions through a validated form with amount prefilling and clear success or error feedback.
+- Sign out while clearing the authenticated user's cached data.
 
-### Payout
+## Architecture
 
-- A payout belongs to a stokvel and contribution cycle.
-- A contribution cycle can only be paid out once.
-- The next recipient is selected from the stokvel member rotation.
-- The payout and cycle status update must succeed or fail together.
+RondiTrack separates HTTP handling, business decisions, domain models and data access.
 
-## Data Storage
-
-The application originally used an in-memory store.
-
-For Assignment 5.1, RondiTrack now uses PostgreSQL with Entity Framework Core.
-
-The database contains:
-
-- Users
-- Stokvels
-- StokvelMembers
-- ContributionCycles
-- Contributions
-- Payouts
-
-`ITrackStore` was kept as the storage abstraction, while `EfTrackStore` now uses `RondiTrackDbContext` to read and write data.
-
-Data now remains available after the API is restarted.
-
-## PostgreSQL Setup
-
-PostgreSQL was installed locally.
-
-The development database is:
-
-- Database: `ronditrack_dev`
-- User: `ronditrack`
-- Port: `5432`
-
-Connectivity was tested independently before EF Core was added:
-
-```bash
-psql -h localhost -p 5432 -U ronditrack -d ronditrack_dev
+```text
+React / TypeScript frontend
+          |
+          | Versioned HTTP API
+          v
+ASP.NET Core controllers
+          |
+          +-- Request DTOs and FluentValidation
+          +-- Authentication and stokvel authorization
+          |
+          v
+Application services and domain rules
+          |
+          v
+Repository interfaces
+          |
+          v
+Entity Framework Core / Npgsql
+          |
+          v
+PostgreSQL
 ```
+
+The **Domain** layer contains entities such as `User`, `Stokvel`, `StokvelMember`, `ContributionCycle`, `Contribution` and `Payout`. Their constructors and methods enforce fundamental domain invariants.
+
+The **API** layer exposes resource-oriented endpoints, maps request and response DTOs, applies validation and access control, and coordinates business services. Mapping is explicit so the public contract remains separate from the persistence model.
+
+The **Infrastructure** layer implements repository interfaces using EF Core. An in-memory implementation also exists for isolated development and testing scenarios, while PostgreSQL is the primary persistent store.
+
+The **web** application consumes generated OpenAPI types through a shared authenticated client. TanStack Query manages retrieval, caching and mutations; UI components focus on displaying data and collecting input.
+
+### Repository layout
+
+```text
+RondiTrack/
+├── Api/                  ASP.NET Core API, controllers, DTOs and services
+│   ├── Auth/             Authentication and authorization
+│   ├── Background/       Cycle closing and housekeeping jobs
+│   ├── Controllers/      Versioned HTTP endpoints
+│   ├── DTO/              Request and response contracts
+│   ├── ErrorHandling/    Centralised API error handling
+│   ├── Mappings/         Domain and DTO conversions
+│   ├── Observability/    Tracing, metrics and correlation
+│   └── Validation/       Request validators
+├── Api.Tests/            Backend and integration tests
+├── Domain/               Entities, business rules and repository contracts
+├── Infrastructure/       EF Core persistence and repository implementations
+├── web/                  React frontend, API hooks, forms and frontend tests
+├── compose.yaml          Local container orchestration
+└── .github/workflows/     Continuous integration configuration
+```
+
+## Backend API
+
+API endpoints use the `/api/v1` prefix. Representative routes include:
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `POST` | `/api/v1/auth/register` | Register an account |
+| `POST` | `/api/v1/auth/login` | Sign in and obtain an access token |
+| `POST` | `/api/v1/auth/refresh` | Rotate the refresh token and issue a new access token |
+| `POST` | `/api/v1/auth/logout` | End the current session |
+| `GET` | `/api/v1/me` | Retrieve the authenticated member's profile |
+| `GET` | `/api/v1/me/home` | Retrieve a personalised stokvel summary |
+| `GET` | `/api/v1/stokvels/{stokvelId}/cycles` | List a stokvel's contribution cycles |
+| `GET` | `/api/v1/stokvels/{stokvelId}/contributions` | Browse contributions with pagination |
+| `GET` | `/api/v1/stokvels/{stokvelId}/cycles/{cycleId}/contributions` | Browse contributions for one cycle |
+| `POST` | `/api/v1/stokvels/{stokvelId}/cycles/{cycleId}/contributions` | Record a cycle contribution |
+
+Additional controllers handle users, stokvel records, membership operations, cycle management and payouts. See the OpenAPI document for the complete route and request/response definitions.
+
+### Validation and error responses
+
+FluentValidation handles request structure and field-level constraints. The application service and domain layers enforce rules requiring existing state, such as membership eligibility, duplicate payments and payout eligibility.
+
+Expected API failures use standard HTTP statuses and Problem Details responses:
+
+| Status | Meaning |
+| --- | --- |
+| `400` | Invalid request or missing required input |
+| `401` | Authentication required or session no longer valid |
+| `403` | Authenticated user lacks the required permission |
+| `404` | Resource unavailable within the requested access scope |
+| `409` | Conflicting state, duplicate record or stale update |
+| `422` | Request violates a business rule |
+| `429` | Request rate limit reached; check `Retry-After` |
+| `500` | Unexpected server error |
+
+Problem responses include a correlation identifier so support and development logs can be matched to an unsuccessful request.
+
+### Authentication and authorization
+
+The API uses JWT bearer access tokens and rotating refresh tokens. Passwords are processed with ASP.NET Core's password hasher. Refresh tokens are stored as hashes on the server and sent to the browser through an HttpOnly cookie rather than returned as ordinary application data.
+
+The frontend keeps the access token in memory. Its authenticated fetch implementation refreshes the session when needed and replays an interrupted request once using the renewed token. Concurrent refresh requests share the same refresh operation.
+
+Stokvel authorization is resolved against membership stored in PostgreSQL. This means the same account may have different roles in different stokvels, and access decisions use the currently requested stokvel.
+
+The API also applies configurable rate limits to login, contribution and payout operations. Browser access is controlled through a configured CORS policy that supports credentials and the required request headers.
+
+## Data persistence and consistency
+
+RondiTrack uses EF Core migrations to manage its PostgreSQL schema. Primary entities are connected through explicit relationships and foreign keys.
+
+Important persistence decisions include:
+
+- **Relational membership:** `StokvelMember` represents the relationship between a user and a stokvel and stores the member's role.
+- **Unique records:** composite indexes protect rules such as one contribution per member and cycle and one payout per cycle.
+- **Financial precision:** persistent amounts use PostgreSQL decimal-compatible values; the web-facing contribution endpoint accepts integer cents.
+- **Pagination:** database-side filtering, sorting and token-based pagination keep larger lists manageable.
+- **Concurrent updates:** version values backed by PostgreSQL's `xmin` concurrency mechanism detect stale writes.
+- **Payout transactions:** related payout and cycle-status changes are committed as one database operation.
+
+Database queries can be inspected through EF Core logs, SQL scripts and PostgreSQL `EXPLAIN ANALYZE` to evaluate query plans and indexing decisions.
+
+## Background processing and observability
+
+The application includes background services for stokvel lifecycle administration and housekeeping.
+
+**Cycle closing** uses the South African calendar (`Africa/Johannesburg`) to identify completed contribution periods. It closes eligible cycles, records arrears and opens subsequent cycles. Database-level protections support repeatable processing without duplicate cycle and arrears records.
+
+**Housekeeping** removes eligible expired refresh-token and idempotency records according to configured retention periods, using database-side deletion operations.
+
+**Observability** is provided through OpenTelemetry traces, metrics and structured logs. Custom measurements cover contribution recording, payout activity, access refusals and cycle processing. Health endpoints support process and database readiness checks:
+
+- `GET /health/live`
+- `GET /health/ready`
+
+Telemetry and application logs are designed to avoid exposing unnecessary member or financial information.
+
+## Frontend
+
+The React application uses TypeScript and a shared `openapi-fetch` client, with its type definitions generated from the backend's OpenAPI specification.
+
+### Data retrieval and caching
+
+TanStack Query handles the authenticated member profile, home summary, cycles and contribution history. Query keys include the stokvel identifier for stokvel-specific information. Switching stokvels therefore retrieves data for the selected group without displaying another group's cached values.
+
+Successful contribution recording invalidates the relevant home, cycle and contribution queries so displayed figures are refreshed from the API rather than guessed locally.
+
+### Contribution form and financial values
+
+React Hook Form and Zod validate member selection and the entered amount. The form is available for open contribution cycles; Members can record for themselves, while Treasurers can select another stokvel member.
+
+The frontend converts editable rand amounts to integer cents without floating-point money multiplication or implicit rounding. For example, `150.50` becomes `15050` cents, while values requiring rounding are rejected. Currency display uses South African rand formatting.
+
+The form creates an idempotency key for a payment intent and retains it after network uncertainty or applicable retry responses. The key is replaced when the payment details change or a successful contribution completes. Server errors are displayed with field-level messages, readable explanations and available correlation references.
+
+## Getting started
+
+### Prerequisites
+
+For local development:
+
+- .NET 10 SDK
+- Node.js 24 and npm
+- PostgreSQL, with a local database and application user
+- Git
+
+Docker Desktop can also be used with the repository's Compose configuration.
+
+### Backend setup (Windows PowerShell)
+
+1. Clone the repository and restore the API dependencies:
+
+```powershell
+git clone <repository-url>
+cd RondiTrack
+dotnet restore .\Api\Api.csproj
+```
+
+2. Create the local PostgreSQL database and a dedicated user. A development example is:
 
 ```sql
-SELECT current_database(), current_user;
+CREATE ROLE ronditrack WITH LOGIN PASSWORD 'REPLACE_WITH_LOCAL_PASSWORD';
+CREATE DATABASE ronditrack_dev OWNER ronditrack;
 ```
 
-## How-to-use
+3. Configure secrets for the API project:
 
-1. Clone the repository.
-
-2. Navigate to the project:
-
-```bash
-cd RondiTrack
-```
-
-3. Restore dependencies:
-
-```bash
-dotnet restore
-```
-
-4. Configure the PostgreSQL connection using User Secrets:
-
-```bash
+```powershell
 dotnet user-secrets init --project .\Api\Api.csproj
+dotnet user-secrets set "ConnectionStrings:RondiTrack" "Host=127.0.0.1;Port=5432;Database=ronditrack_dev;Username=ronditrack;Password=REPLACE_WITH_LOCAL_PASSWORD" --project .\Api\Api.csproj
+dotnet user-secrets set "Jwt:SigningKey" "REPLACE_WITH_A_RANDOM_KEY_OF_AT_LEAST_32_BYTES" --project .\Api\Api.csproj
 ```
 
-```bash
-dotnet user-secrets set "ConnectionStrings:RondiTrack" "Host=127.0.0.1;Port=5432;Database=ronditrack_dev;Username=ronditrack;Password=YOUR_PASSWORD;Pooling=true;Minimum Pool Size=0;Maximum Pool Size=50" --project .\Api\Api.csproj
-```
+Provide any additional configured JWT issuer, audience and development seed settings through the appropriate environment configuration. Do not commit passwords, tokens or signing keys.
 
-5. Apply the migration:
+4. Apply migrations and run the API:
 
-```bash
+```powershell
 dotnet ef database update --project .\Api\Api.csproj
-```
-
-6. Run:
-
-```bash
 dotnet run --project .\Api\Api.csproj
 ```
 
-## DTO
+The default local HTTP address is **http://localhost:5227**. With the API running in Development, documentation is available at:
 
-The application does not expose domain entities directly through the HTTP API.
+- OpenAPI: `http://localhost:5227/openapi/v1.json`
+- Scalar: `http://localhost:5227/scalar/v1`
 
-Create and update operations use request DTOs, while responses use separate response DTOs. This prevents clients from setting internal values such as IDs and allows the API contract to change independently from the internal domain model.
+### Frontend setup
 
-Mapping is performed manually through dedicated mapping classes.
+In a second terminal:
 
-## Service Layer
-
-The service layer is used for operations that contain meaningful business decisions.
-
-These currently include:
-
-- Adding and removing stokvel members.
-- Preventing deletion of users who still belong to a stokvel.
-- Recording contributions.
-- Preventing duplicate contributions.
-- Handling contribution idempotency.
-- Processing payouts.
-- Updating a contribution cycle during payout processing.
-
-## Contribution Idempotency
-
-Recording a contribution requires an `Idempotency-Key` request header.
-
-If the same key is sent again with the same request, the original contribution is returned.
-
-If the same key is reused with different request data, the API returns `409 Conflict`.
-
-A separate duplicate-contribution check prevents the same member's contribution for the same stokvel cycle from being recorded twice.
-
-## 400, 409 and 422
-
-`400 Bad Request` is used when the request does not satisfy the API contract.
-
-`409 Conflict` is used when the request conflicts with existing system state, such as a duplicate contribution or an already-paid contribution cycle.
-
-`422 Unprocessable Entity` is used when the request is valid but breaks a business rule.
-
-## EF Core and Migration
-
-RondiTrack uses one `RondiTrackDbContext` for:
-
-- User
-- Stokvel
-- StokvelMember
-- ContributionCycle
-- Contribution
-- Payout
-
-The initial migration was created with:
-
-```bash
-dotnet ef migrations add InitialPostgreSql --project .\Api\Api.csproj
+```powershell
+cd web
+npm.cmd install
 ```
 
-The migration was reviewed before it was applied. The review checked the six expected tables, keys, decimal precision, indexes and that there were no unexpected destructive operations.
+Create `web/.env.local` with the following value:
 
-`Stokvel.Members` remains a read-only domain collection and is not mapped directly by EF Core. Membership is stored through `StokvelMember`.
-
-## Secret Management
-
-The PostgreSQL password is not stored in Git-tracked configuration files.
-
-The connection string is stored using .NET User Secrets.
-
-## Npgsql Pooling and Retry
-
-Connection pooling is enabled.
-
-The API uses:
-
-```csharp
-EnableRetryOnFailure(
-    maxRetryCount: 3,
-    maxRetryDelay: TimeSpan.FromSeconds(5),
-    errorCodesToAdd: null);
+```dotenv
+VITE_API_BASE_URL=http://localhost:5227
 ```
 
-Three retries with a maximum delay of five seconds allow short-lived database or network failures to recover without delaying requests for too long.
+Generate TypeScript definitions from the running API when the contract changes:
 
-Temporary connectivity failures may be retried. Invalid credentials, validation failures and database constraint violations should not be treated as transient failures.
-
-## Dependency Injection Lifetime
-
-The in-memory repository previously used a Singleton lifetime.
-
-The EF Core repository and service now use Scoped lifetimes because `RondiTrackDbContext` is scoped to a request.
-
-```csharp
-builder.Services.AddScoped<ITrackStore, EfTrackStore>();
-builder.Services.AddScoped<ITrackService, TrackService>();
+```powershell
+npx.cmd openapi-typescript http://localhost:5227/openapi/v1.json -o src/api/schema.d.ts
 ```
 
-## Payout Transaction
+Start the frontend:
 
-Payout processing uses an explicit database transaction.
-
-The operation:
-
-1. Finds the next eligible member.
-2. Creates the payout.
-3. Saves the payout.
-4. Marks the contribution cycle as paid out.
-5. Saves the cycle update.
-6. Commits the transaction.
-
-If part of the process fails, the transaction is rolled back.
-
-The rollback test deliberately fails after the payout insert and then uses a new DbContext to confirm that:
-
-- No partial payout remains.
-- The contribution cycle is still open.
-
-## Test Run Output
-
-Before the PostgreSQL change:
-
-```text
-Test summary: total: 12, failed: 0, succeeded: 12, skipped: 0
+```powershell
+npm.cmd run dev
 ```
 
-After the PostgreSQL change:
+Open **http://localhost:3000** and sign in with an account configured in the development environment.
 
-```text
-Test summary: total: 13, failed: 2, succeeded: 11, skipped: 0
+### Docker Compose
+
+The repository includes a containerised API and PostgreSQL setup. Copy the supplied environment template, set the required values locally and start the services:
+
+```powershell
+Copy-Item .env.example .env
+docker compose up --build -d
 ```
 
-The two current failures are:
+To inspect services or stop the stack:
 
-- `RecordContribution_WhenSameRequestIsRetried_ReturnsIdenticalResponse`
-- `RecordContribution_WhenIdempotencyKeyIsReusedWithDifferentPayload_Returns409ProblemJson`
+```powershell
+docker compose ps
+docker compose logs -f
+docker compose down
+```
 
-Both currently return `409 Conflict` where the first request expects `201 Created`.
+Keep `.env` and any other secret-containing configuration out of version control.
 
-This has been recorded as a PostgreSQL test-isolation issue and will be corrected separately.
+## Testing and quality checks
 
-## Definition of Done
+### Backend
 
-### Users
+The .NET test project covers API behaviour and database integration, including business rules, validation, authorization, data access, concurrency and background processing. PostgreSQL-backed integration tests use Testcontainers, so Docker must be available for those tests.
 
-#### GET /api/users
+From the repository root:
 
-- Documentation: Complete
-- Validation: Not required because there is no request body
-- Integration testing: Covered
-- Status codes reviewed: Yes
-- Expected response: 200 OK
+```powershell
+dotnet build .\Api\Api.csproj
+dotnet test .\Api.Tests\Api.Tests.csproj
+```
 
-#### POST /api/users
+### Frontend
 
-- Documentation: Complete
-- Validation: Covered by FluentValidation
-- Integration testing: Covered
-- Status codes reviewed: Yes
-- Expected responses:
-  - 201 Created
-  - 400 Bad Request
+Vitest tests cover presentation utilities, currency parsing and round trips, validation schemas, session refresh and contribution-retry behaviour. MSW simulates HTTP responses while exercising the application's real request code.
 
-#### PUT /api/users/{id}
+From `web`:
 
-- Documentation: Complete
-- Validation: Covered by FluentValidation
-- Integration testing: Covered
-- Status codes reviewed: Yes
-- Expected responses:
-  - 200 OK
-  - 400 Bad Request
-  - 404 Not Found
+```powershell
+npx.cmd vitest run
+npm.cmd run build
+npm.cmd run lint
+```
 
-#### DELETE /api/users/{id}
+The project also includes a GitHub Actions workflow for automated checks on repository changes.
 
-- Documentation: Complete
-- Integration testing: Covered
-- Status codes reviewed: Yes
-- Expected responses:
-  - 204 No Content
-  - 404 Not Found
-  - 409 Conflict
+## Engineering principles
 
-### Stokvels
+RondiTrack follows a few consistent implementation principles:
 
-#### GET /api/stokvels
+- **Business rules belong in domain objects and services**, not duplicated across controllers or UI components.
+- **API contracts are explicit**, with dedicated DTOs, validation and generated frontend types.
+- **Authorization depends on stokvel context**, not solely on an account-wide role.
+- **Financial values must be exact**, using decimal persistence and integer cents at the frontend boundary.
+- **Database constraints complement application checks**, particularly when requests overlap.
+- **Client state should reflect server-confirmed data**, especially when recording money.
+- **Automated tests cover both unit behaviour and HTTP/database integration**, including failure and retry scenarios.
 
-- Documentation: Complete
-- Integration testing: Covered
-- Status codes reviewed: Yes
-- Expected response: 200 OK
+---
 
-#### POST /api/stokvels
-
-- Documentation: Complete
-- Validation: Covered by FluentValidation
-- Integration testing: Covered
-- Status codes reviewed: Yes
-- Expected responses:
-  - 201 Created
-  - 400 Bad Request
-
-#### PUT /api/stokvels/{id}
-
-- Documentation: Complete
-- Validation: Covered by FluentValidation
-- Integration testing: Covered
-- Status codes reviewed: Yes
-- Expected responses:
-  - 200 OK
-  - 400 Bad Request
-  - 404 Not Found
-
-#### DELETE /api/stokvels/{id}
-
-- Documentation: Complete
-- Integration testing: Covered
-- Status codes reviewed: Yes
-- Expected responses:
-  - 204 No Content
-  - 404 Not Found
-
-### Contributions
-
-#### GET /api/stokvels/{stokvelId}/contributions/{contributionId}
-
-- Documentation: Complete
-- Integration testing: Covered
-- Status codes reviewed: Yes
-- Expected responses:
-  - 200 OK
-  - 404 Not Found
-
-#### POST /api/stokvels/{stokvelId}/contributions
-
-- Documentation: Complete
-- Validation: Covered by FluentValidation and `Idempotency-Key`
-- Integration testing: Covered
-- Status codes reviewed: Yes
-- Expected responses:
-  - 201 Created
-  - 400 Bad Request
-  - 404 Not Found
-  - 409 Conflict
-  - 422 Unprocessable Entity
-
-### Payouts
-
-#### POST /api/stokvels/{stokvelId}/cycles/{cycleId}/payout
-
-- Documentation: Complete
-- Integration testing: Rollback behaviour covered
-- Status codes reviewed: Yes
-- Expected responses:
-  - 201 Created
-  - 404 Not Found
-  - 409 Conflict
-  - 422 Unprocessable Entity
-
-### Assignment 5.1 DoD Extension
-
-| Area | Persisted via EF Core | Explicit transaction tested |
-|---|---|---|
-| Users | Yes | N/A |
-| Stokvels | Yes | N/A |
-| StokvelMembers | Yes | N/A |
-| ContributionCycles | Yes | N/A |
-| Contributions | Yes | N/A |
-| Payouts | Yes | Yes |
-
-## Known Issues
-
-- Two contribution integration tests currently fail because PostgreSQL test data is not yet fully isolated between runs.
-- The test build reports an EF Core package-version warning that should be aligned during cleanup.
+**RondiTrack** brings together a structured .NET backend and a responsive React interface to support accountable stokvel administration and clear visibility of member contributions.
