@@ -74,14 +74,26 @@ public sealed class CycleCloseBackgroundService
             when (stoppingToken
                 .IsCancellationRequested)
         {
-            // Normal application shutdown.
         }
     }
 
-    public async Task<CycleCloseRunResult>
-        RunOnceAsync(
-            CancellationToken cancellationToken =
-                default)
+    public Task<CycleCloseRunResult> RunOnceAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return RunOnceCoreAsync(null, cancellationToken);
+    }
+
+    public Task<CycleCloseRunResult> RunForStokvelsAsync(
+        IReadOnlyCollection<Guid> stokvelIds,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(stokvelIds);
+        return RunOnceCoreAsync(stokvelIds.ToArray(), cancellationToken);
+    }
+
+    private async Task<CycleCloseRunResult> RunOnceCoreAsync(
+        Guid[]? allowedStokvelIds,
+        CancellationToken cancellationToken)
     {
         using var activity =
             ActivitySource.StartActivity(
@@ -108,19 +120,24 @@ public sealed class CycleCloseBackgroundService
                         .GetRequiredService<
                             RondiTrackDbContext>();
 
-                stokvelIds =
-                    await db
-                        .ContributionCycles
+                IQueryable<ContributionCycle> eligibleCycles =
+                    db.ContributionCycles
                         .AsNoTracking()
                         .Where(cycle =>
                             cycle.ClosedAtUtc == null &&
                             cycle.EndDate != null &&
-                            cycle.EndDate < localDate)
-                        .Select(cycle =>
-                            cycle.StokvelId)
-                        .Distinct()
-                        .ToListAsync(
-                            cancellationToken);
+                            cycle.EndDate < localDate);
+
+                if (allowedStokvelIds is not null)
+                {
+                    eligibleCycles = eligibleCycles.Where(cycle =>
+                        allowedStokvelIds.Contains(cycle.StokvelId));
+                }
+
+                stokvelIds = await eligibleCycles
+                    .Select(cycle => cycle.StokvelId)
+                    .Distinct()
+                    .ToListAsync(cancellationToken);
             }
 
             var cyclesClosed =

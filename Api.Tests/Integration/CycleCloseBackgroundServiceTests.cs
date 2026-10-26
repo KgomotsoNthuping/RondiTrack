@@ -14,8 +14,6 @@ public sealed class CycleCloseBackgroundServiceTests : IAsyncLifetime
 {
     private readonly PostgresApiFactory _factory;
 
-    // The collection shares a test database, so each test must remove the
-    // future-dated cycles it created before the next test starts.
     private readonly List<Guid> _seededStokvelIds = new();
     private readonly List<Guid> _seededUserIds = new();
 
@@ -38,8 +36,6 @@ public sealed class CycleCloseBackgroundServiceTests : IAsyncLifetime
         var db = scope.ServiceProvider
             .GetRequiredService<RondiTrackDbContext>();
 
-        // Delete dependents before principals to satisfy PostgreSQL FKs.
-        // Only rows owned by this individual test instance are removed.
         await db.IdempotencyEntries
             .Where(entry => _seededStokvelIds.Contains(entry.StokvelId))
             .ExecuteDeleteAsync();
@@ -92,7 +88,7 @@ public sealed class CycleCloseBackgroundServiceTests : IAsyncLifetime
             CreateJob(clock);
 
         var result =
-            await job.RunOnceAsync();
+            await job.RunForStokvelsAsync([scenario.StokvelId]);
 
         Assert.Equal(
             1,
@@ -209,7 +205,7 @@ public sealed class CycleCloseBackgroundServiceTests : IAsyncLifetime
             CreateJob(clock);
 
         var result =
-            await job.RunOnceAsync();
+            await job.RunForStokvelsAsync([scenario.StokvelId]);
 
         Assert.Equal(
             0,
@@ -263,7 +259,6 @@ public sealed class CycleCloseBackgroundServiceTests : IAsyncLifetime
                     1,
                     25));
 
-        // 23:59 SAST on 25 January.
         var clock =
             new FixedTimeProvider(
                 new DateTimeOffset(
@@ -279,7 +274,7 @@ public sealed class CycleCloseBackgroundServiceTests : IAsyncLifetime
             CreateJob(clock);
 
         var before =
-            await job.RunOnceAsync();
+            await job.RunForStokvelsAsync([scenario.StokvelId]);
 
         Assert.Equal(
             0,
@@ -307,7 +302,6 @@ public sealed class CycleCloseBackgroundServiceTests : IAsyncLifetime
                 stillOpen.ClosedAtUtc);
         }
 
-        // 00:00 SAST on 26 January.
         clock.SetUtcNow(
             new DateTimeOffset(
                 2099,
@@ -319,7 +313,7 @@ public sealed class CycleCloseBackgroundServiceTests : IAsyncLifetime
                 TimeSpan.Zero));
 
         var atMidnight =
-            await job.RunOnceAsync();
+            await job.RunForStokvelsAsync([scenario.StokvelId]);
 
         Assert.Equal(
             1,
@@ -373,7 +367,7 @@ public sealed class CycleCloseBackgroundServiceTests : IAsyncLifetime
             CreateJob(clock);
 
         var first =
-            await job.RunOnceAsync();
+            await job.RunForStokvelsAsync([scenario.StokvelId]);
 
         await using (
             var firstScope =
@@ -409,7 +403,7 @@ public sealed class CycleCloseBackgroundServiceTests : IAsyncLifetime
         }
 
         var second =
-            await job.RunOnceAsync();
+            await job.RunForStokvelsAsync([scenario.StokvelId]);
 
         Assert.Equal(
             1,
@@ -482,8 +476,8 @@ public sealed class CycleCloseBackgroundServiceTests : IAsyncLifetime
                     now));
 
         await Task.WhenAll(
-            firstJob.RunOnceAsync(),
-            secondJob.RunOnceAsync());
+            firstJob.RunForStokvelsAsync([scenario.StokvelId]),
+            secondJob.RunForStokvelsAsync([scenario.StokvelId]));
 
         await using var scope =
             _factory.Services
@@ -550,7 +544,7 @@ public sealed class CycleCloseBackgroundServiceTests : IAsyncLifetime
             CreateJob(clock);
 
         var first =
-            await job.RunOnceAsync();
+            await job.RunForStokvelsAsync([scenario.StokvelId]);
 
         Assert.Equal(
             3,
@@ -608,7 +602,7 @@ public sealed class CycleCloseBackgroundServiceTests : IAsyncLifetime
         }
 
         var second =
-            await job.RunOnceAsync();
+            await job.RunForStokvelsAsync([scenario.StokvelId]);
 
         Assert.Equal(
             0,
@@ -671,10 +665,8 @@ public sealed class CycleCloseBackgroundServiceTests : IAsyncLifetime
         var exception =
             await Record.ExceptionAsync(
                 () =>
-                    job.RunOnceAsync());
+                    job.RunForStokvelsAsync([invalid.StokvelId, valid.StokvelId]));
 
-        // This test deliberately set TotalPeriods to 0. Restore the value
-        // so scheduled background jobs in other tests do not retry it forever.
         await using (var cleanupScope = _factory.Services.CreateAsyncScope())
         {
             var cleanupDb = cleanupScope.ServiceProvider
