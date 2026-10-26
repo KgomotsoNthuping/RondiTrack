@@ -34,7 +34,7 @@ public sealed class PayoutRollbackTests : IClassFixture<PayoutRollbackTests.Roll
 
             var user = new User(
                 "Rollback Test User",
-                $"rollback-{Guid.NewGuid()}@ronditrack.test",
+                $"rollback-{Guid.NewGuid()}@ronditrack.co.za",
                 "0712345678");
 
             var stokvel = new Stokvel(

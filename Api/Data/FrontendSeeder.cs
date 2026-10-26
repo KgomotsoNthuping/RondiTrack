@@ -9,13 +9,13 @@ namespace Api.Data;
 public static class FrontendSeeder
 {
     public const string DemoEmail =
-        "lerato@ronditrack.test";
+        "lerato@ronditrack.co.za";
 
     public const string FamilyName =
-        "Lerato Family Savers (Demo)";
+        "Family Savers";
 
     public const string WorkName =
-        "Lerato Work Savers (Demo)";
+        "Work Savers";
 
     public static async Task SeedAsync(
     RondiTrackDbContext db,
@@ -34,8 +34,8 @@ if (await db.Users.AnyAsync(
         var demoEmails = new[]
         {
             DemoEmail,
-            "nandi.demo@ronditrack.test",
-            "thabo.demo@ronditrack.test"
+            "nandi@ronditrack.co.za",
+            "thabo@ronditrack.co.za"
         };
 
         var existingUsers = await db.Users
@@ -56,19 +56,19 @@ if (await db.Users.AnyAsync(
     return;
 }
         var lerato = new User(
-            "Lerato Demo",
+            "Lerato",
             DemoEmail,
-            "0820000001");
+            "0711111111");
 
         var nandi = new User(
-            "Nandi Demo",
-            "nandi.demo@ronditrack.test",
-            "0820000002");
+            "Nandi",
+            "nandi@ronditrack.co.za",
+            "0722222222");
 
         var thabo = new User(
-            "Thabo Demo",
-            "thabo.demo@ronditrack.test",
-            "0820000003");
+            "Thabo",
+            "thabo@ronditrack.co.za",
+            "0733333333");
 
         if (!string.IsNullOrWhiteSpace(demoPassword))
         {

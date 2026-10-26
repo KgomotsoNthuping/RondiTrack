@@ -78,7 +78,7 @@ beforeAll(() => {
 })
 
 beforeEach(async () => {
-  await login('member@ronditrack.test', 'test-password')
+  await login('member@ronditrack.co.za', 'test-password')
 })
 
 afterEach(() => {
