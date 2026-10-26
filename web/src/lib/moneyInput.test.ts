@@ -1,6 +1,4 @@
-
 import { describe, expect, it } from 'vitest'
-
 import {
   centsToInput,
   parseRandsToCents,
@@ -57,10 +55,26 @@ describe('centsToInput', () => {
   })
 
   it('round-trips every amount from 0 to 100000 cents', () => {
+    let failure: {
+      input: string
+      expected: number
+      actual: number | null
+    } | null = null
+
     for (let cents = 0; cents <= 100000; cents++) {
       const input = centsToInput(cents)
+      const actual = parseRandsToCents(input)
 
-      expect(parseRandsToCents(input)).toBe(cents)
+      if (actual !== cents) {
+        failure = {
+          input,
+          expected: cents,
+          actual,
+        }
+        break
+      }
     }
+
+    expect(failure).toBeNull()
   })
 })

@@ -1,4 +1,3 @@
-
 import { ApiError } from '../api/ApiError'
 
 export type ErrorDescription = {
@@ -10,27 +9,49 @@ export type ErrorDescription = {
   fieldErrors: Record<string, string[]>
 }
 
-// Retry-After can be seconds ("23") or an HTTP date.
-// The optional now parameter makes date handling easy to test.
 export function parseRetryAfter(
   header: string | null,
   now: number = Date.now(),
 ): number | null {
-  if (header === null) return null
+  if (header === null) {
+    return null
+  }
 
   const value = header.trim()
-  if (!value) return null
+
+  if (value.length === 0) {
+    return null
+  }
 
   if (/^\d+$/.test(value)) {
     const seconds = Number(value)
-    return Number.isSafeInteger(seconds) ? seconds : null
+
+    return Number.isSafeInteger(seconds)
+      ? seconds
+      : null
+  }
+
+  const httpDatePattern =
+    /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} GMT$/
+
+  if (!httpDatePattern.test(value)) {
+    return null
   }
 
   const date = Date.parse(value)
 
-  if (Number.isNaN(date)) return null
+  if (Number.isNaN(date)) {
+    return null
+  }
 
-  return Math.max(0, Math.ceil((date - now) / 1000))
+  if (new Date(date).toUTCString() !== value) {
+    return null
+  }
+
+  return Math.max(
+    0,
+    Math.ceil((date - now) / 1000),
+  )
 }
 
 export function describeError(error: unknown): ErrorDescription {
@@ -120,7 +141,6 @@ export function describeError(error: unknown): ErrorDescription {
     }
   }
 
-  // Never expose server-supplied detail for a 500 response.
   return {
     title: 'Something went wrong',
     message:

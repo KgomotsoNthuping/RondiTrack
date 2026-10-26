@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
+import { ApiError } from '../api/ApiError'
+import { parseRetryAfter } from '../lib/errorMessages'
 import { centsToInput, formatCents } from '../lib/money'
 import {
   contributionSchema,
@@ -19,10 +21,83 @@ export type RecordContributionFormProps = {
   currentUserName: string
   memberRole: string
   members: RecordableMember[]
+  cycleId: string
   cycleNumber: number
   cycleStatus: string
   amountOwedInCents: number
-  onRecord: (values: ContributionRequestValues) => Promise<void>
+  onRecord: (
+    values: ContributionRequestValues & {
+      idempotencyKey: string
+    },
+  ) => Promise<void>
+}
+
+type PaymentIntent = {
+  signature: string
+  key: string
+}
+
+type ProblemResponse = {
+  title?: string
+  detail?: string
+  correlationId?: string
+  errors?: Record<string, string[]>
+}
+
+function readProblem(error: ApiError): ProblemResponse {
+  const value: unknown = error.problem
+
+  if (!value || typeof value !== 'object') {
+    return {}
+  }
+
+  return value as ProblemResponse
+}
+
+function messageForError(
+  error: unknown,
+  problem: ProblemResponse,
+): string {
+  if (!(error instanceof ApiError)) {
+    return 'The connection was interrupted. The contribution may have been recorded. Retry with the same details to check safely.'
+  }
+
+  if (error.status === 0) {
+    return 'The connection was interrupted. The contribution may have been recorded. Retry with the same details to check safely.'
+  }
+
+  if (error.status === 429) {
+    const seconds = parseRetryAfter(error.retryAfter)
+
+    return seconds === null
+      ? 'Too many requests. Wait before trying again.'
+      : `Too many requests. Try again in ${seconds} seconds.`
+  }
+
+  if (error.status >= 500) {
+    return 'The server could not confirm the result. Your contribution may have been recorded. You can retry safely with the same details.'
+  }
+
+  if (error.status === 409 || error.status === 422) {
+    return (
+      problem.detail ??
+      'The contribution could not be recorded.'
+    )
+  }
+
+  if (error.status === 403) {
+    return 'You do not have permission to record this contribution.'
+  }
+
+  if (error.status === 404) {
+    return 'This stokvel or contribution cycle was not found.'
+  }
+
+  return (
+    problem.detail ??
+    problem.title ??
+    'The contribution could not be recorded.'
+  )
 }
 
 export function RecordContributionForm({
@@ -30,14 +105,22 @@ export function RecordContributionForm({
   currentUserName,
   memberRole,
   members,
+  cycleId,
   cycleNumber,
   cycleStatus,
   amountOwedInCents,
   onRecord,
 }: RecordContributionFormProps) {
+  const intentRef = useRef<PaymentIntent | null>(null)
   const submittingRef = useRef(false)
-  const [confirmation, setConfirmation] = useState<string | null>(null)
-  const [submissionError, setSubmissionError] = useState<string | null>(null)
+
+  const [confirmation, setConfirmation] = useState<
+    string | null
+  >(null)
+
+  const [submissionError, setSubmissionError] = useState<
+    string | null
+  >(null)
 
   const isTreasurer = memberRole === 'Treasurer'
   const isOpen = cycleStatus === 'Open'
@@ -46,8 +129,9 @@ export function RecordContributionForm({
     register,
     handleSubmit,
     setValue,
-    setFocus,
+    setError,
     clearErrors,
+    setFocus,
     formState: { errors, isSubmitting },
   } = useForm<ContributionFormValues>({
     resolver: zodResolver(contributionSchema),
@@ -60,18 +144,10 @@ export function RecordContributionForm({
     },
   })
 
-  if (!isOpen) {
-    return (
-      <section className="rounded-xl border border-border bg-card p-5 text-card-foreground">
-        <h2 className="text-lg font-semibold">
-          Record contribution
-        </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          This cycle is {cycleStatus.toLowerCase()}.
-          Contributions can only be recorded for an open cycle.
-        </p>
-      </section>
-    )
+  function changeIntent() {
+    intentRef.current = null
+    setConfirmation(null)
+    setSubmissionError(null)
   }
 
   async function submit(values: ContributionFormValues) {
@@ -83,14 +159,37 @@ export function RecordContributionForm({
     setConfirmation(null)
     setSubmissionError(null)
 
+    const request = toContributionRequest(values)
+
+    const signature = [
+      cycleId,
+      request.userId,
+      request.amountInCents,
+    ].join(':')
+
+    if (
+      intentRef.current === null ||
+      intentRef.current.signature !== signature
+    ) {
+      intentRef.current = {
+        signature,
+        key: crypto.randomUUID(),
+      }
+    }
+
+    const idempotencyKey = intentRef.current.key
+
     try {
-      const request = toContributionRequest(values)
+      await onRecord({
+        ...request,
+        idempotencyKey,
+      })
 
       const memberName =
         members.find(member => member.id === request.userId)
           ?.fullName ?? currentUserName
 
-      await onRecord(request)
+      intentRef.current = null
 
       setConfirmation(
         `${formatCents(request.amountInCents)} recorded for ${memberName} in cycle ${cycleNumber}.`,
@@ -108,27 +207,95 @@ export function RecordContributionForm({
 
       clearErrors()
       setFocus('amount')
-    } catch {
-      setSubmissionError(
-        'The contribution could not be confirmed. It may have been recorded. You can retry safely once the connection is available.',
-      )
+    } catch (error) {
+      if (error instanceof ApiError) {
+        const problem = readProblem(error)
+        const unknownFields: string[] = []
+
+        for (const [key, messages] of Object.entries(
+          problem.errors ?? {},
+        )) {
+          const field = key.toLowerCase()
+          const message = messages.join(' ')
+
+          if (field === 'userid') {
+            setError('userId', {
+              type: 'server',
+              message,
+            })
+          } else if (
+            field === 'amount' ||
+            field === 'amountincents'
+          ) {
+            setError('amount', {
+              type: 'server',
+              message,
+            })
+          } else {
+            unknownFields.push(`${key}: ${message}`)
+          }
+        }
+
+        const reference = problem.correlationId
+          ? ` Reference: ${problem.correlationId}.`
+          : ''
+
+        const description = messageForError(
+          error,
+          problem,
+        )
+
+        setSubmissionError(
+          [
+            description,
+            ...unknownFields,
+          ].join(' ') + reference,
+        )
+
+        if (problem.errors?.userId) {
+          setFocus('userId')
+        } else if (
+          problem.errors?.amount ||
+          problem.errors?.amountInCents
+        ) {
+          setFocus('amount')
+        }
+      } else {
+        setSubmissionError(messageForError(error, {}))
+      }
     } finally {
       submittingRef.current = false
     }
   }
 
-  return (
-    <section className="rounded-xl border border-border bg-card p-5 text-card-foreground shadow-sm">
-      <div className="mb-5">
+  if (!isOpen) {
+    return (
+      <section className="rounded-xl border border-border bg-card p-5 text-card-foreground">
         <h2 className="text-lg font-semibold">
           Record contribution
         </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-muted-foreground">
+          This cycle is {cycleStatus.toLowerCase()}.
+          Contributions can only be recorded for an open cycle.
+        </p>
+      </section>
+    )
+  }
+
+  return (
+    <section className="rounded-xl border border-border bg-card p-5 text-card-foreground shadow-sm">
+      <div className="mb-5 space-y-2">
+        <h2 className="text-lg font-semibold">
+          Record contribution
+        </h2>
+        <p className="text-sm text-muted-foreground">
           Cycle {cycleNumber}
         </p>
-        <p className="mt-2 text-sm">
+        <p className="text-sm">
           Amount outstanding:{' '}
-          <strong>{formatCents(amountOwedInCents)}</strong>
+          <strong>
+            {formatCents(amountOwedInCents)}
+          </strong>
         </p>
       </div>
 
@@ -148,27 +315,31 @@ export function RecordContributionForm({
           {isTreasurer ? (
             <select
               id="contribution-user"
-              {...register('userId')}
+              {...register('userId', {
+                onChange: changeIntent,
+              })}
+              disabled={isSubmitting}
               aria-invalid={Boolean(errors.userId)}
               aria-describedby={
-                errors.userId ? 'contribution-user-error' : undefined
+                errors.userId
+                  ? 'contribution-user-error'
+                  : undefined
               }
-              disabled={isSubmitting}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground"
             >
               <option value="">Select member</option>
               {members.map(member => (
-                <option key={member.id} value={member.id}>
+                <option
+                  key={member.id}
+                  value={member.id}
+                >
                   {member.fullName}
                 </option>
               ))}
             </select>
           ) : (
             <>
-              <p
-                id="contribution-user"
-                className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
-              >
+              <p className="rounded-lg border border-input bg-background px-3 py-2 text-sm">
                 {currentUserName}
               </p>
               <input
@@ -181,8 +352,8 @@ export function RecordContributionForm({
           {errors.userId && (
             <p
               id="contribution-user-error"
-              className="text-sm text-destructive"
               role="alert"
+              className="text-sm text-destructive"
             >
               {errors.userId.message}
             </p>
@@ -203,22 +374,24 @@ export function RecordContributionForm({
             inputMode="decimal"
             autoComplete="off"
             placeholder="500.00"
-            {...register('amount')}
+            {...register('amount', {
+              onChange: changeIntent,
+            })}
+            disabled={isSubmitting}
             aria-invalid={Boolean(errors.amount)}
             aria-describedby={
               errors.amount
                 ? 'contribution-amount-error'
                 : undefined
             }
-            disabled={isSubmitting}
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground"
           />
 
           {errors.amount && (
             <p
               id="contribution-amount-error"
-              className="text-sm text-destructive"
               role="alert"
+              className="text-sm text-destructive"
             >
               {errors.amount.message}
             </p>

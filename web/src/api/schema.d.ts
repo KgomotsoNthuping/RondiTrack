@@ -488,7 +488,39 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    "Idempotency-Key": string;
+                };
+                path: {
+                    stokvelId: string;
+                    cycleId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RecordCycleContributionRequest"];
+                    "text/json": components["schemas"]["RecordCycleContributionRequest"];
+                    "application/*+json": components["schemas"]["RecordCycleContributionRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["RecordedCycleContributionResponse"];
+                        "application/json": components["schemas"]["RecordedCycleContributionResponse"];
+                        "text/json": components["schemas"]["RecordedCycleContributionResponse"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -1316,6 +1348,27 @@ export interface components {
             contributionCycleId?: string;
             /** Format: double */
             amount?: number;
+        };
+        RecordCycleContributionRequest: {
+            /** Format: uuid */
+            userId?: string;
+            /** Format: int64 */
+            amountInCents?: number;
+        };
+        RecordedCycleContributionResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            stokvelId: string;
+            /** Format: uuid */
+            userId: string;
+            /** Format: uuid */
+            contributionCycleId: string;
+            /** Format: int64 */
+            amountInCents: number;
+            status: string;
+            /** Format: date-time */
+            paidAtUtc: null | string;
         };
         RegisterRequest: {
             fullName?: null | string;
