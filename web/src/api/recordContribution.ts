@@ -13,38 +13,40 @@ export type RecordContributionVariables = {
   idempotencyKey: string
 }
 
+export async function sendContribution({
+  stokvelId,
+  cycleId,
+  userId,
+  amountInCents,
+  idempotencyKey,
+}: RecordContributionVariables) {
+  const result = await api.POST(
+    '/api/v1/stokvels/{stokvelId}/cycles/{cycleId}/contributions',
+    {
+      params: {
+        path: {
+          stokvelId,
+          cycleId,
+        },
+        header: {
+          'Idempotency-Key': idempotencyKey,
+        },
+      },
+      body: {
+        userId,
+        amountInCents,
+      },
+    },
+  )
+
+  return unwrap(result)
+}
+
 export function useRecordContribution() {
   const client = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({
-      stokvelId,
-      cycleId,
-      userId,
-      amountInCents,
-      idempotencyKey,
-    }: RecordContributionVariables) => {
-      const result = await api.POST(
-        '/api/v1/stokvels/{stokvelId}/cycles/{cycleId}/contributions',
-        {
-          params: {
-            path: {
-              stokvelId,
-              cycleId,
-            },
-            header: {
-              'Idempotency-Key': idempotencyKey,
-            },
-          },
-          body: {
-            userId,
-            amountInCents,
-          },
-        },
-      )
-
-      return unwrap(result)
-    },
+    mutationFn: sendContribution,
     retry: false,
     onSuccess: async (_result, variables) => {
       await Promise.all([

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { ApiError } from '../api/ApiError'
+import { PaymentIntentTracker } from '../contributions/paymentIntent'
 import { parseRetryAfter } from '../lib/errorMessages'
 import { centsToInput, formatCents } from '../lib/money'
 import {
@@ -32,11 +33,6 @@ export type RecordContributionFormProps = {
   ) => Promise<void>
 }
 
-type PaymentIntent = {
-  signature: string
-  key: string
-}
-
 type ProblemResponse = {
   title?: string
   detail?: string
@@ -58,12 +54,8 @@ function messageForError(
   error: unknown,
   problem: ProblemResponse,
 ): string {
-  if (!(error instanceof ApiError)) {
-    return 'The connection was interrupted. The contribution may have been recorded. Retry with the same details to check safely.'
-  }
-
-  if (error.status === 0) {
-    return 'The connection was interrupted. The contribution may have been recorded. Retry with the same details to check safely.'
+  if (!(error instanceof ApiError) || error.status === 0) {
+    return 'The connection was interrupted. Your contribution may have been recorded. Retry with the same details to check safely.'
   }
 
   if (error.status === 429) {
@@ -75,7 +67,7 @@ function messageForError(
   }
 
   if (error.status >= 500) {
-    return 'The server could not confirm the result. Your contribution may have been recorded. You can retry safely with the same details.'
+    return 'The server could not confirm the result. Your contribution may have been recorded. Retry with the same details to check safely.'
   }
 
   if (error.status === 409 || error.status === 422) {
@@ -111,7 +103,7 @@ export function RecordContributionForm({
   amountOwedInCents,
   onRecord,
 }: RecordContributionFormProps) {
-  const intentRef = useRef<PaymentIntent | null>(null)
+  const intentRef = useRef(new PaymentIntentTracker())
   const submittingRef = useRef(false)
 
   const [confirmation, setConfirmation] = useState<
@@ -145,7 +137,7 @@ export function RecordContributionForm({
   })
 
   function changeIntent() {
-    intentRef.current = null
+    intentRef.current.clear()
     setConfirmation(null)
     setSubmissionError(null)
   }
@@ -159,27 +151,15 @@ export function RecordContributionForm({
     setConfirmation(null)
     setSubmissionError(null)
 
-    const request = toContributionRequest(values)
-
-    const signature = [
-      cycleId,
-      request.userId,
-      request.amountInCents,
-    ].join(':')
-
-    if (
-      intentRef.current === null ||
-      intentRef.current.signature !== signature
-    ) {
-      intentRef.current = {
-        signature,
-        key: crypto.randomUUID(),
-      }
-    }
-
-    const idempotencyKey = intentRef.current.key
-
     try {
+      const request = toContributionRequest(values)
+
+      const idempotencyKey = intentRef.current.keyFor({
+        cycleId,
+        userId: request.userId,
+        amountInCents: request.amountInCents,
+      })
+
       await onRecord({
         ...request,
         idempotencyKey,
@@ -189,7 +169,7 @@ export function RecordContributionForm({
         members.find(member => member.id === request.userId)
           ?.fullName ?? currentUserName
 
-      intentRef.current = null
+      intentRef.current.clear()
 
       setConfirmation(
         `${formatCents(request.amountInCents)} recorded for ${memberName} in cycle ${cycleNumber}.`,
@@ -211,26 +191,34 @@ export function RecordContributionForm({
       if (error instanceof ApiError) {
         const problem = readProblem(error)
         const unknownFields: string[] = []
+        let firstInvalidField: 'userId' | 'amount' | null = null
 
         for (const [key, messages] of Object.entries(
           problem.errors ?? {},
         )) {
-          const field = key.toLowerCase()
+          const field = key.toLowerCase().replaceAll(
+            /[^a-z]/g,
+            '',
+          )
           const message = messages.join(' ')
 
-          if (field === 'userid') {
+          if (field.endsWith('userid')) {
             setError('userId', {
               type: 'server',
               message,
             })
+
+            firstInvalidField ??= 'userId'
           } else if (
-            field === 'amount' ||
-            field === 'amountincents'
+            field.endsWith('amount') ||
+            field.endsWith('amountincents')
           ) {
             setError('amount', {
               type: 'server',
               message,
             })
+
+            firstInvalidField ??= 'amount'
           } else {
             unknownFields.push(`${key}: ${message}`)
           }
@@ -240,25 +228,15 @@ export function RecordContributionForm({
           ? ` Reference: ${problem.correlationId}.`
           : ''
 
-        const description = messageForError(
-          error,
-          problem,
-        )
-
         setSubmissionError(
           [
-            description,
+            messageForError(error, problem),
             ...unknownFields,
           ].join(' ') + reference,
         )
 
-        if (problem.errors?.userId) {
-          setFocus('userId')
-        } else if (
-          problem.errors?.amount ||
-          problem.errors?.amountInCents
-        ) {
-          setFocus('amount')
+        if (firstInvalidField) {
+          setFocus(firstInvalidField)
         }
       } else {
         setSubmissionError(messageForError(error, {}))
