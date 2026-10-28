@@ -77,13 +77,14 @@ function asProblem(
   }
 }
 
+
 export function readOrFail<T>(
   result: {
     data?: T
     error?: unknown
     response: Response
   },
-): T | ApiError {
+): T {
   const { response, data, error } = result
 
   if (response.status === 401) {
@@ -99,7 +100,7 @@ export function readOrFail<T>(
   }
 
   if (!response.ok) {
-    return new ApiError(
+    throw new ApiError(
       response.status,
       asProblem(error),
       response.headers.get('Retry-After'),

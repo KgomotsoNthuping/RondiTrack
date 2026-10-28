@@ -17,12 +17,6 @@ export type LoginState = {
   fieldErrors: Record<string, string[]>
 }
 
-export const initialLoginState: LoginState = {
-  message: null,
-  reference: null,
-  fieldErrors: {},
-}
-
 type LoginResponse = {
   accessToken: string
   expiresAtUtc: string
