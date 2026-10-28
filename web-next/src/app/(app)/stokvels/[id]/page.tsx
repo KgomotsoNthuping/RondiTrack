@@ -1,3 +1,5 @@
+
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import {
@@ -9,22 +11,30 @@ import {
 
 import { ApiError } from '@/api/ApiError'
 import { ApiErrorPanel } from '@/components/ApiErrorPanel'
+import {
+  RecentContributions,
+  RecentContributionsSkeleton,
+} from '@/components/RecentContributions'
 import { StatusBadge } from '@/components/StatusBadge'
-import { loadStokvelDetail } from '@/lib/stokvel-data'
+import Loading from '@/app/(app)/loading'
+
+import {
+  loadRecentContributions,
+  loadStokvelDetail,
+} from '@/lib/stokvel-data'
+import { settleForStream } from '@/lib/settleForStream'
 import { formatCents } from '@/lib/money'
 import { formatCalendarDate } from '@/lib/dates'
 import { roleLabel } from '@/lib/roles'
-import { Suspense } from 'react'
-import Loading from '@/app/(app)/loading'
-
-const uuidPattern =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 type StokvelDetailPageProps = {
   params: Promise<{
     id: string
   }>
 }
+
+const uuidPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 async function StokvelDetailContent({
   params,
@@ -35,11 +45,33 @@ async function StokvelDetailContent({
     notFound()
   }
 
-  const stokvel = await loadStokvelDetail(id)
+  const startedAt = performance.now()
+
+  /*
+   * Both independent requests start before either
+   * result is awaited.
+   *
+   * The detail is needed for the main content.
+   * Contributions are awaited by a separate
+   * Server Component inside Suspense.
+   */
+  const detailRequest = loadStokvelDetail(id)
+
+  const recentRequest = settleForStream(
+    loadRecentContributions(id),
+  )
+
+  const stokvel = await detailRequest
 
   if (stokvel instanceof ApiError) {
     return <ApiErrorPanel error={stokvel} />
   }
+
+  console.info(
+    `[RondiTrack] Stokvel details ready in ${Math.round(
+      performance.now() - startedAt,
+    )}ms`,
+  )
 
   const cycle = stokvel.currentCycle
 
@@ -167,6 +199,19 @@ async function StokvelDetailContent({
         )}
       </section>
 
+      {/*
+       * The main details are already available.
+       * Recent contributions can stream separately.
+       */}
+      <Suspense
+        fallback={<RecentContributionsSkeleton />}
+      >
+        <RecentContributions
+          request={recentRequest}
+          startedAt={startedAt}
+        />
+      </Suspense>
+
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex items-center gap-2">
           <Users
@@ -225,7 +270,6 @@ function InfoCard({
   )
 }
 
-
 export default function StokvelDetailPage({
   params,
 }: StokvelDetailPageProps) {
@@ -235,4 +279,3 @@ export default function StokvelDetailPage({
     </Suspense>
   )
 }
-

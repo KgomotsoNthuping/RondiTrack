@@ -3,6 +3,7 @@ import { shouldHideStokvel } from '@/lib/stokvelVisibility'
 import { notFound } from 'next/navigation'
 import { ApiError } from '@/api/ApiError'
 import type {
+  ContributionItem,
   MeHomeResponse,
   StokvelDetail,
 } from '@/api/types'
@@ -48,6 +49,38 @@ export async function loadMemberHome() {
 export async function loadStokvelDetail(id: string) {
   try {
     return await getStokvelDetail(id)
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return error
+    }
+
+    throw error
+  }
+}
+
+export async function loadRecentContributions(
+  stokvelId: string,
+): Promise<ContributionItem[] | ApiError> {
+  try {
+    const { api } = await signedInApi()
+
+    const result = await api.GET(
+      '/api/v1/stokvels/{stokvelId}/contributions',
+      {
+        params: {
+          path: {
+            stokvelId,
+          },
+          query: {
+            pageSize: 5,
+          },
+        },
+      },
+    )
+
+    const page = readOrFail(result)
+
+    return page.items
   } catch (error) {
     if (error instanceof ApiError) {
       return error
