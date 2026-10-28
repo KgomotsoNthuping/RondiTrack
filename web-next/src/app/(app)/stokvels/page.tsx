@@ -1,11 +1,15 @@
+
+import { Suspense } from 'react'
+
 import { ApiError } from '@/api/ApiError'
 import { ApiErrorPanel } from '@/components/ApiErrorPanel'
 import { StokvelCard } from '@/components/StokvelCard'
 import { loadMemberHome } from '@/lib/stokvel-data'
+import Loading from '@/app/(app)/loading'
 
-export default async function StokvelsPage() {
+async function StokvelsContent() {
   const home = await loadMemberHome()
-
+  
   if (home instanceof ApiError) {
     return <ApiErrorPanel error={home} />
   }
@@ -60,5 +64,13 @@ export default async function StokvelsPage() {
         </>
       )}
     </div>
+  )
+}
+
+export default function StokvelsPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <StokvelsContent />
+    </Suspense>
   )
 }

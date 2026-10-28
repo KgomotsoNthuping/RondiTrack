@@ -1,4 +1,5 @@
 
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { Wallet } from 'lucide-react'
 
@@ -7,8 +8,9 @@ import { ApiErrorPanel } from '@/components/ApiErrorPanel'
 import { StokvelCard } from '@/components/StokvelCard'
 import { loadMemberHome } from '@/lib/stokvel-data'
 import { stokvelsWhereTreasurer } from '@/lib/treasurer'
+import Loading from '@/app/(app)/loading'
 
-export default async function TreasurerDashboardPage() {
+async function TreasurerDashboardContent() {
   const home = await loadMemberHome()
 
   if (home instanceof ApiError) {
@@ -95,5 +97,13 @@ export default async function TreasurerDashboardPage() {
         </section>
       )}
     </div>
+  )
+}
+
+export default function TreasurerDashboardPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <TreasurerDashboardContent />
+    </Suspense>
   )
 }

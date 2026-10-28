@@ -1,4 +1,5 @@
 
+import { Suspense } from 'react'
 import Link from 'next/link'
 import {
   CircleDollarSign,
@@ -11,8 +12,9 @@ import { ApiErrorPanel } from '@/components/ApiErrorPanel'
 import { StokvelCard } from '@/components/StokvelCard'
 import { loadMemberHome } from '@/lib/stokvel-data'
 import { formatCents } from '@/lib/money'
+import Loading from '@/app/(app)/loading'
 
-export default async function MemberDashboardPage() {
+async function MemberDashboardContent() {
   const home = await loadMemberHome()
 
   if (home instanceof ApiError) {
@@ -100,8 +102,8 @@ export default async function MemberDashboardPage() {
             </h3>
 
             <p className="mt-2 text-slate-600">
-              Your stokvels will appear here once you
-              become a member.
+              Your stokvels will appear here once
+              you become a member.
             </p>
           </div>
         ) : (
@@ -145,5 +147,13 @@ function SummaryCard({
         {value}
       </p>
     </div>
+  )
+}
+
+export default function MemberDashboardPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <MemberDashboardContent />
+    </Suspense>
   )
 }

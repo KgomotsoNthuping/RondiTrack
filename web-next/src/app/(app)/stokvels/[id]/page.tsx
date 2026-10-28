@@ -14,6 +14,8 @@ import { loadStokvelDetail } from '@/lib/stokvel-data'
 import { formatCents } from '@/lib/money'
 import { formatCalendarDate } from '@/lib/dates'
 import { roleLabel } from '@/lib/roles'
+import { Suspense } from 'react'
+import Loading from '@/app/(app)/loading'
 
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -24,7 +26,7 @@ type StokvelDetailPageProps = {
   }>
 }
 
-export default async function StokvelDetailPage({
+async function StokvelDetailContent({
   params,
 }: StokvelDetailPageProps) {
   const { id } = await params
@@ -222,3 +224,15 @@ function InfoCard({
     </div>
   )
 }
+
+
+export default function StokvelDetailPage({
+  params,
+}: StokvelDetailPageProps) {
+  return (
+    <Suspense fallback={<Loading />}>
+      <StokvelDetailContent params={params} />
+    </Suspense>
+  )
+}
+
