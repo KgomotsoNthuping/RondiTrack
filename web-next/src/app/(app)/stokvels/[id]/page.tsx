@@ -7,8 +7,10 @@ import {
   Wallet,
 } from 'lucide-react'
 
+import { ApiError } from '@/api/ApiError'
+import { ApiErrorPanel } from '@/components/ApiErrorPanel'
 import { StatusBadge } from '@/components/StatusBadge'
-import { getStokvelDetail } from '@/lib/stokvel-data'
+import { loadStokvelDetail } from '@/lib/stokvel-data'
 import { formatCents } from '@/lib/money'
 import { formatCalendarDate } from '@/lib/dates'
 import { roleLabel } from '@/lib/roles'
@@ -31,7 +33,12 @@ export default async function StokvelDetailPage({
     notFound()
   }
 
-  const stokvel = await getStokvelDetail(id)
+  const stokvel = await loadStokvelDetail(id)
+
+  if (stokvel instanceof ApiError) {
+    return <ApiErrorPanel error={stokvel} />
+  }
+
   const cycle = stokvel.currentCycle
 
   return (
@@ -164,6 +171,7 @@ export default async function StokvelDetailPage({
             aria-hidden="true"
             className="size-5 text-lime-700"
           />
+
           <h2 className="text-xl font-bold">
             Membership information
           </h2>

@@ -1,8 +1,15 @@
+import { ApiError } from '@/api/ApiError'
+import { ApiErrorPanel } from '@/components/ApiErrorPanel'
 import { StokvelCard } from '@/components/StokvelCard'
-import { getMemberHome } from '@/lib/stokvel-data'
+import { loadMemberHome } from '@/lib/stokvel-data'
 
 export default async function StokvelsPage() {
-  const home = await getMemberHome()
+  const home = await loadMemberHome()
+
+  if (home instanceof ApiError) {
+    return <ApiErrorPanel error={home} />
+  }
+
   const stokvels = home.stokvels
 
   return (

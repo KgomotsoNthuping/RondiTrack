@@ -1,6 +1,7 @@
 import 'server-only'
-
+import { shouldHideStokvel } from '@/lib/stokvelVisibility'
 import { notFound } from 'next/navigation'
+import { ApiError } from '@/api/ApiError'
 import type {
   MeHomeResponse,
   StokvelDetail,
@@ -26,14 +27,32 @@ export async function getStokvelDetail(
     },
   })
 
-  // The backend may return 403 for non-members.
-  // Treat this the same as a nonexistent stokvel.
-  if (
-    result.response.status === 403 ||
-    result.response.status === 404
-  ) {
-    notFound()
-  }
+  if (shouldHideStokvel(result.response.status)) 
+    {notFound()}
 
   return readOrFail(result)
+}
+
+export async function loadMemberHome() {
+  try {
+    return await getMemberHome()
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return error
+    }
+
+    throw error
+  }
+}
+
+export async function loadStokvelDetail(id: string) {
+  try {
+    return await getStokvelDetail(id)
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return error
+    }
+
+    throw error
+  }
 }

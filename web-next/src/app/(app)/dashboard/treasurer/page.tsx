@@ -1,15 +1,22 @@
+
 import Link from 'next/link'
 import { Wallet } from 'lucide-react'
 
+import { ApiError } from '@/api/ApiError'
+import { ApiErrorPanel } from '@/components/ApiErrorPanel'
 import { StokvelCard } from '@/components/StokvelCard'
-import { getMemberHome } from '@/lib/stokvel-data'
+import { loadMemberHome } from '@/lib/stokvel-data'
+import { stokvelsWhereTreasurer } from '@/lib/treasurer'
 
 export default async function TreasurerDashboardPage() {
-  const home = await getMemberHome()
+  const home = await loadMemberHome()
 
-  const treasurerStokvels = home.stokvels.filter(
-    stokvel =>
-      stokvel.role.trim().toLowerCase() === 'treasurer',
+  if (home instanceof ApiError) {
+    return <ApiErrorPanel error={home} />
+  }
+
+  const treasurerStokvels = stokvelsWhereTreasurer(
+    home.stokvels,
   )
 
   return (
@@ -31,13 +38,17 @@ export default async function TreasurerDashboardPage() {
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex items-center gap-3">
           <span className="rounded-xl bg-lime-100 p-3 text-lime-900">
-            <Wallet aria-hidden="true" className="size-6" />
+            <Wallet
+              aria-hidden="true"
+              className="size-6"
+            />
           </span>
 
           <div>
             <p className="text-sm text-slate-600">
               Treasurer memberships
             </p>
+
             <p className="text-3xl font-extrabold">
               {treasurerStokvels.length}
             </p>

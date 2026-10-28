@@ -1,3 +1,4 @@
+
 import Link from 'next/link'
 import {
   CircleDollarSign,
@@ -5,12 +6,19 @@ import {
   Wallet,
 } from 'lucide-react'
 
+import { ApiError } from '@/api/ApiError'
+import { ApiErrorPanel } from '@/components/ApiErrorPanel'
 import { StokvelCard } from '@/components/StokvelCard'
-import { getMemberHome } from '@/lib/stokvel-data'
+import { loadMemberHome } from '@/lib/stokvel-data'
 import { formatCents } from '@/lib/money'
 
 export default async function MemberDashboardPage() {
-  const home = await getMemberHome()
+  const home = await loadMemberHome()
+
+  if (home instanceof ApiError) {
+    return <ApiErrorPanel error={home} />
+  }
+
   const stokvels = home.stokvels
 
   const openCycles = stokvels.filter(
@@ -90,6 +98,7 @@ export default async function MemberDashboardPage() {
             <h3 className="text-lg font-bold">
               No stokvel memberships yet
             </h3>
+
             <p className="mt-2 text-slate-600">
               Your stokvels will appear here once you
               become a member.
