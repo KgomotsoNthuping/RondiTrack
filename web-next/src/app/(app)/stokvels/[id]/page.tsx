@@ -1,7 +1,9 @@
-
+import { randomUUID } from 'node:crypto'
+import { getSession } from '@/lib/session'
+import { RecordContributionForm } from '@/components/RecordContributionForm'
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import {
   ArrowLeft,
   CalendarDays,
@@ -74,6 +76,15 @@ async function StokvelDetailContent({
   )
 
   const cycle = stokvel.currentCycle
+
+  const session =
+  cycle?.status === 'Open'
+    ? await getSession()
+    : null
+
+    if (cycle?.status === 'Open' && !session) {
+      redirect('/login')
+    }
 
   return (
     <div className="space-y-7">
@@ -199,10 +210,19 @@ async function StokvelDetailContent({
         )}
       </section>
 
-      {/*
-       * The main details are already available.
-       * Recent contributions can stream separately.
-       */}
+      {cycle !== null &&
+        cycle.status === 'Open' &&
+        session !== null && (
+          <RecordContributionForm
+            stokvelId={stokvel.id}
+            cycleId={cycle.id}
+            cycleNumber={cycle.cycleNumber}
+            currentUserId={session.userId}
+            currentUserName={session.fullName}
+            initialKey={randomUUID()}
+          />
+        )}
+
       <Suspense
         fallback={<RecentContributionsSkeleton />}
       >

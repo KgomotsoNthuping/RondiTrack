@@ -42,7 +42,7 @@ export async function signedInApi() {
   }
 }
 
-function asProblem(
+export function asProblem(
   value: unknown,
 ): ApiProblem | null {
   if (
