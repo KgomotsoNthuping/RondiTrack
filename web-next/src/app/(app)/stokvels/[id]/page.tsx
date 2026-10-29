@@ -3,6 +3,7 @@ import { getSession } from '@/lib/session'
 import { RecordContributionForm } from '@/components/RecordContributionForm'
 import { Suspense } from 'react'
 import Link from 'next/link'
+import { canSelectContributionMember } from '@/lib/contributionMembers'
 import { notFound, redirect } from 'next/navigation'
 import {
   ArrowLeft,
@@ -23,6 +24,7 @@ import Loading from '@/app/(app)/loading'
 import {
   loadRecentContributions,
   loadStokvelDetail,
+  loadRecordableMembers
 } from '@/lib/stokvel-data'
 import { settleForStream } from '@/lib/settleForStream'
 import { formatCents } from '@/lib/money'
@@ -210,18 +212,31 @@ async function StokvelDetailContent({
         )}
       </section>
 
-      {cycle !== null &&
-        cycle.status === 'Open' &&
-        session !== null && (
-          <RecordContributionForm
-            stokvelId={stokvel.id}
-            cycleId={cycle.id}
-            cycleNumber={cycle.cycleNumber}
-            currentUserId={session.userId}
-            currentUserName={session.fullName}
-            initialKey={randomUUID()}
-          />
-        )}
+      
+{cycle !== null &&
+  cycle.status === 'Open' &&
+  session !== null && (
+    <Suspense
+      fallback={
+        <section
+          role="status"
+          className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-600 shadow-sm"
+        >
+          Loading contribution form...
+        </section>
+      }
+    >
+      <ContributionFormForStokvel
+        stokvelId={stokvel.id}
+        cycleId={cycle.id}
+        cycleNumber={cycle.cycleNumber}
+        memberRole={stokvel.role}
+        currentUserId={session.userId}
+        currentUserName={session.fullName}
+      />
+    </Suspense>
+  )}
+
 
       <Suspense
         fallback={<RecentContributionsSkeleton />}
@@ -299,3 +314,46 @@ export default function StokvelDetailPage({
     </Suspense>
   )
 }
+
+
+type ContributionFormForStokvelProps = {
+  stokvelId: string
+  cycleId: string
+  cycleNumber: number
+  memberRole: string
+  currentUserId: string
+  currentUserName: string
+}
+
+async function ContributionFormForStokvel({
+  stokvelId,
+  cycleId,
+  cycleNumber,
+  memberRole,
+  currentUserId,
+  currentUserName,
+}: ContributionFormForStokvelProps) {
+  const members = canSelectContributionMember(
+    memberRole,
+  )
+    ? await loadRecordableMembers(stokvelId)
+    : []
+
+  if (members instanceof ApiError) {
+    return <ApiErrorPanel error={members} />
+  }
+
+  return (
+    <RecordContributionForm
+      stokvelId={stokvelId}
+      cycleId={cycleId}
+      cycleNumber={cycleNumber}
+      currentUserId={currentUserId}
+      currentUserName={currentUserName}
+      memberRole={memberRole}
+      members={members}
+      initialKey={randomUUID()}
+    />
+  )
+}
+

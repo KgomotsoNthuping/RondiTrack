@@ -2,6 +2,10 @@ import 'server-only'
 import { shouldHideStokvel } from '@/lib/stokvelVisibility'
 import { notFound } from 'next/navigation'
 import { ApiError } from '@/api/ApiError'
+import {
+  toRecordableMembers,
+  type RecordableMember,
+} from '@/lib/contributionMembers'
 import type {
   ContributionItem,
   MeHomeResponse,
@@ -81,6 +85,68 @@ export async function loadRecentContributions(
     const page = readOrFail(result)
 
     return page.items
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return error
+    }
+
+    throw error
+  }
+}
+
+
+export async function loadRecordableMembers(
+  stokvelId: string,
+): Promise<RecordableMember[] | ApiError> {
+  try {
+    const { api } = await signedInApi()
+
+    const members: RecordableMember[] = []
+    const seenTokens = new Set<string>()
+
+    let pageToken: string | undefined
+
+    while (true) {
+      const result = await api.GET(
+        '/api/v1/stokvels/{stokvelId}/members',
+        {
+          params: {
+            path: {
+              stokvelId,
+            },
+            query: {
+              PageSize: 100,
+              Sort: 'fullName',
+              PageToken: pageToken,
+            },
+          },
+        },
+      )
+
+      const page = readOrFail(result)
+
+      members.push(
+        ...toRecordableMembers(page.items),
+      )
+
+      const nextToken = page.nextPageToken
+
+      if (!nextToken) {
+        return members
+      }
+
+      if (
+        seenTokens.has(nextToken) ||
+        seenTokens.size >= 100
+      ) {
+        throw new Error(
+          'Invalid member pagination response.',
+        )
+      }
+
+      seenTokens.add(nextToken)
+      pageToken = nextToken
+    }
   } catch (error) {
     if (error instanceof ApiError) {
       return error

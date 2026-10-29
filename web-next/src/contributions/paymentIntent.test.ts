@@ -60,4 +60,27 @@ describe('PaymentIntentTracker', () => {
     expect(tracker.keyFor(payment)).toBe(nextKey)
     expect(nextKey).not.toBe(initialKey)
   })
+
+  
+it('generates a new key when the selected member changes', () => {
+  const newKey = crypto.randomUUID()
+
+  const tracker = new PaymentIntentTracker(
+    initialKey,
+    () => newKey,
+  )
+
+  const first = tracker.keyFor(payment)
+
+  const second = tracker.keyFor({
+    ...payment,
+    userId:
+      '123e4567-e89b-42d3-a456-426614174009',
+  })
+
+  expect(first).toBe(initialKey)
+  expect(second).toBe(newKey)
+  expect(second).not.toBe(first)
+})
+
 })
