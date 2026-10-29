@@ -1,9 +1,13 @@
 import 'server-only'
+
 import { cookies } from 'next/headers'
 import { EncryptJWT, jwtDecrypt } from 'jose'
 
-const COOKIE_NAME = 'session'
-const SESSION_MAX_AGE = 7 * 24 * 60 * 60
+export const SESSION_COOKIE = 'session'
+
+// Eight hours of inactivity.
+// A successful token refresh renews this session.
+export const SESSION_MAX_AGE = 8 * 60 * 60
 
 export type SessionData = {
   accessToken: string
@@ -12,6 +16,16 @@ export type SessionData = {
   userId: string
   email: string
   fullName: string
+}
+
+export function sessionCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
+    path: '/',
+    maxAge: SESSION_MAX_AGE,
+  }
 }
 
 function sessionKey(): Uint8Array {
@@ -24,13 +38,17 @@ function sessionKey(): Uint8Array {
   const bytes = Buffer.from(secret, 'base64url')
 
   if (bytes.length !== 32) {
-    throw new Error('SESSION_SECRET must contain 32 random bytes.')
+    throw new Error(
+      'SESSION_SECRET must contain 32 random bytes.',
+    )
   }
 
   return new Uint8Array(bytes)
 }
 
-function isSessionData(value: unknown): value is SessionData {
+function isSessionData(
+  value: unknown,
+): value is SessionData {
   if (
     value === null ||
     typeof value !== 'object' ||
@@ -50,56 +68,57 @@ function isSessionData(value: unknown): value is SessionData {
     'fullName',
   ] as const
 
-  if (
-    requiredFields.some(
-      field =>
-        typeof data[field] !== 'string' ||
-        (data[field] as string).trim().length === 0,
-    )
-  ) {
+  const validFields = requiredFields.every(
+    field =>
+      typeof data[field] === 'string' &&
+      (data[field] as string).trim().length > 0,
+  )
+
+  if (!validFields) {
     return false
   }
 
+  // Treasurer is a per-stokvel role.
+  // A global role must not be stored in this session.
   if ('role' in data) {
     return false
   }
 
-  return !Number.isNaN(
-    Date.parse(data.accessTokenExpiresAtUtc as string),
+  const expiresAt = Date.parse(
+    data.accessTokenExpiresAtUtc as string,
   )
+
+  return Number.isFinite(expiresAt)
 }
 
-export async function createSession(
+/**
+ * Encrypt session data without accessing cookies.
+ * Used by createSession() and proxy.ts.
+ */
+export async function sealSession(
   data: SessionData,
-): Promise<void> {
+): Promise<string> {
   if (!isSessionData(data)) {
     throw new Error('Invalid session data.')
   }
 
-  const encrypted = await new EncryptJWT({ ...data })
+  return new EncryptJWT({ ...data })
     .setProtectedHeader({
       alg: 'dir',
       enc: 'A256GCM',
     })
     .setIssuedAt()
-    .setExpirationTime('7d')
+    .setExpirationTime('8h')
     .encrypt(sessionKey())
-
-  const store = await cookies()
-
-  store.set(COOKIE_NAME, encrypted, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: SESSION_MAX_AGE,
-  })
 }
 
-export async function getSession(): Promise<SessionData | null> {
-  const store = await cookies()
-  const encrypted = store.get(COOKIE_NAME)?.value
-
+/**
+ * Decrypt session data supplied as cookie text.
+ * Tampered, expired or invalid sessions return null.
+ */
+export async function openSession(
+  encrypted: string | null | undefined,
+): Promise<SessionData | null> {
   if (!encrypted) {
     return null
   }
@@ -132,8 +151,39 @@ export async function getSession(): Promise<SessionData | null> {
   }
 }
 
+/**
+ * Used by the existing login Server Action.
+ */
+export async function createSession(
+  data: SessionData,
+): Promise<void> {
+  const encrypted = await sealSession(data)
+  const store = await cookies()
+
+  store.set(
+    SESSION_COOKIE,
+    encrypted,
+    sessionCookieOptions(),
+  )
+}
+
+/**
+ * Used by Server Components and Server Actions.
+ * They read the session but never refresh it.
+ */
+export async function getSession(): Promise<SessionData | null> {
+  const store = await cookies()
+
+  return openSession(
+    store.get(SESSION_COOKIE)?.value,
+  )
+}
+
+/**
+ * Used by the existing logout Server Action.
+ */
 export async function deleteSession(): Promise<void> {
   const store = await cookies()
 
-  store.delete(COOKIE_NAME)
+  store.delete(SESSION_COOKIE)
 }
