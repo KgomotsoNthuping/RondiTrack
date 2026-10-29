@@ -1,7 +1,10 @@
+
 'use client'
 
 import { useActionState } from 'react'
+import Link from 'next/link'
 import { LockKeyhole, Wallet } from 'lucide-react'
+
 import {
   loginAction,
   type LoginState,
@@ -15,15 +18,28 @@ const initialState: LoginState = {
 
 type LoginFormProps = {
   expired?: boolean
+  registered?: boolean
+  next?: string | null
 }
 
 export function LoginForm({
   expired = false,
+  registered = false,
+  next = null,
 }: LoginFormProps) {
   const [state, formAction, pending] = useActionState(
     loginAction,
     initialState,
   )
+
+  const registerHref = next
+    ? `/register?${new URLSearchParams({ next }).toString()}`
+    : '/register'
+
+  const inputClass =
+    'min-h-11 w-full rounded-lg border border-slate-300 ' +
+    'bg-white px-3 py-2 text-slate-950 outline-none ' +
+    'focus-visible:ring-2 focus-visible:ring-lime-500'
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8">
@@ -46,6 +62,16 @@ export function LoginForm({
             </p>
           </div>
         </header>
+
+        {registered && (
+          <div
+            role="status"
+            className="mb-5 rounded-lg border border-lime-200 bg-lime-50 p-3 text-sm text-lime-950"
+          >
+            Your account has been created successfully.
+            Sign in to continue.
+          </div>
+        )}
 
         {expired && (
           <div
@@ -71,7 +97,18 @@ export function LoginForm({
           </div>
         )}
 
-        <form action={formAction} className="space-y-5">
+        <form
+          action={formAction}
+          className="space-y-5"
+        >
+          {next && (
+            <input
+              type="hidden"
+              name="next"
+              value={next}
+            />
+          )}
+
           <div className="space-y-2">
             <label
               htmlFor="login-email"
@@ -87,16 +124,17 @@ export function LoginForm({
               autoComplete="username"
               required
               placeholder="you@example.com"
-              aria-invalid={
-                Boolean(state.fieldErrors.email?.length)
-              }
-              className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              aria-invalid={Boolean(
+                state.fieldErrors.email?.length,
+              )}
+              className={inputClass}
             />
 
             {state.fieldErrors.email?.map(
               (message, index) => (
                 <p
                   key={index}
+                  role="alert"
                   className="text-sm text-red-700"
                 >
                   {message}
@@ -119,16 +157,17 @@ export function LoginForm({
               type="password"
               autoComplete="current-password"
               required
-              aria-invalid={
-                Boolean(state.fieldErrors.password?.length)
-              }
-              className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              aria-invalid={Boolean(
+                state.fieldErrors.password?.length,
+              )}
+              className={inputClass}
             />
 
             {state.fieldErrors.password?.map(
               (message, index) => (
                 <p
                   key={index}
+                  role="alert"
                   className="text-sm text-red-700"
                 >
                   {message}
@@ -150,6 +189,16 @@ export function LoginForm({
             {pending ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
+
+        <p className="mt-6 text-center text-sm text-slate-600">
+          Don't have an account?{' '}
+          <Link
+            href={registerHref}
+            className="font-semibold text-lime-800 hover:underline"
+          >
+            Create an account
+          </Link>
+        </p>
       </section>
     </main>
   )

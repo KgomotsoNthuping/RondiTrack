@@ -1,5 +1,6 @@
 'use server'
 
+import { safeNext } from '@/lib/safeNext'
 import { redirect } from 'next/navigation'
 import { ApiError } from '@/api/ApiError'
 import { extractRefreshToken } from '@/lib/authCookies'
@@ -205,7 +206,10 @@ export async function loginAction(
     return loginFailure(error)
   }
 
-  redirect('/dashboard/member')
+  const destination =
+  safeNext(formData.get('next')) ?? '/dashboard/member'
+
+  redirect(destination)
 }
 
 export async function logoutAction(): Promise<void> {

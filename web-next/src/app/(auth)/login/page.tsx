@@ -1,9 +1,12 @@
 import { Suspense } from 'react'
 import { LoginForm } from '@/components/LoginForm'
+import { safeNext } from '@/lib/safeNext'
 
 type LoginPageProps = {
   searchParams: Promise<{
     expired?: string
+    registered?: string
+    next?: string
   }>
 }
 
@@ -15,6 +18,8 @@ async function LoginFormFromUrl({
   return (
     <LoginForm
       expired={params.expired === '1'}
+      registered={params.registered === '1'}
+      next={safeNext(params.next)}
     />
   )
 }
