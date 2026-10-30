@@ -122,6 +122,10 @@ builder.Services.AddScoped<
     IIdempotencyRepository,
     EfIdempotencyRepository>();
 
+builder.Services.AddScoped<ContributionListService>();
+
+builder.Services.AddScoped<MemberActivityService>();
+
 builder.Services.AddSingleton(
     new HousekeepingOptions(
         Interval:
