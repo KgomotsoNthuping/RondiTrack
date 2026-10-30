@@ -228,6 +228,15 @@ async function StokvelDetailContent({
         <RecentContributions request={recentRequest} />
       </Suspense>
 
+      
+      <Link
+        href={`/stokvels/${id}/contributions`}
+        className="inline-flex min-h-11 items-center rounded-xl border border-lime-600 bg-white px-5 py-3 text-sm font-semibold text-lime-800 hover:bg-lime-50"
+      >
+        View full contribution history
+      </Link>
+
+
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex items-center gap-2">
           <Users
