@@ -27,13 +27,17 @@ namespace Api.DTO;
     StokvelMemberRole MemberRole,
     decimal Amount);
     
+    
     public sealed record ContributionListItemResponse(
     Guid Id,
     Guid ContributionCycleId,
     long AmountInCents,
     string Status,
     DateTime? PaidAtUtc,
-    int CycleNumber);
+    int CycleNumber,
+    Guid UserId = default,
+    string MemberName = "");
+
 
 
     public class CycleContributionPageRequest

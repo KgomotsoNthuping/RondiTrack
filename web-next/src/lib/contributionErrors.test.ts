@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ApiError } from '@/api/ApiError'
+import { ApiError } from '../api/ApiError'
 import { describeContributionFailure } from './contributionErrors'
 
 describe('contribution error mapping', () => {

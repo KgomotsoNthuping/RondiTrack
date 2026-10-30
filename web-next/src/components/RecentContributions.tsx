@@ -10,12 +10,10 @@ type RecentContributionsProps = {
   request: Promise<
     StreamResult<ContributionItem[] | ApiError>
   >
-  startedAt: number
 }
 
 export async function RecentContributions({
   request,
-  startedAt,
 }: RecentContributionsProps) {
   const outcome = await request
 
@@ -42,12 +40,6 @@ export async function RecentContributions({
       </section>
     )
   }
-
-  console.info(
-    `[RondiTrack] Recent contributions ready in ${Math.round(
-      performance.now() - startedAt,
-    )}ms`,
-  )
 
   return (
     <section

@@ -9,6 +9,8 @@ using Domain.Repositories;
 using Api.Auth;
 using Api.Common;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Globalization;
+using Domain.Exceptions;
 
 namespace Api.Controllers;
 
@@ -33,13 +35,17 @@ public sealed class ContributionsController : ControllerBase
         _listService = listService;
     }
 
+    
     [HttpGet]
     public async Task<
         ActionResult<PagedResponse<ContributionListItemResponse>>>
         GetAll(
             Guid stokvelId,
             [FromQuery] int pageSize = 20,
-            [FromQuery] string? pageToken = null)
+            [FromQuery] string? pageToken = null,
+            [FromQuery] string? member = null,
+            [FromQuery(Name = "from")] string? fromValue = null,
+            [FromQuery(Name = "to")] string? toValue = null)
     {
         if (!await _access.AuthorizeAsync(
             User,
@@ -49,31 +55,84 @@ public sealed class ContributionsController : ControllerBase
             return Forbid();
         }
 
-        if (pageSize < 1 || pageSize > 100)
+        Guid? memberId = null;
+
+        if (!string.IsNullOrWhiteSpace(member))
         {
-            return BadRequest(
-                "pageSize must be between 1 and 100.");
+            if (
+                !Guid.TryParse(member, out var parsedMember) ||
+                parsedMember == Guid.Empty
+            )
+            {
+                throw new ValidationException(
+                    new Dictionary<string, string[]>
+                    {
+                        ["member"] = ["Select a valid member."]
+                    });
+            }
+
+            memberId = parsedMember;
         }
 
-        var offset = 0;
+        var fromUtc = ParseUtcInstant(
+            fromValue,
+            "from");
 
-        if (!string.IsNullOrWhiteSpace(pageToken) &&
-            (!int.TryParse(pageToken, out offset) ||
-            offset < 0 ||
-            offset > int.MaxValue - pageSize))
-        {
-            return BadRequest(
-                "Invalid pageToken.");
-        }
+        var toUtc = ParseUtcInstant(
+            toValue,
+            "to");
+
+        var request = new ContributionHistoryPageRequest(
+            pageSize,
+            memberId,
+            fromUtc,
+            toUtc,
+            pageToken);
 
         var result = await _listService.GetAsync(
             stokvelId,
-            pageSize,
-            offset);
+            request);
 
         return Ok(result);
     }
 
+    private static DateTime? ParseUtcInstant(
+        string? value,
+        string field)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var formats = new[]
+        {
+            "yyyy-MM-dd'T'HH:mm:ss'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss.FFFFFFF'Z'"
+        };
+
+        if (!DateTime.TryParseExact(
+            value,
+            formats,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.AssumeUniversal |
+            DateTimeStyles.AdjustToUniversal,
+            out var result))
+        {
+            throw new ValidationException(
+                new Dictionary<string, string[]>
+                {
+                    [field] =
+                    [
+                        "Enter a valid UTC instant."
+                    ]
+                });
+        }
+
+        return DateTime.SpecifyKind(
+            result,
+            DateTimeKind.Utc);
+    }
 
     // GET /api/stokvels/{stokvelId}/contributions/{contributionId}
     [HttpGet("{contributionId:guid}")]

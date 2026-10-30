@@ -49,16 +49,6 @@ async function StokvelDetailContent({
     notFound()
   }
 
-  const startedAt = performance.now()
-
-  /*
-   * Both independent requests start before either
-   * result is awaited.
-   *
-   * The detail is needed for the main content.
-   * Contributions are awaited by a separate
-   * Server Component inside Suspense.
-   */
   const detailRequest = loadStokvelDetail(id)
 
   const recentRequest = settleForStream(
@@ -70,12 +60,6 @@ async function StokvelDetailContent({
   if (stokvel instanceof ApiError) {
     return <ApiErrorPanel error={stokvel} />
   }
-
-  console.info(
-    `[RondiTrack] Stokvel details ready in ${Math.round(
-      performance.now() - startedAt,
-    )}ms`,
-  )
 
   const cycle = stokvel.currentCycle
 
@@ -241,10 +225,7 @@ async function StokvelDetailContent({
       <Suspense
         fallback={<RecentContributionsSkeleton />}
       >
-        <RecentContributions
-          request={recentRequest}
-          startedAt={startedAt}
-        />
+        <RecentContributions request={recentRequest} />
       </Suspense>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

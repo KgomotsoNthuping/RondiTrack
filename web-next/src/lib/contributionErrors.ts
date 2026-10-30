@@ -1,5 +1,5 @@
-import { ApiError } from '@/api/ApiError'
-import { parseRetryAfter } from '@/lib/errorMessages'
+import { ApiError } from '../api/ApiError'
+import { parseRetryAfter } from './errorMessages'
 
 export type ContributionFailure = {
   status: 'error' | 'uncertain'
