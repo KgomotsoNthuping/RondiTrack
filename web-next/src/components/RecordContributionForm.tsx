@@ -1,8 +1,12 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import {
+  useActionState,
+  useEffect,
+  useState,
+} from 'react'
 import { Wallet } from 'lucide-react'
-
+import { useQueryClient } from '@tanstack/react-query'
 import {
   recordContributionAction,
   type RecordContributionState,
@@ -48,6 +52,7 @@ export function RecordContributionForm({
     () => new PaymentIntentTracker(initialKey),
   )
 
+  const queryClient = useQueryClient()
   const [draft, setDraft] = useState({
     amount: '',
     memberId: currentUserId,
@@ -58,6 +63,29 @@ export function RecordContributionForm({
     recordContributionAction,
     initialState,
   )
+
+
+useEffect(() => {
+  if (
+    state.status !== 'success' ||
+    !state.attemptKey
+  ) {
+    return
+  }
+
+  void queryClient.invalidateQueries({
+    queryKey: ['history', stokvelId],
+  })
+
+  void queryClient.invalidateQueries({
+    queryKey: ['activity'],
+  })
+}, [
+  state.status,
+  state.attemptKey,
+  stokvelId,
+  queryClient,
+])
 
   const canChooseMember =
     canSelectContributionMember(memberRole)

@@ -1,16 +1,18 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, CalendarDays } from 'lucide-react'
+import {
+  ArrowLeft,
+  CalendarDays,
+} from 'lucide-react'
 import type { SearchParams } from 'nuqs/server'
 
 import Loading from '@/app/(app)/loading'
 import { ApiError } from '@/api/ApiError'
 import { ApiErrorPanel } from '@/components/ApiErrorPanel'
 import { HistoryFilters } from '@/components/HistoryFilters'
-import { StatusBadge } from '@/components/StatusBadge'
-import { formatCents } from '@/lib/money'
-import { formatDateTime } from '@/lib/dates'
+import { HistoryContributionCard } from '@/components/HistoryContributionCard'
+import { HistoryFeed } from '@/components/HistoryFeed'
 import {
   getStokvelDetail,
   loadRecordableMembers,
@@ -69,6 +71,18 @@ async function HistoryContent({
     filters.from !== null ||
     filters.to !== null
 
+  const firstItemId =
+    history.items[0]?.id ?? ''
+
+  const feedKey = [
+    id,
+    filters.member ?? '',
+    filters.from ?? '',
+    filters.to ?? '',
+    history.nextPageToken,
+    firstItemId,
+  ].join('|')
+
   return (
     <div className="space-y-7">
       <Link
@@ -79,6 +93,7 @@ async function HistoryContent({
           aria-hidden="true"
           className="size-4"
         />
+
         Back to stokvel details
       </Link>
 
@@ -92,7 +107,7 @@ async function HistoryContent({
         </h1>
 
         <p className="mt-2 text-slate-600">
-          Filter the payment records by member and
+          Filter payment records by member and
           South African calendar dates.
         </p>
       </header>
@@ -147,73 +162,26 @@ async function HistoryContent({
             </p>
           </div>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-2">
+          <HistoryFeed
+            key={feedKey}
+            stokvelId={id}
+            filters={{
+              member: filters.member,
+              from: filters.from,
+              to: filters.to,
+            }}
+            after={history.nextPageToken}
+            firstItemId={firstItemId}
+            firstCount={history.items.length}
+          >
             {history.items.map(item => (
-              <article
+              <HistoryContributionCard
                 key={item.id}
-                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm text-slate-600">
-                      {item.memberName}
-                    </p>
-
-                    <h3 className="mt-2 text-2xl font-bold">
-                      {formatCents(
-                        item.amountInCents,
-                      )}
-                    </h3>
-                  </div>
-
-                  <StatusBadge
-                    kind="contribution"
-                    status={item.status}
-                  />
-                </div>
-
-                <div className="mt-5 grid gap-3 border-t border-slate-200 pt-4 text-sm sm:grid-cols-2">
-                  <div>
-                    <p className="text-slate-500">
-                      Contribution cycle
-                    </p>
-
-                    <p className="mt-1 font-semibold">
-                      Cycle {item.cycleNumber}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-slate-500">
-                      Payment date
-                    </p>
-
-                    <p className="mt-1 font-semibold">
-                      {item.paidAtUtc
-                        ? formatDateTime(
-                            item.paidAtUtc,
-                          )
-                        : 'Not paid yet'}
-                    </p>
-                  </div>
-                </div>
-              </article>
+                item={item}
+              />
             ))}
-          </div>
+          </HistoryFeed>
         )}
-
-        <p
-          role="status"
-          className="text-sm text-slate-600"
-        >
-          Showing {history.items.length}{' '}
-          {history.items.length === 1
-            ? 'contribution'
-            : 'contributions'}
-          {history.nextPageToken
-            ? '. More records are available.'
-            : '. End of available results.'}
-        </p>
       </section>
     </div>
   )

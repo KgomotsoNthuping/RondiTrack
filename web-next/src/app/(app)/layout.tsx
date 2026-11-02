@@ -3,6 +3,7 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import {
+  Activity,
   House,
   LayoutDashboard,
   Users,
@@ -12,6 +13,7 @@ import {
 
 import { logoutAction } from '@/actions/auth'
 import { getSession } from '@/lib/session'
+import { Providers } from './Providers'
 
 const navigation = [
   { href: '/', label: 'Home', icon: House },
@@ -30,6 +32,12 @@ const navigation = [
     label: 'My stokvels',
     icon: Users,
   },
+  {
+  href: '/activity',
+  label: 'Activity feed',
+  icon: Activity,
+  },
+  
 ]
 
 async function AppShell({
@@ -122,17 +130,19 @@ export default function AppLayout({
   children: ReactNode
 }) {
   return (
-    <Suspense
-      fallback={
-        <div
-          role="status"
-          className="p-8 text-slate-600"
-        >
-          Loading RondiTrack...
-        </div>
-      }
-    >
-      <AppShell>{children}</AppShell>
-    </Suspense>
+    <Providers>
+      <Suspense
+        fallback={
+          <div
+            role="status"
+            className="p-8 text-slate-600"
+          >
+            Loading RondiTrack...
+          </div>
+        }
+      >
+        <AppShell>{children}</AppShell>
+      </Suspense>
+    </Providers>
   )
 }

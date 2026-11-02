@@ -77,23 +77,40 @@ function clearSession(
   return response
 }
 
+
+function bffFailure(
+  status: number,
+  title: string,
+): NextResponse {
+  return NextResponse.json(
+    { title, status },
+    {
+      status,
+      headers: {
+        'Cache-Control': 'no-store',
+      },
+    },
+  )
+}
+
 export async function proxy(
   request: NextRequest,
 ): Promise<NextResponse> {
   const encrypted =
     request.cookies.get(SESSION_COOKIE)?.value
 
+    const isBff = request.nextUrl.pathname.startsWith('/bff/')
   const session = await openSession(encrypted)
 
   if (!session) {
-    const response = loginRedirect(request)
+  const response = isBff
+    ? bffFailure(401, 'Your session has ended.')
+    : loginRedirect(request)
 
-    if (encrypted) {
-      return clearSession(response)
-    }
-
-    return response
-  }
+  return encrypted
+    ? clearSession(response)
+    : response
+}
 
   if (
     !needsRefresh(
@@ -108,10 +125,12 @@ export async function proxy(
   const outcome = await refreshOnce(session)
 
   if (outcome.kind === 'refused') {
-    const response = loginRedirect(request, true)
+  const response = isBff
+    ? bffFailure(401, 'Your session has ended.')
+    : loginRedirect(request, true)
 
-    return clearSession(response)
-  }
+  return clearSession(response)
+}
 
   if (outcome.kind === 'temporary') {
     if (
@@ -122,6 +141,12 @@ export async function proxy(
       return NextResponse.next()
     }
 
+    if (isBff) {
+  return bffFailure(
+    503,
+    'Session renewal is temporarily unavailable.',
+  )
+}
     return new NextResponse(
       'RondiTrack cannot renew your session right now. Please try again.',
       {
@@ -167,5 +192,7 @@ export const config = {
   matcher: [
     '/dashboard/:path*',
     '/stokvels/:path*',
+    '/activity/:path*',
+    '/bff/:path*',
   ],
 }
