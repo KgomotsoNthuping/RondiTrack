@@ -502,6 +502,8 @@ builder.Services.AddHostedService(
 
 builder.Services.AddScoped<ContributionListService>();
 
+builder.Services.AddScoped<StokvelInviteService>();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

@@ -29,6 +29,8 @@ public class RondiTrackDbContext : DbContext
 
     public DbSet<IdempotencyEntry> IdempotencyEntries => Set<IdempotencyEntry>();
 
+    public DbSet<StokvelInvite> StokvelInvites => Set<StokvelInvite>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -41,6 +43,7 @@ public class RondiTrackDbContext : DbContext
         ConfigureRefreshTokens(modelBuilder);
         ConfigureArrears(modelBuilder);
         ConfigureIdempotencyEntries(modelBuilder);
+        ConfigureStokvelInvites(modelBuilder);
     }
 
     private static void ConfigureUsers(ModelBuilder modelBuilder)
@@ -309,4 +312,45 @@ public class RondiTrackDbContext : DbContext
             .OnDelete(
                 DeleteBehavior.Restrict);
     }
+
+    
+    private static void ConfigureStokvelInvites(ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<StokvelInvite>();
+
+        entity.HasKey(invite => invite.Id);
+
+        entity.Property(invite => invite.CodeHash)
+            .IsRequired()
+            .HasMaxLength(64);
+
+        entity.HasIndex(invite => invite.CodeHash)
+            .IsUnique();
+
+        entity.HasIndex(invite => new
+        {
+            invite.StokvelId,
+            invite.ExpiresAtUtc
+        });
+
+        entity.Property(invite => invite.CreatedAtUtc)
+            .HasColumnType("timestamp with time zone");
+
+        entity.Property(invite => invite.ExpiresAtUtc)
+            .HasColumnType("timestamp with time zone");
+
+        entity.Property(invite => invite.RevokedAtUtc)
+            .HasColumnType("timestamp with time zone");
+
+        entity.HasOne<Stokvel>()
+            .WithMany()
+            .HasForeignKey(invite => invite.StokvelId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        entity.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(invite => invite.CreatedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+
 }

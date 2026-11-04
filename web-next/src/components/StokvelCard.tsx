@@ -4,6 +4,7 @@ import {
   CircleDollarSign,
   Wallet,
 } from 'lucide-react'
+import { PinStokvelButton } from './PinStokvelButton'
 import type { MeHomeEntry } from '@/api/types'
 import { formatCents } from '@/lib/money'
 import {
@@ -39,6 +40,10 @@ export function StokvelCard({ stokvel }: Props) {
             {roleLabel(stokvel.role)}
           </p>
         </div>
+        <PinStokvelButton
+          stokvelId={stokvel.stokvelId}
+          stokvelName={stokvel.name}
+        />
       </header>
 
       <div className="flex-1 space-y-4 py-5">

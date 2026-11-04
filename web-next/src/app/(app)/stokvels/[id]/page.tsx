@@ -11,7 +11,7 @@ import {
   Users,
   Wallet,
 } from 'lucide-react'
-
+import { PinStokvelButton } from '@/components/PinStokvelButton'
 import { ApiError } from '@/api/ApiError'
 import { ApiErrorPanel } from '@/components/ApiErrorPanel'
 import {
@@ -107,6 +107,12 @@ async function StokvelDetailContent({
               Your role: {roleLabel(stokvel.role)}
             </p>
           </div>
+          <div className="mt-4">
+  <PinStokvelButton
+    stokvelId={stokvel.id}
+    stokvelName={stokvel.name}
+  />
+</div>
         </div>
       </header>
 

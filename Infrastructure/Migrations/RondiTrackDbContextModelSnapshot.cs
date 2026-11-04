@@ -304,6 +304,44 @@ namespace Infrastructure.Migrations
                     b.ToTable("Stokvels");
                 });
 
+            modelBuilder.Entity("Domain.Models.StokvelInvite", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("RevokedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("StokvelId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CodeHash")
+                        .IsUnique();
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("StokvelId", "ExpiresAtUtc");
+
+                    b.ToTable("StokvelInvites");
+                });
+
             modelBuilder.Entity("Domain.Models.StokvelMember", b =>
                 {
                     b.Property<Guid>("UserId")
@@ -430,6 +468,21 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Models.StokvelInvite", b =>
+                {
+                    b.HasOne("Domain.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Models.Stokvel", null)
+                        .WithMany()
+                        .HasForeignKey("StokvelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
