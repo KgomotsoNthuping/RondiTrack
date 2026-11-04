@@ -23,6 +23,8 @@ type HistoryFeedProps = {
   firstItemId: string
   firstCount: number
   children: ReactNode
+  viewerUserId: string
+  viewerRole: string
 }
 
 export function HistoryFeed({
@@ -32,6 +34,8 @@ export function HistoryFeed({
   firstItemId,
   firstCount,
   children,
+  viewerUserId,
+  viewerRole,
 }: HistoryFeedProps) {
   const [wanted, setWanted] = useState(false)
   const sentinelRef = useRef<HTMLDivElement>(null)
@@ -159,6 +163,9 @@ export function HistoryFeed({
             <HistoryContributionCard
               key={item.id}
               item={item}
+              stokvelId={stokvelId}
+              viewerUserId={viewerUserId}
+              viewerRole={viewerRole}
             />
           )),
         )}

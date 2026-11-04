@@ -1,6 +1,7 @@
+
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import {
   ArrowLeft,
   CalendarDays,
@@ -20,6 +21,7 @@ import {
 import { loadHistoryFilters } from '@/lib/historyFilters'
 import { southAfricanDaysToUtcRange } from '@/lib/southAfricanDates'
 import { loadContributionHistoryPage } from '@/lib/history-data'
+import { getSession } from '@/lib/session'
 
 type HistoryPageProps = {
   params: Promise<{ id: string }>
@@ -40,6 +42,12 @@ async function HistoryContent({
 
   if (!uuidPattern.test(id)) {
     notFound()
+  }
+
+  const session = await getSession()
+
+  if (!session) {
+    redirect('/login')
   }
 
   const range = southAfricanDaysToUtcRange(
@@ -93,7 +101,6 @@ async function HistoryContent({
           aria-hidden="true"
           className="size-4"
         />
-
         Back to stokvel details
       </Link>
 
@@ -165,6 +172,8 @@ async function HistoryContent({
           <HistoryFeed
             key={feedKey}
             stokvelId={id}
+            viewerUserId={session.userId}
+            viewerRole={stokvel.role}
             filters={{
               member: filters.member,
               from: filters.from,
@@ -178,6 +187,9 @@ async function HistoryContent({
               <HistoryContributionCard
                 key={item.id}
                 item={item}
+                stokvelId={id}
+                viewerUserId={session.userId}
+                viewerRole={stokvel.role}
               />
             ))}
           </HistoryFeed>

@@ -1,13 +1,27 @@
+import Link from 'next/link'
+
 import { StatusBadge } from '@/components/StatusBadge'
 import { formatCents } from '@/lib/money'
 import { formatDateTime } from '@/lib/dates'
 import type { ContributionHistoryItem } from '@/lib/historyTypes'
 
+type Props = {
+  item: ContributionHistoryItem
+  stokvelId: string
+  viewerUserId: string
+  viewerRole: string
+}
+
 export function HistoryContributionCard({
   item,
-}: {
-  item: ContributionHistoryItem
-}) {
+  stokvelId,
+  viewerUserId,
+  viewerRole,
+}: Props) {
+  const canAccessProof =
+    item.userId === viewerUserId ||
+    viewerRole === 'Treasurer'
+
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -50,6 +64,15 @@ export function HistoryContributionCard({
           </p>
         </div>
       </div>
+
+      {canAccessProof && (
+        <Link
+          href={`/stokvels/${stokvelId}/contributions/${item.id}/proof`}
+          className="mt-5 inline-flex min-h-11 items-center rounded-xl border border-lime-600 px-4 py-3 text-sm font-semibold text-lime-800 hover:bg-lime-50"
+        >
+          Proof of payment
+        </Link>
+      )}
     </article>
   )
 }
