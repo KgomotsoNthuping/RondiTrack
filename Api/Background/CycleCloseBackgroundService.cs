@@ -1,5 +1,7 @@
+
 using System.Diagnostics;
 using Api.Observability;
+using Api.Services;
 using Domain.Models;
 using Domain.Repositories;
 using Infrastructure.Data;
@@ -71,8 +73,7 @@ public sealed class CycleCloseBackgroundService
                     stoppingToken));
         }
         catch (OperationCanceledException)
-            when (stoppingToken
-                .IsCancellationRequested)
+            when (stoppingToken.IsCancellationRequested)
         {
         }
     }
@@ -80,20 +81,27 @@ public sealed class CycleCloseBackgroundService
     public Task<CycleCloseRunResult> RunOnceAsync(
         CancellationToken cancellationToken = default)
     {
-        return RunOnceCoreAsync(null, cancellationToken);
+        return RunOnceCoreAsync(
+            null,
+            cancellationToken);
     }
 
     public Task<CycleCloseRunResult> RunForStokvelsAsync(
         IReadOnlyCollection<Guid> stokvelIds,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(stokvelIds);
-        return RunOnceCoreAsync(stokvelIds.ToArray(), cancellationToken);
+        ArgumentNullException.ThrowIfNull(
+            stokvelIds);
+
+        return RunOnceCoreAsync(
+            stokvelIds.ToArray(),
+            cancellationToken);
     }
 
-    private async Task<CycleCloseRunResult> RunOnceCoreAsync(
-        Guid[]? allowedStokvelIds,
-        CancellationToken cancellationToken)
+    private async Task<CycleCloseRunResult>
+        RunOnceCoreAsync(
+            Guid[]? allowedStokvelIds,
+            CancellationToken cancellationToken)
     {
         using var activity =
             ActivitySource.StartActivity(
@@ -105,8 +113,7 @@ public sealed class CycleCloseBackgroundService
                 _timeProvider.GetUtcNow();
 
             var localDate =
-                _schedule.GetLocalDate(
-                    now);
+                _schedule.GetLocalDate(now);
 
             List<Guid> stokvelIds;
 
@@ -120,34 +127,36 @@ public sealed class CycleCloseBackgroundService
                         .GetRequiredService<
                             RondiTrackDbContext>();
 
-                IQueryable<ContributionCycle> eligibleCycles =
-                    db.ContributionCycles
-                        .AsNoTracking()
-                        .Where(cycle =>
-                            cycle.ClosedAtUtc == null &&
-                            cycle.EndDate != null &&
-                            cycle.EndDate < localDate);
+                IQueryable<ContributionCycle>
+                    eligibleCycles =
+                        db.ContributionCycles
+                            .AsNoTracking()
+                            .Where(cycle =>
+                                cycle.ClosedAtUtc == null &&
+                                cycle.EndDate != null &&
+                                cycle.EndDate < localDate);
 
                 if (allowedStokvelIds is not null)
                 {
-                    eligibleCycles = eligibleCycles.Where(cycle =>
-                        allowedStokvelIds.Contains(cycle.StokvelId));
+                    eligibleCycles =
+                        eligibleCycles.Where(cycle =>
+                            allowedStokvelIds.Contains(
+                                cycle.StokvelId));
                 }
 
-                stokvelIds = await eligibleCycles
-                    .Select(cycle => cycle.StokvelId)
-                    .Distinct()
-                    .ToListAsync(cancellationToken);
+                stokvelIds =
+                    await eligibleCycles
+                        .Select(cycle =>
+                            cycle.StokvelId)
+                        .Distinct()
+                        .ToListAsync(
+                            cancellationToken);
             }
 
-            var cyclesClosed =
-                0;
+            var cyclesClosed = 0;
+            var arrearsRecorded = 0;
 
-            var arrearsRecorded =
-                0;
-
-            foreach (
-                var stokvelId in stokvelIds)
+            foreach (var stokvelId in stokvelIds)
             {
                 try
                 {
@@ -165,8 +174,7 @@ public sealed class CycleCloseBackgroundService
                 }
                 catch (Exception exception)
                     when (
-                        exception
-                            is not
+                        exception is not
                             OperationCanceledException)
                 {
                     _logger.LogError(
@@ -196,8 +204,7 @@ public sealed class CycleCloseBackgroundService
         }
         catch (Exception exception)
             when (
-                exception
-                    is not
+                exception is not
                     OperationCanceledException)
         {
             activity?.SetStatus(
@@ -232,6 +239,11 @@ public sealed class CycleCloseBackgroundService
                 .GetRequiredService<
                     ICycleCloseRepository>();
 
+        var planner =
+            scope.ServiceProvider
+                .GetRequiredService<
+                    CycleClosePlanner>();
+
         var executionStrategy =
             db.Database
                 .CreateExecutionStrategy();
@@ -253,11 +265,8 @@ public sealed class CycleCloseBackgroundService
                                     stokvelId,
                                 cancellationToken);
 
-                    var cyclesClosed =
-                        0;
-
-                    var arrearsRecorded =
-                        0;
+                    var cyclesClosed = 0;
+                    var arrearsRecorded = 0;
 
                     while (true)
                     {
@@ -284,10 +293,9 @@ public sealed class CycleCloseBackgroundService
 
                         var closeInstant =
                             _schedule.GetCloseInstantUtc(
-                                cycle.EndDate.Value);
+                                cycle.EndDate!.Value);
 
-                        if (now <
-                            closeInstant)
+                        if (now < closeInstant)
                         {
                             break;
                         }
@@ -306,91 +314,31 @@ public sealed class CycleCloseBackgroundService
                                 .RollbackAsync(
                                     cancellationToken);
 
-                            return new
-                                CycleCloseRunResult(
-                                    0,
-                                    0);
+                            return new CycleCloseRunResult(
+                                0,
+                                0);
                         }
 
-                        var memberIds =
-                            await db
-                                .StokvelMembers
-                                .Where(member =>
-                                    member.StokvelId ==
-                                        stokvelId)
-                                .Select(member =>
-                                    member.UserId)
-                                .ToListAsync(
-                                    cancellationToken);
+                        var preview =
+                            await planner.CalculateAsync(
+                                stokvel,
+                                cycle,
+                                cycle.EndDate.Value,
+                                cancellationToken);
 
-                        var contributions =
-                            await db
-                                .Contributions
-                                .Where(contribution =>
-                                    contribution
-                                        .StokvelId ==
-                                            stokvelId &&
-                                    contribution
-                                        .ContributionCycleId ==
-                                            cycle.Id)
-                                .GroupBy(
-                                    contribution =>
-                                        contribution
-                                            .UserId)
-                                .Select(group =>
-                                    new
-                                    {
-                                        UserId =
-                                            group.Key,
-
-                                        Paid =
-                                            group.Sum(
-                                                value =>
-                                                    value.Amount)
-                                    })
-                                .ToDictionaryAsync(
-                                    value =>
-                                        value.UserId,
-                                    value =>
-                                        value.Paid,
-                                    cancellationToken);
-
-                        var requiredCents =
-                            ToCents(
-                                stokvel
-                                    .MonthlyContribution);
-
-                        foreach (
-                            var userId in memberIds)
+                        foreach (var item in preview.Arrears)
                         {
-                            contributions
-                                .TryGetValue(
-                                    userId,
-                                    out var paid);
-
-                            var paidCents =
-                                ToCents(paid);
-
-                            var shortfall =
-                                requiredCents -
-                                paidCents;
-
-                            if (shortfall <= 0)
-                            {
-                                continue;
-                            }
-
                             db.Arrears.Add(
                                 new Arrear(
                                     stokvelId,
-                                    userId,
+                                    item.UserId,
                                     cycle.Id,
-                                    shortfall,
-                                    closeInstant
-                                        .UtcDateTime));
-
-                            arrearsRecorded++;
+                                    item.ShortfallInCents,
+                                    closeInstant.UtcDateTime));
                         }
+
+                        arrearsRecorded +=
+                            preview.Arrears.Count;
 
                         var nextCycleNumber =
                             cycle.CycleNumber + 1;
@@ -410,8 +358,7 @@ public sealed class CycleCloseBackgroundService
                             stokvel.CurrentPeriod >=
                             stokvel.TotalPeriods
                                 ? 1
-                                : stokvel.CurrentPeriod +
-                                    1;
+                                : stokvel.CurrentPeriod + 1;
 
                         stokvel.UpdateDetails(
                             stokvel.Name,
@@ -429,22 +376,10 @@ public sealed class CycleCloseBackgroundService
                     await transaction.CommitAsync(
                         cancellationToken);
 
-                    return new
-                        CycleCloseRunResult(
-                            cyclesClosed,
-                            arrearsRecorded);
+                    return new CycleCloseRunResult(
+                        cyclesClosed,
+                        arrearsRecorded);
                 });
-    }
-
-    private static long ToCents(
-        decimal amount)
-    {
-        return checked(
-            (long)decimal.Round(
-                amount * 100m,
-                0,
-                MidpointRounding
-                    .AwayFromZero));
     }
 }
 

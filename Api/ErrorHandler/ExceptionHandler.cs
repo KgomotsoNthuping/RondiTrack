@@ -61,12 +61,19 @@ public sealed class ExceptionHandler : IExceptionHandler
                     exception.Message
                 ),
 
-                    InviteExpiredException =>
-                    (
-                        StatusCodes.Status410Gone,
-                        "Invitation Expired",
-                        exception.Message
-                    ),
+                CycleClosePermissionException =>
+                (
+                    StatusCodes.Status403Forbidden,
+                    "Forbidden",
+                    exception.Message
+                ),
+
+                InviteExpiredException =>
+                (
+                    StatusCodes.Status410Gone,
+                    "Invitation Expired",
+                    exception.Message
+                ),
 
                 ConflictException =>
                     (

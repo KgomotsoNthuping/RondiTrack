@@ -33,6 +33,8 @@ public class RondiTrackDbContext : DbContext
 
     public DbSet<ContributionProof> ContributionProofs => Set<ContributionProof>();
 
+    public DbSet<CycleCloseReceipt> CycleCloseReceipts => Set<CycleCloseReceipt>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -47,6 +49,7 @@ public class RondiTrackDbContext : DbContext
         ConfigureIdempotencyEntries(modelBuilder);
         ConfigureStokvelInvites(modelBuilder);
         ConfigureContributionProofs(modelBuilder);
+        ConfigureCycleCloseReceipts(modelBuilder);
     }
 
     private static void ConfigureUsers(ModelBuilder modelBuilder)
@@ -392,5 +395,53 @@ public class RondiTrackDbContext : DbContext
             .HasForeignKey(proof => proof.UploadedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
     }
+
+    
+    private static void ConfigureCycleCloseReceipts(
+        ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<CycleCloseReceipt>();
+
+        entity.HasKey(receipt => receipt.Id);
+
+        entity.Property(receipt => receipt.Key)
+            .IsRequired()
+            .HasMaxLength(200);
+
+        entity.Property(receipt => receipt.PreviewVersion)
+            .IsRequired()
+            .HasMaxLength(64);
+
+        entity.Property(receipt => receipt.AsOfDate)
+            .HasColumnType("date");
+
+        entity.Property(receipt => receipt.ClosedAtUtc)
+            .HasColumnType("timestamp with time zone");
+
+        entity.HasIndex(receipt => new
+        {
+            receipt.CallerUserId,
+            receipt.Key
+        })
+        .IsUnique()
+        .HasDatabaseName(
+            "UX_CycleCloseReceipts_User_Key");
+
+        entity.HasIndex(receipt => receipt.CycleId)
+            .IsUnique()
+            .HasDatabaseName(
+                "UX_CycleCloseReceipts_Cycle");
+
+        entity.HasOne<ContributionCycle>()
+            .WithMany()
+            .HasForeignKey(receipt => receipt.CycleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        entity.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(receipt => receipt.CallerUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+
 
 }

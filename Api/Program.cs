@@ -535,6 +535,12 @@ builder.Services.AddScoped<StokvelInviteService>();
 
 builder.Services.AddScoped<ContributionProofService>();
 
+
+builder.Services.AddScoped<CycleClosePlanner>();
+
+builder.Services.AddScoped<ManualCycleCloseService>();
+
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

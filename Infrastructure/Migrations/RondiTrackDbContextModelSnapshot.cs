@@ -184,6 +184,56 @@ namespace Infrastructure.Migrations
                     b.ToTable("ContributionProofs");
                 });
 
+            modelBuilder.Entity("Domain.Models.CycleCloseReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ArrearsCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly>("AsOfDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("CallerUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ClosedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CycleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("PreviewVersion")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("StokvelId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("TotalArrearsInCents")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CycleId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_CycleCloseReceipts_Cycle");
+
+                    b.HasIndex("CallerUserId", "Key")
+                        .IsUnique()
+                        .HasDatabaseName("UX_CycleCloseReceipts_User_Key");
+
+                    b.ToTable("CycleCloseReceipts");
+                });
+
             modelBuilder.Entity("Domain.Models.IdempotencyEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -498,6 +548,21 @@ namespace Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("UploadedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Models.CycleCloseReceipt", b =>
+                {
+                    b.HasOne("Domain.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("CallerUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Models.ContributionCycle", null)
+                        .WithMany()
+                        .HasForeignKey("CycleId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

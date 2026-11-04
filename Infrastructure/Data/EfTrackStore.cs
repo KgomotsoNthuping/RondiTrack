@@ -1,6 +1,7 @@
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Domain.Repositories;
+using Domain.Exceptions;
 
 namespace Infrastructure.Data;
 
@@ -205,12 +206,49 @@ public sealed class EfTrackStore : ITrackStore
     }
 
     public async Task AddContributionAsync(
-        Contribution contribution)
+    Contribution contribution)
     {
-        await _dbContext.Contributions
-            .AddAsync(contribution);
+        var strategy = _dbContext.Database
+            .CreateExecutionStrategy();
 
-        await _dbContext.SaveChangesAsync();
+        await strategy.ExecuteAsync(async () =>
+        {
+            await using var transaction =
+                await _dbContext.Database.BeginTransactionAsync();
+
+            var found = await CycleRowLock.LockAsync(
+                _dbContext,
+                contribution.StokvelId,
+                contribution.ContributionCycleId);
+
+            if (!found)
+            {
+                throw new ResourceNotFoundException(
+                    "The contribution cycle was not found.");
+            }
+
+            var cycle = await _dbContext.ContributionCycles
+                .AsNoTracking()
+                .SingleAsync(value =>
+                    value.Id == contribution.ContributionCycleId &&
+                    value.StokvelId == contribution.StokvelId);
+
+            if (
+                cycle.ClosedAtUtc.HasValue ||
+                cycle.Status == ContributionCycleStatus.PaidOut
+            )
+            {
+                throw new ConflictException(
+                    "Contributions cannot be recorded for a closed cycle.");
+            }
+
+            await _dbContext.Contributions
+                .AddAsync(contribution);
+
+            await _dbContext.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+        });
     }
 
     // Contribution Cycles
