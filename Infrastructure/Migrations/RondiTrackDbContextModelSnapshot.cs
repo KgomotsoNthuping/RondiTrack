@@ -141,6 +141,49 @@ namespace Infrastructure.Migrations
                     b.ToTable("ContributionCycles");
                 });
 
+            modelBuilder.Entity("Domain.Models.ContributionProof", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<Guid>("ContributionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("StokvelId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UploadedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UploadedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContributionId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_ContributionProofs_Contribution");
+
+                    b.HasIndex("StokvelId");
+
+                    b.HasIndex("UploadedByUserId");
+
+                    b.ToTable("ContributionProofs");
+                });
+
             modelBuilder.Entity("Domain.Models.IdempotencyEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -441,6 +484,21 @@ namespace Infrastructure.Migrations
                     b.Navigation("ContributionCycle");
 
                     b.Navigation("Member");
+                });
+
+            modelBuilder.Entity("Domain.Models.ContributionProof", b =>
+                {
+                    b.HasOne("Domain.Models.Contribution", null)
+                        .WithMany()
+                        .HasForeignKey("ContributionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UploadedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Models.IdempotencyEntry", b =>

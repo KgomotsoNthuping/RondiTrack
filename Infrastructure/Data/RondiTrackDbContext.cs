@@ -31,6 +31,8 @@ public class RondiTrackDbContext : DbContext
 
     public DbSet<StokvelInvite> StokvelInvites => Set<StokvelInvite>();
 
+    public DbSet<ContributionProof> ContributionProofs => Set<ContributionProof>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -44,6 +46,7 @@ public class RondiTrackDbContext : DbContext
         ConfigureArrears(modelBuilder);
         ConfigureIdempotencyEntries(modelBuilder);
         ConfigureStokvelInvites(modelBuilder);
+        ConfigureContributionProofs(modelBuilder);
     }
 
     private static void ConfigureUsers(ModelBuilder modelBuilder)
@@ -350,6 +353,43 @@ public class RondiTrackDbContext : DbContext
         entity.HasOne<User>()
             .WithMany()
             .HasForeignKey(invite => invite.CreatedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+
+    
+    private static void ConfigureContributionProofs(
+        ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<ContributionProof>();
+
+        entity.HasKey(proof => proof.Id);
+
+        entity.Property(proof => proof.ContentType)
+            .IsRequired()
+            .HasMaxLength(32);
+
+        entity.Property(proof => proof.Content)
+            .IsRequired()
+            .HasColumnType("bytea");
+
+        entity.Property(proof => proof.UploadedAtUtc)
+            .HasColumnType("timestamp with time zone");
+
+        entity.HasIndex(proof => proof.ContributionId)
+            .IsUnique()
+            .HasDatabaseName(
+                "UX_ContributionProofs_Contribution");
+
+        entity.HasIndex(proof => proof.StokvelId);
+
+        entity.HasOne<Contribution>()
+            .WithMany()
+            .HasForeignKey(proof => proof.ContributionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        entity.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(proof => proof.UploadedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 

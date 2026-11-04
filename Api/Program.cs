@@ -533,6 +533,8 @@ builder.Services.AddScoped<ContributionListService>();
 
 builder.Services.AddScoped<StokvelInviteService>();
 
+builder.Services.AddScoped<ContributionProofService>();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
