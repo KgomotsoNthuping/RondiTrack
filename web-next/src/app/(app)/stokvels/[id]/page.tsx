@@ -20,6 +20,7 @@ import {
 } from '@/components/RecentContributions'
 import { StatusBadge } from '@/components/StatusBadge'
 import Loading from '@/app/(app)/loading'
+import { CreateStokvelInvite } from '@/components/CreateStokvelInvite'
 
 import {
   loadRecentContributions,
@@ -108,13 +109,17 @@ async function StokvelDetailContent({
             </p>
           </div>
           <div className="mt-4">
-  <PinStokvelButton
-    stokvelId={stokvel.id}
-    stokvelName={stokvel.name}
-  />
-</div>
+          <PinStokvelButton
+            stokvelId={stokvel.id}
+            stokvelName={stokvel.name}
+          />
+        </div>
         </div>
       </header>
+
+      {stokvel.role === 'Treasurer' && (
+        <CreateStokvelInvite stokvelId={stokvel.id} />
+      )}
 
       <section
         aria-label="Stokvel summary"

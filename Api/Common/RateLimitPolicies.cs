@@ -7,4 +7,6 @@ public static class RateLimitPolicies
     public const string Contribution = "Contribution";
 
     public const string Payout = "Payout";
+
+    public const string Invite = "Invite";
 }

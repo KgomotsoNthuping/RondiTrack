@@ -64,6 +64,10 @@ public class PostgresApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting(
             "RateLimiting:Payout:PermitLimit",
             "1000");
+
+        builder.UseSetting(
+        "RateLimiting:Invite:PermitLimit",
+        "1000");
     }
 
     public HttpClient CreateAuthenticatedClient(

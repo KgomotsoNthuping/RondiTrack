@@ -43,6 +43,11 @@ const navigation = [
     label: 'Activity feed',
     icon: Activity,
   },
+  {
+  href: '/join',
+  label: 'Join a stokvel',
+  icon: Users,
+  },
 ]
 
 async function AppShell({

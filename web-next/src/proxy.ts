@@ -194,5 +194,6 @@ export const config = {
     '/stokvels/:path*',
     '/activity/:path*',
     '/bff/:path*',
+    '/join/:path*',
   ],
 }

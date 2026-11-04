@@ -3,6 +3,7 @@ using Api.DTO;
 using Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Api.Controllers;
 
@@ -20,6 +21,7 @@ public sealed class InvitesController : ControllerBase
     }
 
     [HttpGet("{code}")]
+    [EnableRateLimiting(RateLimitPolicies.Invite)]
     public async Task<
         ActionResult<StokvelInvitePreviewResponse>>
         Preview(string code)
@@ -39,6 +41,7 @@ public sealed class InvitesController : ControllerBase
     }
 
     [HttpPost("{code}/join")]
+    [EnableRateLimiting(RateLimitPolicies.Invite)]
     public async Task<
         ActionResult<JoinStokvelResponse>>
         Join(string code)

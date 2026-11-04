@@ -386,6 +386,35 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode =
         StatusCodes.Status429TooManyRequests;
 
+    
+options.AddPolicy(
+    RateLimitPolicies.Invite,
+    context =>
+    {
+        var userId =
+            context.User.FindFirst("sub")?.Value
+            ?? "anonymous";
+
+        var address =
+            context.Connection.RemoteIpAddress?
+                .ToString()
+            ?? "unknown";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: $"{address}:{userId}",
+            factory: _ =>
+                new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = builder.Configuration.GetValue(
+                        "RateLimiting:Invite:PermitLimit",
+                        10),
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 0,
+                    AutoReplenishment = true
+                });
+    });
+
+
     options.AddPolicy(
         RateLimitPolicies.Contribution,
         httpContext =>
