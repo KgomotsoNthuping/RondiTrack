@@ -21,6 +21,39 @@ describe('PaymentIntentTracker', () => {
 
     expect(tracker.keyFor(payment)).toBe(initialKey)
   })
+  
+  it('keeps the same key across repeated unchanged attempts', () => {
+    let generated = 0
+
+    const tracker = new PaymentIntentTracker(
+      initialKey,
+      () => {
+        generated += 1
+
+        return `generated-key-${generated}`
+      },
+    )
+
+    const first = tracker.keyFor(payment)
+
+    const second = tracker.keyFor(payment)
+
+    const third = tracker.keyFor(payment)
+
+    expect(first).toBe(initialKey)
+    expect(second).toBe(initialKey)
+    expect(third).toBe(initialKey)
+    expect(generated).toBe(0)
+
+    const changed = tracker.keyFor({
+      ...payment,
+      amountInCents: 20000,
+    })
+
+    expect(changed).toBe('generated-key-1')
+    expect(generated).toBe(1)
+  })
+
 
   it('reuses the key for an unchanged retry', () => {
     const tracker = new PaymentIntentTracker(initialKey)
