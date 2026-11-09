@@ -6,7 +6,9 @@ type PagedResponse = {
 export async function fetchExtraPage<T extends PagedResponse>(
   url: string,
 ): Promise<T> {
-  const response = await fetch(url, {
+  const response = await fetch(
+  new URL(url, window.location.origin),
+  {
     credentials: 'same-origin',
     cache: 'no-store',
   })

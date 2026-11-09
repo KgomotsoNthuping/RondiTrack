@@ -183,6 +183,37 @@ describe('RecordContributionForm', () => {
       'contribution-amount-error',
     )
   })
+    
+  it('shows a Treasurer the member selector', () => {
+    renderForm('Treasurer')
+
+    expect(
+      screen.getByRole('combobox', {
+        name: 'Member',
+      }),
+    ).toBeInTheDocument()
+
+    expect(
+      screen.getByRole('option', {
+        name: 'Thandi Dlamini',
+      }),
+    ).toBeInTheDocument()
+  })
+
+  it('does not show another-member controls to an ordinary Member', () => {
+    renderForm('Member')
+
+    expect(
+      screen.queryByRole('combobox', {
+        name: 'Member',
+      }),
+    ).not.toBeInTheDocument()
+
+    expect(
+      screen.getByText('Sipho Mokoena'),
+    ).toBeInTheDocument()
+  })
+
 
   it('maps the API userId error to the visible Member field', async () => {
     const user = userEvent.setup()
