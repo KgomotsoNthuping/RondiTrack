@@ -3,7 +3,7 @@ export default function Loading() {
     <div
       role="status"
       aria-live="polite"
-      className="animate-pulse space-y-6"
+      className="animate-pulse space-y-6 motion-reduce:animate-none"
     >
       <span className="sr-only">
         Loading RondiTrack information...

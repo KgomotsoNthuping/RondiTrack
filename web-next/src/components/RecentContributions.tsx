@@ -98,7 +98,7 @@ export function RecentContributionsSkeleton() {
       <div
         role="status"
         aria-live="polite"
-        className="grid animate-pulse gap-4 lg:grid-cols-2"
+        className="grid animate-pulse gap-4 lg:grid-cols-2 motion-reduce:animate-none"
       >
         <span className="sr-only">
           Loading contribution records...

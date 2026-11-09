@@ -299,7 +299,7 @@ function InfoCard({
         {label}
       </p>
 
-      <p className="mt-2 break-words text-xl font-bold">
+      <p className="mt-2 break-words text-xl font-bold tabular-nums">
         {value}
       </p>
     </div>

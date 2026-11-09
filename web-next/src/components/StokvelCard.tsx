@@ -74,7 +74,7 @@ export function StokvelCard({ stokvel }: Props) {
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl bg-lime-50 p-3 text-lime-950">
                   <p className="text-xs">Paid</p>
-                  <p className="mt-1 break-words font-bold">
+                  <p className="mt-1 break-words font-bold tabular-nums">
                     {stokvel.paidThisCycleInCents == null
                       ? 'Unavailable'
                       : formatCents(
@@ -85,7 +85,7 @@ export function StokvelCard({ stokvel }: Props) {
 
                 <div className="rounded-xl bg-slate-100 p-3 text-slate-950">
                   <p className="text-xs">Still owed</p>
-                  <p className="mt-1 break-words font-bold">
+                  <p className="mt-1 break-words font-bold tabular-nums">
                     {stokvel.stillOwedInCents == null
                       ? 'Unavailable'
                       : formatCents(

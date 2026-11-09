@@ -143,7 +143,7 @@ function SummaryCard({
         {label}
       </p>
 
-      <p className="mt-2 break-words text-2xl font-extrabold">
+      <p className="mt-2 break-words text-2xl font-extrabold tabular-nums">
         {value}
       </p>
     </div>

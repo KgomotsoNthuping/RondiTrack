@@ -151,14 +151,52 @@ export default function AppLayout({
   return (
     <Providers>
       <Suspense
+        
         fallback={
           <div
             role="status"
-            className="p-8 text-slate-600"
+            aria-label="Loading RondiTrack"
+            className="mx-auto flex min-h-screen max-w-7xl flex-col md:flex-row"
           >
-            Loading RondiTrack...
+            <aside
+              aria-hidden="true"
+              className="w-full shrink-0 border-b border-slate-200 bg-white p-5 md:min-h-screen md:w-64 md:border-b-0 md:border-r"
+            >
+              <div className="h-11 w-40 rounded-xl bg-slate-200" />
+              <div className="mt-8 grid grid-cols-2 gap-2 md:grid-cols-1">
+                {Array.from({ length: 6 }, (_, index) => (
+                  <div
+                    key={index}
+                    className="h-11 rounded-xl bg-slate-100"
+                  />
+                ))}
+              </div>
+              <div className="mt-8 h-24 border-t border-slate-200 pt-5">
+                <div className="h-5 w-32 rounded bg-slate-200" />
+                <div className="mt-3 h-4 w-40 rounded bg-slate-100" />
+              </div>
+            </aside>
+            <main className="min-w-0 flex-1 p-5 sm:p-8">
+              <div className="animate-pulse space-y-6">
+                <div className="h-4 w-32 rounded bg-slate-200" />
+                <div className="h-9 w-64 max-w-full rounded bg-slate-200" />
+                <div className="h-4 w-full max-w-lg rounded bg-slate-200" />
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {Array.from({ length: 3 }, (_, index) => (
+                    <div
+                      key={index}
+                      className="h-32 rounded-2xl border border-slate-200 bg-white"
+                    />
+                  ))}
+                </div>
+              </div>
+            </main>
+            <span className="sr-only">
+              Loading RondiTrack information...
+            </span>
           </div>
-        }
+}
+
       >
         <AppShell>{children}</AppShell>
       </Suspense>
