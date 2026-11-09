@@ -15,3 +15,31 @@ select,
 textarea {
   font: inherit;
 }
+
+
+html {
+  scroll-padding-top: 5rem;
+  scroll-padding-bottom: 7rem;
+}
+
+:where(
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  [tabindex]
+):focus-visible {
+  outline: 3px solid #65a30d;
+  outline-offset: 3px;
+}
+
+#main-content {
+  scroll-margin-top: 5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

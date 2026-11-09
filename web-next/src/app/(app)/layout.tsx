@@ -66,7 +66,14 @@ async function AppShell({
       key={session.userId}
       userId={session.userId}
     >
-      <div className="min-h-screen bg-slate-50 text-slate-950">
+      <div className="min-h-screen bg-slate-50 text-slate-950">      
+        <a
+          href="#main-content"
+          className="fixed left-4 top-4 z-[100] -translate-y-32 rounded-lg bg-lime-400 px-5 py-3 font-bold text-lime-950 shadow-lg focus:translate-y-0 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-slate-950"
+        >
+          Skip to main content
+        </a>
+
         <div className="mx-auto flex min-h-screen max-w-7xl flex-col md:flex-row">
           <aside className="w-full border-b border-slate-200 bg-white p-5 md:min-h-screen md:w-64 md:shrink-0 md:border-b-0 md:border-r">
             <Link
@@ -121,10 +128,13 @@ async function AppShell({
             </div>
           </aside>
 
+          
           <main
             id="main-content"
+            tabIndex={-1}
             className="min-w-0 flex-1 p-5 sm:p-8"
           >
+
             {children}
           </main>
         </div>

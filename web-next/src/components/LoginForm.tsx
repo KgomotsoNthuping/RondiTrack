@@ -127,6 +127,13 @@ export function LoginForm({
               aria-invalid={Boolean(
                 state.fieldErrors.email?.length,
               )}
+              
+              aria-describedby={
+                state.fieldErrors.email?.length
+                  ? 'login-email-errors'
+                  : undefined
+              }
+
               className={inputClass}
             />
 
@@ -160,6 +167,13 @@ export function LoginForm({
               aria-invalid={Boolean(
                 state.fieldErrors.password?.length,
               )}
+              
+              aria-describedby={
+                state.fieldErrors.password?.length
+                  ? 'login-password-errors'
+                  : undefined
+              }
+
               className={inputClass}
             />
 
