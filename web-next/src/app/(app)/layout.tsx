@@ -16,6 +16,17 @@ import { LogoutForm } from '@/components/LogoutForm'
 import { PinnedStokvelsNav } from '@/components/PinnedStokvelsNav'
 import { PinnedStokvelsProvider } from '@/components/PinnedStokvelsProvider'
 import { Providers } from './Providers'
+import type { Metadata } from 'next'
+
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+  },
+}
+
 
 const navigation = [
   {

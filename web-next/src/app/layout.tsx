@@ -3,11 +3,17 @@ import type { ReactNode } from 'react'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import './globals.css'
 
+
 export const metadata: Metadata = {
-  title: 'RondiTrack',
+  title: {
+    default: 'RondiTrack',
+    template: '%s · RondiTrack',
+  },
   description:
-    'Stokvel membership, contributions and financial tracking.',
+    'RondiTrack helps stokvel members manage contributions, membership and financial activity securely.',
+  applicationName: 'RondiTrack',
 }
+
 
 export default function RootLayout({
   children,

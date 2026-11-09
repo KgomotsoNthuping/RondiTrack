@@ -1,6 +1,25 @@
 import { Suspense } from 'react'
 import { LoginForm } from '@/components/LoginForm'
 import { safeNext } from '@/lib/safeNext'
+import type { Metadata } from 'next'
+
+
+export const metadata: Metadata = {
+  title: 'Sign in',
+  description:
+    'Sign in to RondiTrack to manage your stokvel membership and contributions.',
+  openGraph: {
+    type: 'website',
+    siteName: 'RondiTrack',
+    title: 'RondiTrack',
+    description:
+      'A secure platform for stokvel membership and contribution management.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+}
 
 type LoginPageProps = {
   searchParams: Promise<{

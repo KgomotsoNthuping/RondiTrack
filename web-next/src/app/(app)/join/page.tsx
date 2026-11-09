@@ -13,6 +13,29 @@ import {
   transitionJoin,
   type JoinState,
 } from '@/lib/joinFlow'
+import type { Metadata } from 'next'
+
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Join a stokvel',
+    description:
+      'You have been invited to join a stokvel using RondiTrack. Sign in to review your invitation.',
+    robots: {
+      index: false,
+      follow: false,
+      nocache: true,
+    },
+    openGraph: {
+      type: 'website',
+      siteName: 'RondiTrack',
+      title: 'Join a stokvel · RondiTrack',
+      description:
+        'You have received a RondiTrack invitation. Sign in to review the details securely.',
+    },
+  }
+}
+
 
 type JoinPageProps = {
   searchParams: Promise<{
