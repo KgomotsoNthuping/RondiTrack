@@ -1,24 +1,26 @@
+
 name: CI
 
 on:
   push:
     branches:
       - main
-
   pull_request:
 
-jobs:
+permissions:
+  contents: read
 
-  test:
-    name: Build and test
+jobs:
+  backend:
+    name: Backend - build and test
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v6
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
 
@@ -31,19 +33,154 @@ jobs:
       - name: Test
         run: dotnet test --no-build --configuration Release
 
+  frontend:
+    name: Frontend - ${{ matrix.timezone }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        timezone:
+          - UTC
+          - Africa/Johannesburg
+
+    defaults:
+      run:
+        working-directory: web-next
+
+    env:
+      TZ: ${{ matrix.timezone }}
+      CI: "true"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web-next/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Generate Next.js types
+        run: npm exec -- next typegen
+
+      - name: TypeScript
+        run: npm run typecheck
+
+      - name: Vitest
+        run: npm test
+
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=low
+
+  e2e:
+    name: E2E - Chromium, axe and metadata
+    runs-on: ubuntu-latest
+    needs:
+      - backend
+      - frontend
+
+    defaults:
+      run:
+        working-directory: web-next
+
+    env:
+      CI: "true"
+      TZ: Africa/Johannesburg
+      API_BASE_URL: http://localhost:8080
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web-next/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npm exec -- playwright install --with-deps chromium
+
+      - name: Generate throwaway test credentials
+        working-directory: .
+        shell: bash
+        run: |
+          POSTGRES_PASSWORD=$(openssl rand -hex 24)
+          JWT_SIGNING_KEY=$(openssl rand -hex 48)
+          DEMO_PASSWORD=$(openssl rand -hex 24)
+          SESSION_SECRET=$(node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))")
+
+          {
+            echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD"
+            echo "JWT_SIGNING_KEY=$JWT_SIGNING_KEY"
+            echo "DEMO_PASSWORD=$DEMO_PASSWORD"
+            echo "E2E_DEMO_PASSWORD=$DEMO_PASSWORD"
+            echo "SESSION_SECRET=$SESSION_SECRET"
+          } >> "$GITHUB_ENV"
+
+      - name: Start fresh PostgreSQL and API
+        working-directory: .
+        run: docker compose up -d --build
+
+      - name: Verify API readiness
+        working-directory: .
+        run: |
+          curl --fail --silent --show-error \
+            --retry 30 \
+            --retry-connrefused \
+            --retry-delay 2 \
+            http://localhost:8080/health/ready
+
+      - name: Generate Next.js types
+        run: npm exec -- next typegen
+
+      - name: Build production frontend
+        run: npm run build
+
+      - name: Run Playwright
+        run: npm run test:e2e
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-html-report
+          path: |
+            web-next/playwright-report/
+            web-next/test-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Stop test containers
+        if: always()
+        working-directory: .
+        run: docker compose down --volumes --remove-orphans
 
   image:
     name: Build container image
-    needs: test
+    needs: backend
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
-      - name: Build image
-        run: >
-          docker build
-          -f Containerfile
-          --tag ronditrack-api:${{ github.sha }}
-          .
+      - name: Build API container image
+        run: |
+          docker build \
+            -f Containerfile \
+            --tag ronditrack-api:${{ github.sha }} \
+            .
