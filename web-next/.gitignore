@@ -13,3 +13,6 @@ coverage/
 .vercel/
 *.tsbuildinfo
 next-env.d.ts
+e2e/.auth/
+test-results/
+playwright-report/
