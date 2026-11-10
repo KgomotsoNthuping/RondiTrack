@@ -8,7 +8,7 @@ import {
 import { southAfricanDaysToUtcRange } from '@/lib/southAfricanDates'
 
 type RouteContext = {
-  params: Promise<{ id: string }>
+  params: Promise<{ stokvelId: string }>
 }
 
 const uuidPattern =
@@ -18,9 +18,9 @@ export async function GET(
   request: NextRequest,
   context: RouteContext,
 ): Promise<Response> {
-  const { id } = await context.params
+  const { stokvelId } = await context.params
 
-  if (!uuidPattern.test(id)) {
+  if (!uuidPattern.test(stokvelId)) {
     return Response.json(
       { title: 'Invalid stokvel ID.' },
       { status: 400 },
@@ -60,7 +60,7 @@ export async function GET(
   }
 
   return forwardAuthenticatedGet(
-    `/api/v1/stokvels/${id}/contributions`,
+    `/api/v1/stokvels/${stokvelId}/contributions`,
     query,
   )
 }

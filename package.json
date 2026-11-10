@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "dev": "npm --prefix web run dev --"
+  },
   "dependencies": {
     "@tanstack/react-query": "^5.104.5",
     "openapi-fetch": "^0.17.0"

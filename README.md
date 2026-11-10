@@ -230,7 +230,26 @@ cd RondiTrack
 dotnet restore .\Api\Api.csproj
 ```
 
-2. Create the local PostgreSQL database and a dedicated user. A development example is:
+#### Using the repository's Docker PostgreSQL
+
+Start the Compose database:
+
+```powershell
+docker compose up -d postgres
+```
+
+Compose publishes PostgreSQL on `127.0.0.1:5432`. Set the API connection string to the Compose database (`ronditrack`, user `postgres`) and use the `POSTGRES_PASSWORD` value from the repository's `.env` file:
+
+```powershell
+dotnet user-secrets set "ConnectionStrings:RondiTrack" "Host=127.0.0.1;Port=5432;Database=ronditrack;Username=postgres;Password=REPLACE_WITH_POSTGRES_PASSWORD_FROM_DOT_ENV" --project .\Api\Api.csproj
+dotnet run --project .\Api\Api.csproj
+```
+
+Replace the password placeholder locally; do not commit it. The API applies pending migrations at startup.
+
+#### Using a separate local PostgreSQL
+
+Create a local PostgreSQL database and dedicated user. A development example is:
 
 ```sql
 CREATE ROLE ronditrack WITH LOGIN PASSWORD 'REPLACE_WITH_LOCAL_PASSWORD';
@@ -285,6 +304,8 @@ Start the frontend:
 ```powershell
 npm.cmd run dev
 ```
+
+You can also run `npm.cmd run dev` from the repository root.
 
 Open **http://localhost:3000** and sign in with an account configured in the development environment.
 

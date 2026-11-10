@@ -37,18 +37,24 @@ export function PinnedStokvelsProvider({
   useEffect(() => {
     let active = true
 
-    void store.persist.rehydrate().then(
-      () => {
-        if (active) {
-          store.setState({ hydrated: true })
-        }
-      },
-      () => {
-        if (active) {
-          store.setState({ hydrated: true })
-        }
-      },
-    )
+    const rehydrate = store.persist.rehydrate()
+
+    if (rehydrate && typeof rehydrate.then === 'function') {
+      void rehydrate.then(
+        () => {
+          if (active) {
+            store.setState({ hydrated: true })
+          }
+        },
+        () => {
+          if (active) {
+            store.setState({ hydrated: true })
+          }
+        },
+      )
+    } else if (active) {
+      store.setState({ hydrated: true })
+    }
 
     function onStorage(event: StorageEvent) {
       if (
